@@ -753,10 +753,19 @@ footer{border-top:1px solid var(--line);padding:34px 0;background:var(--bg-2)}
   });
 
   /* Reveal generico */
+  gsap.set('.r', { y: 28, opacity: 0 });
+  
   ScrollTrigger.batch('.r', {
-    start: 'top 86%', once: true,
+    start: 'top 86%',
+    once: true,
     onEnter: function (els) {
-      gsap.from(els, { y: 28, opacity: 0, stagger: 0.09, duration: 0.85, overwrite: true });
+      gsap.to(els, {
+        y: 0,
+        opacity: 1,
+        stagger: 0.09,
+        duration: 0.85,
+        overwrite: true
+      });
     }
   });
 
