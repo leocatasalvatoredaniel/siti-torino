@@ -45,6 +45,18 @@ Verificato inoltre che non c'è conflitto tra il flusso esclusione del principal
 
 Monitoraggio post-attivazione: nei primi minuti nessuna execution in errore. Nota: i poll (Gmail/Notion) creano un'execution solo quando trovano dati nuovi, quindi a code vuote l'assenza di esecuzioni è lo stato atteso; il primo segnale di vita regolare è il tick del trigger 5-min (Mod3). Eventuali errori arrivano comunque in Telegram via Error Handler.
 
+## 5. Bug off-by-one nel flusso "Sposta colloquio" (segnalato da Daniel, corretto)
+
+Dagli screenshot del foglio disponibilità è emersa un'incongruenza: la scheda candidato indicava Trombini / Lo Vetere / Leocata, ma le celle grigie/protette erano quelle di Scarabotti / Campanale / Rabino — una colonna a destra, su tutti e tre gli sheet.
+
+**Causa**: `Code - Trova 3 Slot Sposta` (workflow Telegram) emetteva gli indici colonna **1-based** (chiavi `col_N` del nodo Sheets, C=3), mentre `Code - Build Sposta Updates` li usava come indici API **0-based** (alla riga applicava il −1, alla colonna no). Ogni "Sposta colloquio" proteggeva quindi la cella della persona adiacente e salvava le coordinate sbagliate in `slot_assignments` — col rischio, ai run successivi dello scheduling, di considerare occupata la persona sbagliata (doppia prenotazione del responsabile reale).
+
+Il workflow principale è risultato sano: `Prepara Blocco Slot`, `Code - Trova Slot Alternativi` e `coordToPerson` usano mappe 0-based corrette e mutuamente coerenti (verificato anche sul backup del 09/06). Gli altri flussi (/assegna, /blocca_slot) non calcolano colonne o le copiano da record esistenti.
+
+**Fix**: 1 riga in `Code - Trova 3 Slot Sposta` (`ci: parseInt(colIndex) - 1`), deploy con protocollo standard. Test live: le proposte di spostamento ora emettono indici 0-based corretti (verificato nell'execution, sessione annullata senza confermare spostamenti).
+
+**Riallineamento dati**: le 3 protezioni + 3 CF del record di test sono state spostate sulle celle delle persone effettivamente scelte (Trombini M&C col D, Lo Vetere IT col C, Leocata T&DA col D — riga 10:00) e il DB aggiornato con colonne 0-based e i nuovi protection_id. Foglio, Supabase e Notion ora raccontano la stessa storia.
+
 ## Strumenti di sessione
 
 Helper n8n temporaneo (webhook + azioni whitelisted con credential dei workflow: SQL preparate, Sheets get/batch, Gmail search, Notion query/archive con gate sulla sola pagina di test) creato a inizio sessione ed eliminato a fine sessione. Nessun segreto in chat, repo o log; backup live solo in `/tmp`.
