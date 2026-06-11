@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REC Automation · JEToP</title>
+<meta name="description" content="Il processo di selezione di JEToP, orchestrato: candidature, colloqui e comunicazioni gestiti in automatico. Le decisioni restano al team.">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg:#0B0A10;
+  --bg-2:#13111B;
+  --bg-3:#1A1726;
+  --line:rgba(236,234,244,.09);
+  --line-strong:rgba(236,234,244,.16);
+  --text:#ECEAF4;
+  --muted:#A6A1B6;
+  --iris:#9379C2;
+  --iris-strong:#684DC2;
+  --iris-soft:rgba(147,121,194,.13);
+  --iris-line:rgba(147,121,194,.34);
+  --ok:#69c98b;
+  --radius:16px;
+  --nav-h:68px;
+  --pad:clamp(20px,4vw,56px);
+}
+/* z-scale: 1 contenuti in rilievo · 40 nav · 50 progress · 60 skip-link */
+
+/* ============ BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+@font-face{font-family:'Red Hat Display';src:url('fonts/RedHatDisplay-var.woff2') format('woff2');font-weight:300 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Red Hat Display';src:url('fonts/RedHatDisplay-700i.woff2') format('woff2');font-weight:700;font-style:italic;font-display:swap}
+@font-face{font-family:'Red Hat Mono';src:url('fonts/RedHatMono-var.woff2') format('woff2');font-weight:300 700;font-style:normal;font-display:swap}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Red Hat Display',system-ui,-apple-system,sans-serif;
+  font-size:17px;line-height:1.7;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  overflow-x:clip;
+}
+::selection{background:var(--iris);color:#0B0A10}
+img{max-width:100%;height:auto;display:block}
+a{color:inherit}
+.mono{font-family:'Red Hat Mono',ui-monospace,monospace}
+
+.skip-link{position:fixed;top:-100px;left:16px;z-index:60;background:var(--iris);color:#0B0A10;
+  padding:10px 18px;border-radius:999px;font-weight:700;text-decoration:none;transition:top .2s}
+.skip-link:focus{top:12px}
+:focus-visible{outline:2px solid var(--iris);outline-offset:3px;border-radius:4px}
+
+.wrap{max-width:1280px;margin-inline:auto;padding-inline:var(--pad)}
+section{position:relative}
+.section-pad{padding-block:clamp(88px,12vh,150px)}
+
+h1,h2,h3{line-height:1.06;letter-spacing:-.025em;font-weight:800;text-wrap:balance}
+h2{font-size:clamp(2rem,4.2vw,3.3rem);margin-bottom:.5em}
+h3{font-size:1.16rem;letter-spacing:-.01em;line-height:1.3}
+p{max-width:65ch}
+.lead{font-size:clamp(1.08rem,1.6vw,1.3rem);color:var(--muted)}
+.eyebrow{
+  display:inline-block;font-family:'Red Hat Mono',monospace;font-size:.72rem;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--iris);
+  margin-bottom:1.1rem;font-weight:500;
+}
+
+/* ============ NAV ============ */
+.nav{
+  position:fixed;inset-inline:0;top:0;z-index:40;height:var(--nav-h);
+  display:flex;align-items:center;
+  transition:background .35s ease,border-color .35s ease,backdrop-filter .35s ease;
+  border-bottom:1px solid transparent;
+}
+body.scrolled .nav{background:rgba(11,10,16,.78);backdrop-filter:blur(14px);border-bottom-color:var(--line)}
+.nav-inner{width:100%;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.nav-logo img{height:26px;width:auto}
+.nav-links{display:flex;gap:30px;list-style:none;align-items:center}
+.nav-links a{
+  text-decoration:none;font-size:.92rem;font-weight:500;color:var(--muted);
+  transition:color .2s;
+}
+.nav-links a:hover{color:var(--text)}
+.live-chip{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'Red Hat Mono',monospace;font-size:.74rem;letter-spacing:.08em;
+  color:var(--text);border:1px solid var(--line-strong);border-radius:999px;
+  padding:7px 14px;white-space:nowrap;
+}
+.live-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);
+  box-shadow:0 0 0 0 rgba(105,201,139,.5)}
+@media (prefers-reduced-motion:no-preference){
+  .live-chip .dot{animation:pulse 2.4s ease-out infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(105,201,139,.45)}70%{box-shadow:0 0 0 7px rgba(105,201,139,0)}100%{box-shadow:0 0 0 0 rgba(105,201,139,0)}}
+}
+.progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:50;
+  background:linear-gradient(90deg,var(--iris-strong),var(--iris));
+  transform-origin:0 50%;transform:scaleX(0)}
+@media (max-width:860px){.nav-links{display:none}}
+
+/* ============ HERO ============ */
+.hero{min-height:100dvh;display:flex;align-items:center;padding-top:var(--nav-h);overflow:clip}
+.hero-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(28px,5vw,72px);align-items:center;width:100%}
+.hero h1{font-size:clamp(2.9rem,6.4vw,5.3rem);font-weight:900;margin-bottom:.35em}
+.hero h1 em{font-style:italic;color:var(--iris);padding-bottom:.06em}
+.hero .lead{margin-bottom:2.2rem}
+.hero-visual{position:relative;min-height:320px}
+.hero-visual::before{
+  content:"";position:absolute;inset:-18%;
+  background:radial-gradient(closest-side,rgba(104,77,194,.28),rgba(104,77,194,.07) 55%,transparent 75%);
+  pointer-events:none;
+}
+.hero-visual img{position:relative;width:min(100%,600px);margin-inline:auto;will-change:transform}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--iris);color:#0B0A10;font-weight:800;font-size:1rem;
+  border:none;border-radius:999px;padding:15px 30px;text-decoration:none;
+  cursor:pointer;transition:background .2s;
+  will-change:transform;
+}
+.btn:hover{background:#A48DCE}
+.btn:active{transform:scale(.98)}
+.btn svg{width:18px;height:18px;flex:none}
+@media (max-width:920px){
+  .hero{min-height:auto;padding-block:calc(var(--nav-h) + 56px) 56px}
+  .hero-grid{grid-template-columns:1fr}
+  .hero-visual{order:-1;min-height:0}
+  .hero-visual img{width:min(72%,380px)}
+}
+
+/* ============ STATS ============ */
+.stats{border-block:1px solid var(--line);background:var(--bg-2)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line)}
+.stat{background:var(--bg-2);padding:clamp(26px,3.4vw,46px) clamp(18px,2.4vw,36px)}
+.stat .num{font-family:'Red Hat Mono',monospace;font-size:clamp(2.2rem,4vw,3.4rem);font-weight:500;letter-spacing:-.04em;color:var(--text);line-height:1.1}
+.stat .num sub{font-size:.45em;vertical-align:baseline;color:var(--iris);font-weight:500}
+.stat .lbl{color:var(--muted);font-size:.92rem;margin-top:6px}
+@media (max-width:860px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* ============ MANIFESTO ============ */
+.manifesto{text-align:center}
+.manifesto .lead{margin-inline:auto}
+.manifesto h2{max-width:18ch;margin-inline:auto}
+.decide-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,56px);
+  margin-top:clamp(48px,7vh,84px);text-align:left;
+}
+.decide-col{border-top:2px solid var(--line-strong);padding-top:26px}
+.decide-col.accent{border-top-color:var(--iris)}
+.decide-col h3{margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.decide-col h3 svg{width:21px;height:21px;color:var(--iris);flex:none}
+.decide-col ul{list-style:none}
+.decide-col li{
+  padding:11px 0;color:var(--muted);font-size:1rem;
+  border-bottom:1px solid var(--line);
+}
+.decide-col li:last-child{border-bottom:none}
+.decide-col li strong{color:var(--text);font-weight:700}
+@media (max-width:760px){.decide-grid{grid-template-columns:1fr}}
+
+/* ============ PERCHÉ ============ */
+.why-grid{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:clamp(36px,6vw,90px);align-items:start}
+.why-grid h2{position:sticky;top:calc(var(--nav-h) + 28px)}
+.pain{display:flex;gap:18px;padding:24px 0;border-bottom:1px solid var(--line)}
+.pain:first-child{border-top:1px solid var(--line)}
+.pain svg{width:24px;height:24px;color:var(--iris);flex:none;margin-top:3px}
+.pain h3{margin-bottom:5px}
+.pain p{color:var(--muted);font-size:.98rem}
+@media (max-width:860px){.why-grid{grid-template-columns:1fr}.why-grid h2{position:static}}
+
+/* ============ PRIMA / DA ORA ============ */
+.shift{background:var(--bg-2);border-block:1px solid var(--line)}
+.shift-head{max-width:62ch;margin-bottom:clamp(40px,6vh,64px)}
+.shift-cols{display:grid;grid-template-columns:1fr 1fr;gap:clamp(18px,3vw,32px)}
+.shift-col{border-radius:var(--radius);padding:clamp(24px,3vw,40px)}
+.shift-col.before{border:1px solid var(--line)}
+.shift-col.after{background:linear-gradient(160deg,rgba(104,77,194,.16),rgba(147,121,194,.05));border:1px solid var(--iris-line)}
+.shift-col .tag{font-family:'Red Hat Mono',monospace;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:18px}
+.shift-col.after .tag{color:var(--iris)}
+.shift-col ul{list-style:none}
+.shift-col li{padding:13px 0;border-bottom:1px solid var(--line);font-size:1rem;color:var(--muted);display:flex;gap:12px;align-items:flex-start}
+.shift-col.after li{color:var(--text)}
+.shift-col li:last-child{border-bottom:none}
+.shift-col li svg{width:18px;height:18px;flex:none;margin-top:5px;color:var(--muted)}
+.shift-col.after li svg{color:var(--iris)}
+@media (max-width:820px){.shift-cols{grid-template-columns:1fr}}
+
+/* ============ PROCESSO (pan orizzontale) ============ */
+.flow{overflow:clip}
+.flow-head{padding-top:clamp(88px,12vh,150px);padding-bottom:clamp(28px,4vh,48px)}
+.flow-track{display:flex;align-items:stretch;gap:clamp(16px,2vw,28px);padding-bottom:clamp(64px,10vh,120px)}
+.flow-panel{
+  flex:none;width:min(520px,82vw);
+  border:1px solid var(--line);border-radius:var(--radius);
+  background:linear-gradient(175deg,var(--bg-2),var(--bg));
+  padding:clamp(26px,3vw,42px);
+  display:flex;flex-direction:column;gap:14px;min-height:340px;
+}
+.flow-panel .icon{
+  width:48px;height:48px;border-radius:12px;background:var(--iris-soft);
+  display:grid;place-items:center;margin-bottom:8px;
+}
+.flow-panel .icon svg{width:25px;height:25px;color:var(--iris)}
+.flow-panel h3{font-size:clamp(1.5rem,2.2vw,2rem);letter-spacing:-.02em}
+.flow-panel .kicker{color:var(--iris);font-weight:700;font-size:1.02rem}
+.flow-panel p{color:var(--muted);font-size:1rem}
+.flow-panel .foot{margin-top:auto;padding-top:18px;border-top:1px solid var(--line);
+  font-family:'Red Hat Mono',monospace;font-size:.8rem;color:var(--muted);letter-spacing:.04em}
+@media (max-width:1023px){
+  .flow-track{flex-direction:column;padding-inline:var(--pad)}
+  .flow-panel{width:100%;min-height:0}
+}
+@media (min-width:1024px){
+  .flow-track{padding-inline:max(var(--pad),calc((100vw - 1280px)/2 + var(--pad)))}
+}
+
+/* ============ BOT ============ */
+.bot-head{max-width:60ch}
+.cmd-groups{display:grid;gap:26px;margin-top:clamp(36px,5vh,56px)}
+.cmd-group{display:grid;grid-template-columns:170px 1fr;gap:16px;align-items:baseline;border-top:1px solid var(--line);padding-top:20px}
+.cmd-group .g{font-family:'Red Hat Mono',monospace;font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.cmd-row{display:flex;flex-wrap:wrap;gap:10px}
+.cmd{
+  font-family:'Red Hat Mono',monospace;font-size:.88rem;
+  border:1px solid var(--line-strong);border-radius:999px;padding:8px 16px;
+  color:var(--text);background:var(--bg-2);white-space:nowrap;
+  transition:border-color .2s,background .2s;
+}
+.cmd:hover{border-color:var(--iris);background:var(--iris-soft)}
+@media (max-width:700px){.cmd-group{grid-template-columns:1fr;gap:10px}}
+.bot-highlights{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-top:clamp(40px,6vh,64px)}
+.bot-hl{background:var(--bg-2);padding:clamp(22px,2.6vw,34px)}
+.bot-hl svg{width:24px;height:24px;color:var(--iris);margin-bottom:14px}
+.bot-hl h3{margin-bottom:6px;font-size:1.05rem}
+.bot-hl p{color:var(--muted);font-size:.95rem}
+@media (max-width:820px){.bot-highlights{grid-template-columns:1fr}}
+
+/* ============ STRUMENTI (bento) ============ */
+.tools{background:var(--bg-2);border-block:1px solid var(--line)}
+.bento{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:clamp(36px,5vh,56px)}
+.cell{
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--bg);
+  padding:clamp(22px,2.4vw,32px);position:relative;overflow:hidden;
+  transition:transform .25s cubic-bezier(.16,1,.3,1),border-color .25s;
+}
+.cell:hover{transform:translateY(-3px);border-color:var(--iris-line)}
+.cell .tool-logo{width:30px;height:30px;color:var(--text);margin-bottom:16px}
+.cell h3{font-size:1.04rem;margin-bottom:5px}
+.cell p{color:var(--muted);font-size:.94rem}
+.cell-n8n{grid-column:span 7;background:linear-gradient(150deg,rgba(104,77,194,.2),rgba(147,121,194,.04) 60%);border-color:var(--iris-line)}
+.cell-n8n .tool-logo{width:38px;height:38px;color:var(--iris)}
+.cell-n8n h3{font-size:1.35rem}
+.cell-n8n p{max-width:46ch}
+.cell-notion{grid-column:span 5}
+.cell-telegram{grid-column:span 4}
+.cell-sheets{grid-column:span 4}
+.cell-calendar{grid-column:span 4}
+.cell-gmail{grid-column:span 4}
+.cell-supabase{grid-column:span 4}
+.cell-gemini{grid-column:span 4}
+.cell-mark{position:absolute;right:-30px;bottom:-46px;width:150px;opacity:.07;pointer-events:none}
+@media (max-width:980px){
+  .cell-n8n{grid-column:span 12}
+  .cell-notion,.cell-telegram,.cell-sheets,.cell-calendar,.cell-gmail,.cell-supabase,.cell-gemini{grid-column:span 6}
+}
+@media (max-width:620px){.bento .cell{grid-column:span 12}}
+
+/* ============ GOVERNANCE ============ */
+.gov-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(36px,6vw,90px);align-items:start}
+.gov-col h3{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.gov-col h3 svg{width:21px;height:21px;color:var(--iris)}
+.gov-list{list-style:none}
+.gov-list li{padding:18px 0;border-bottom:1px solid var(--line)}
+.gov-list li:last-child{border-bottom:none}
+.gov-list .who{font-weight:800;display:block;margin-bottom:3px}
+.gov-list p{color:var(--muted);font-size:.97rem}
+@media (max-width:820px){.gov-grid{grid-template-columns:1fr}}
+
+/* ============ ROADMAP ============ */
+.roadmap-list{list-style:none;margin-top:clamp(36px,5vh,56px);position:relative}
+.roadmap-list::before{content:"";position:absolute;left:7px;top:8px;bottom:8px;width:1px;background:var(--line-strong)}
+.roadmap-list li{position:relative;padding:0 0 clamp(34px,5vh,52px) 44px}
+.roadmap-list li:last-child{padding-bottom:0}
+.roadmap-list li::before{
+  content:"";position:absolute;left:0;top:7px;width:15px;height:15px;border-radius:50%;
+  background:var(--bg);border:2px solid var(--iris);
+}
+.roadmap-list li.now::before{background:var(--iris)}
+.roadmap-list .when{font-family:'Red Hat Mono',monospace;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--iris);display:block;margin-bottom:4px}
+.roadmap-list h3{margin-bottom:4px}
+.roadmap-list p{color:var(--muted);font-size:.98rem;max-width:58ch}
+
+/* ============ CTA FINALE / FOOTER ============ */
+.outro{
+  background:
+    radial-gradient(60% 90% at 70% 10%,rgba(104,77,194,.22),transparent 70%),
+    var(--bg-2);
+  border-top:1px solid var(--line);
+  text-align:center;
+}
+.outro h2{font-size:clamp(2.4rem,5vw,4rem);max-width:16ch;margin-inline:auto}
+.outro .lead{margin:18px auto 36px}
+footer{border-top:1px solid var(--line);padding:34px 0;background:var(--bg-2)}
+.foot-inner{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.foot-inner img{height:22px;width:auto;opacity:.85}
+.foot-inner .mono{font-size:.78rem;color:var(--muted);letter-spacing:.06em}
+
+/* ============ REVEAL (solo con JS+motion) ============ */
+.r{opacity:1}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Vai al contenuto</a>
+<div class="progress" aria-hidden="true"></div>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="nav-logo" href="#" aria-label="JEToP, torna su">
+      <img src="assets/logo-secondario-white.png" alt="JEToP, Junior Enterprise Torino Politecnico" width="640" height="178">
+    </a>
+    <nav aria-label="Sezioni">
+      <ul class="nav-links">
+        <li><a href="#perche">Perché</a></li>
+        <li><a href="#processo">Processo</a></li>
+        <li><a href="#strumenti">Strumenti</a></li>
+        <li><a href="#roadmap">Roadmap</a></li>
+      </ul>
+    </nav>
+    <span class="live-chip"><span class="dot" aria-hidden="true"></span>SISTEMA LIVE</span>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <h1>La selezione,<br><em>automatizzata</em>.</h1>
+        <p class="lead">REC Automation orchestra candidature, agenda e comunicazioni della selezione JEToP. Le decisioni restano al team, l'esecuzione passa al sistema.</p>
+        <a class="btn" id="cta-hero" href="#processo">Guarda il processo <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg></a>
+      </div>
+      <div class="hero-visual">
+        <img id="logo3d" src="assets/logo-3d.png" alt="Logo 3D di JEToP: doppia freccia iridescente" width="1500" height="938" fetchpriority="high">
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats" aria-label="Numeri del sistema">
+    <div class="wrap" style="padding-inline:0">
+      <div class="stats-grid">
+        <div class="stat"><div class="num"><span data-count="3">3</span></div><div class="lbl">workflow in produzione</div></div>
+        <div class="stat"><div class="num"><span data-count="399">399</span></div><div class="lbl">nodi orchestrati</div></div>
+        <div class="stat"><div class="num"><span data-count="16">16</span></div><div class="lbl">comandi dal telefono</div></div>
+        <div class="stat"><div class="num"><span data-count="0">0</span></div><div class="lbl">email scritte a mano</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MANIFESTO -->
+  <section class="manifesto section-pad" id="cosa">
+    <div class="wrap">
+      <h2 class="r">Il lavoro ripetitivo non merita il vostro tempo.</h2>
+      <p class="lead r">REC Automation prende in carico la parte meccanica del recruiting: registra le candidature, applica i filtri di idoneità, incrocia le disponibilità, fissa i colloqui, scrive ai candidati e tiene ogni stato allineato. In tempo reale, senza passaggi a mano.</p>
+      <div class="decide-grid">
+        <div class="decide-col r">
+          <h3><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M215.79,118.17a8,8,0,0,0-5-5.66L153.18,90.9l14.66-73.33a8,8,0,0,0-13.69-7l-112,120a8,8,0,0,0,3,13l57.63,21.61L88.16,238.43a8,8,0,0,0,13.69,7l112-120A8,8,0,0,0,215.79,118.17ZM109.37,214l10.47-52.38a8,8,0,0,0-5-9.06L62,132.71l84.62-90.66L136.16,94.43a8,8,0,0,0,5,9.06l52.8,19.8Z"/></svg> Il sistema esegue</h3>
+          <ul>
+            <li><strong>Screening</strong> dei requisiti di base all'arrivo di ogni candidatura</li>
+            <li><strong>Incastro automatico</strong> di tre agende per ogni colloquio</li>
+            <li><strong>Email ai candidati</strong>: convocazioni, conferme, spostamenti, esiti</li>
+            <li><strong>Stati sincronizzati</strong> su Notion, calendario e fogli</li>
+            <li><strong>Briefing quotidiano</strong> dei colloqui in arrivo</li>
+          </ul>
+        </div>
+        <div class="decide-col accent r">
+          <h3><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M244.8,150.4a8,8,0,0,1-11.2-1.6A51.6,51.6,0,0,0,192,128a8,8,0,0,1-7.37-4.89,8,8,0,0,1,0-6.22A8,8,0,0,1,192,112a24,24,0,1,0-23.24-30,8,8,0,1,1-15.5-4A40,40,0,1,1,219,117.51a67.94,67.94,0,0,1,27.43,21.68A8,8,0,0,1,244.8,150.4ZM190.92,212a8,8,0,1,1-13.84,8,57,57,0,0,0-98.16,0,8,8,0,1,1-13.84-8,72.06,72.06,0,0,1,33.74-29.92,48,48,0,1,1,58.36,0A72.06,72.06,0,0,1,190.92,212ZM128,176a32,32,0,1,0-32-32A32,32,0,0,0,128,176ZM72,120a8,8,0,0,0-8-8A24,24,0,1,1,87.24,82a8,8,0,1,0,15.5-4A40,40,0,1,0,37,117.51,67.94,67.94,0,0,0,9.6,139.19a8,8,0,1,0,12.8,9.61A51.6,51.6,0,0,1,64,128,8,8,0,0,0,72,120Z"/></svg> Il team decide</h3>
+          <ul>
+            <li><strong>Chi approvare</strong> e chi convocare al colloquio conoscitivo</li>
+            <li><strong>Chi promuovere</strong> al tecnico e per quali aree</li>
+            <li><strong>Esiti finali</strong>: accettazioni, ripescaggi, rifiuti</li>
+            <li><strong>Il tono</strong> e i testi di ogni comunicazione</li>
+            <li><strong>Quando fermarsi</strong>: la pausa è un comando</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PERCHÉ -->
+  <section class="section-pad" id="perche">
+    <div class="wrap why-grid">
+      <div>
+        <h2 class="r">Perché lo introduciamo</h2>
+      </div>
+      <div>
+        <p class="lead r" style="margin-bottom:34px">Il REC è il momento più intenso dell'anno per l'Area Talent: decine di candidature in pochi giorni e tre persone da coordinare per ogni colloquio, mentre i candidati rispondono, spostano, rinunciano. Gestirlo a mano significa ore di lavoro meccanico ed errori inevitabili.</p>
+        <div class="pain r">
+          <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Zm-38.34-85.66a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L116,164.69l42.34-42.35A8,8,0,0,1,169.66,122.34Z"/></svg>
+          <div>
+            <h3>Disponibilità incrociate a mano</h3>
+            <p>Ogni colloquio richiede responsabile di prima area, di seconda e un membro Talent: tre agende da far combaciare, ogni volta.</p>
+          </div>
+        </div>
+        <div class="pain r">
+          <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M227.32,28.68a16,16,0,0,0-15.66-4.08l-.15,0L19.57,82.84a16,16,0,0,0-2.49,29.8L102,154l41.3,84.87A15.86,15.86,0,0,0,157.74,248q.69,0,1.38-.06a15.88,15.88,0,0,0,14-11.51l58.2-191.94c0-.05,0-.1,0-.15A16,16,0,0,0,227.32,28.68ZM157.83,231.85l-.05.14,0-.07-40.06-82.3,48-48a8,8,0,0,0-11.31-11.31l-48,48L24.08,98.25l-.07,0,.14,0L216,40Z"/></svg>
+          <div>
+            <h3>Comunicazioni una alla volta</h3>
+            <p>Convocazioni, spostamenti, esiti: ogni email scritta, ricontrollata e inviata singolarmente, con il rischio di doppi invii e dimenticanze.</p>
+          </div>
+        </div>
+        <div class="pain r">
+          <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M128,24C74.17,24,32,48.6,32,80v96c0,31.4,42.17,56,96,56s96-24.6,96-56V80C224,48.6,181.83,24,128,24Zm80,104c0,9.62-7.88,19.43-21.61,26.92C170.93,163.35,150.19,168,128,168s-42.93-4.65-58.39-13.08C55.88,147.43,48,137.62,48,128V111.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64ZM69.61,53.08C85.07,44.65,105.81,40,128,40s42.93,4.65,58.39,13.08C200.12,60.57,208,70.38,208,80s-7.88,19.43-21.61,26.92C170.93,115.35,150.19,120,128,120s-42.93-4.65-58.39-13.08C55.88,99.43,48,89.62,48,80S55.88,60.57,69.61,53.08ZM186.39,202.92C170.93,211.35,150.19,216,128,216s-42.93-4.65-58.39-13.08C55.88,195.43,48,185.62,48,176V159.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64V176C208,185.62,200.12,195.43,186.39,202.92Z"/></svg>
+          <div>
+            <h3>Stato sparso ovunque</h3>
+            <p>Fogli, chat e memoria personale: nessuna fonte unica della verità su chi è stato contattato, convocato, valutato.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRIMA / DA ORA -->
+  <section class="shift section-pad" id="cambio">
+    <div class="wrap">
+      <div class="shift-head">
+        <h2 class="r">Come cambia il modo di lavorare</h2>
+        <p class="lead r">Stesso processo, stesse persone, stesse decisioni. Sparisce solo la parte che non aveva bisogno di noi.</p>
+      </div>
+      <div class="shift-cols">
+        <div class="shift-col before r">
+          <span class="tag">Prima</span>
+          <ul>
+            <li><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M165.66,101.66,139.31,128l26.35,26.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg> Le candidature si ricopiano dal form al database</li>
+            <li><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M165.66,101.66,139.31,128l26.35,26.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg> Trovare uno slot è un giro di messaggi</li>
+            <li><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M165.66,101.66,139.31,128l26.35,26.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg> Le convocazioni partono quando c'è tempo</li>
+            <li><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M165.66,101.66,139.31,128l26.35,26.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg> Gli spostamenti si negoziano in chat</li>
+            <li><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M165.66,101.66,139.31,128l26.35,26.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg> Gli esiti viaggiano a voce</li>
+          </ul>
+        </div>
+        <div class="shift-col after r">
+          <span class="tag">Da ora</span>
+          <ul>
+            <li><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg> Ogni candidatura arriva in Notion da sola, già classificata</li>
+            <li><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg> L'algoritmo incrocia i fogli disponibilità e prenota</li>
+            <li><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg> Partono da sole, con evento in calendario e conferma</li>
+            <li><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg> Il candidato sceglie tra slot reali proposti dal sistema</li>
+            <li><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg> Un tap sul bot: stato, email e calendario si aggiornano</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESSO -->
+  <section class="flow" id="processo">
+    <div class="wrap flow-head">
+      <span class="eyebrow">Il processo</span>
+      <h2 class="r">Dalla candidatura all'onboarding,<br>sei momenti orchestrati</h2>
+    </div>
+    <div class="flow-track" id="flow-track">
+      <article class="flow-panel">
+        <div class="icon"><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M230.6,49.53A15.81,15.81,0,0,0,216,40H40A16,16,0,0,0,28.19,66.76l.08.09L96,139.17V216a16,16,0,0,0,24.87,13.32l32-21.34A16,16,0,0,0,160,194.66V139.17l67.74-72.32.08-.09A15.8,15.8,0,0,0,230.6,49.53ZM40,56h0Zm106.18,74.58A8,8,0,0,0,144,136v58.66L112,216V136a8,8,0,0,0-2.16-5.47L40,56H216Z"/></svg></div>
+        <h3>Candidatura</h3>
+        <p class="kicker">Il form alimenta Notion.</p>
+        <p>Ogni risposta al form diventa una scheda candidato completa: dati, CV, aree di preferenza. Il candidato riceve subito una email di ringraziamento.</p>
+        <div class="foot">Form &gt; Notion &gt; email di conferma</div>
+      </article>
+      <article class="flow-panel">
+        <div class="icon"><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,128a8,8,0,0,1-8,8H128a8,8,0,0,1,0-16h88A8,8,0,0,1,224,128ZM128,72h88a8,8,0,0,0,0-16H128a8,8,0,0,0,0,16Zm88,112H128a8,8,0,0,0,0,16h88a8,8,0,0,0,0-16ZM82.34,42.34,56,68.69,45.66,58.34A8,8,0,0,0,34.34,69.66l16,16a8,8,0,0,0,11.32,0l32-32A8,8,0,0,0,82.34,42.34Zm0,64L56,132.69,45.66,122.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32,0l32-32a8,8,0,0,0-11.32-11.32Zm0,64L56,196.69,45.66,186.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32,0l32-32a8,8,0,0,0-11.32-11.32Z"/></svg></div>
+        <h3>Screening</h3>
+        <p class="kicker">I requisiti si verificano da soli.</p>
+        <p>Età, lingua e università vengono controllate all'arrivo. Chi non rientra nei requisiti riceve una risposta rispettosa, con un testo dedicato a ogni motivo.</p>
+        <div class="foot">Filtri di idoneità &gt; esiti automatici</div>
+      </article>
+      <article class="flow-panel">
+        <div class="icon"><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Zm-38.34-85.66a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L116,164.69l42.34-42.35A8,8,0,0,1,169.66,122.34Z"/></svg></div>
+        <h3>Scheduling</h3>
+        <p class="kicker">L'algoritmo trova l'incastro.</p>
+        <p>Ogni mattina alle 9 il sistema legge i fogli di disponibilità e compone gli slot: prima area, seconda area e Talent, senza conflitti né doppie prenotazioni.</p>
+        <div class="foot">Cron 9:00 &gt; slot protetti sui fogli</div>
+      </article>
+      <article class="flow-panel">
+        <div class="icon"><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M227.32,28.68a16,16,0,0,0-15.66-4.08l-.15,0L19.57,82.84a16,16,0,0,0-2.49,29.8L102,154l41.3,84.87A15.86,15.86,0,0,0,157.74,248q.69,0,1.38-.06a15.88,15.88,0,0,0,14-11.51l58.2-191.94c0-.05,0-.1,0-.15A16,16,0,0,0,227.32,28.68ZM157.83,231.85l-.05.14,0-.07-40.06-82.3,48-48a8,8,0,0,0-11.31-11.31l-48,48L24.08,98.25l-.07,0,.14,0L216,40Z"/></svg></div>
+        <h3>Convocazione</h3>
+        <p class="kicker">Tutto parte in automatico.</p>
+        <p>Email di convocazione al candidato, evento sul calendario condiviso, slot bloccati sui fogli. Ogni invio ha un lock che impedisce i duplicati.</p>
+        <div class="foot">Gmail + Calendar + lock anti doppio invio</div>
+      </article>
+      <article class="flow-panel">
+        <div class="icon"><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M232.07,186.76a80,80,0,0,0-62.5-114.17A80,80,0,1,0,23.93,138.76l-7.27,24.71a16,16,0,0,0,19.87,19.87l24.71-7.27a80.39,80.39,0,0,0,25.18,7.35,80,80,0,0,0,108.34,40.65l24.71,7.27a16,16,0,0,0,19.87-19.86ZM62,159.5a8.28,8.28,0,0,0-2.26.32L32,168l8.17-27.76a8,8,0,0,0-.63-6,64,64,0,1,1,26.26,26.26A8,8,0,0,0,62,159.5Zm153.79,28.73L224,216l-27.76-8.17a8,8,0,0,0-6,.63,64.05,64.05,0,0,1-85.87-24.88A79.93,79.93,0,0,0,174.7,89.71a64,64,0,0,1,41.75,92.48A8,8,0,0,0,215.82,188.23Z"/></svg></div>
+        <h3>Colloquio</h3>
+        <p class="kicker">Il team lavora dal telefono.</p>
+        <p>Briefing del mattino, scheda candidato, spostamenti e ritiri: tutto dal gruppo Telegram, con bottoni e conferme, senza aprire un gestionale.</p>
+        <div class="foot">Bot Telegram &gt; azioni in un tap</div>
+      </article>
+      <article class="flow-panel">
+        <div class="icon"><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M221.87,83.16A104.1,104.1,0,1,1,195.67,49l22.67-22.68a8,8,0,0,1,11.32,11.32l-96,96a8,8,0,0,1-11.32-11.32l27.72-27.72a40,40,0,1,0,17.87,31.09,8,8,0,1,1,16-.9,56,56,0,1,1-22.38-41.65L184.3,60.39a87.88,87.88,0,1,0,23.13,29.67,8,8,0,0,1,14.44-6.9Z"/></svg></div>
+        <h3>Esito</h3>
+        <p class="kicker">Decisione umana, esecuzione automatica.</p>
+        <p>Promosso al tecnico, accettato o rifiutato: il team sceglie, il sistema aggiorna Notion e invia onboarding o esclusione. Le scelte irreversibili chiedono sempre conferma.</p>
+        <div class="foot">Esiti &gt; email + stati aggiornati</div>
+      </article>
+    </div>
+  </section>
+
+  <!-- BOT -->
+  <section class="section-pad" id="bot">
+    <div class="wrap">
+      <div class="bot-head">
+        <h2 class="r">Una plancia di comando in tasca</h2>
+        <p class="lead r">L'intero processo si governa dal gruppo Telegram dell'Area Talent: sedici comandi coprono agenda, candidati, valutazioni e manutenzione. Nessuna dashboard da imparare.</p>
+      </div>
+      <div class="cmd-groups r">
+        <div class="cmd-group">
+          <span class="g">Ogni giorno</span>
+          <div class="cmd-row"><span class="cmd">/briefing</span><span class="cmd">/stato</span><span class="cmd">/candidato</span><span class="cmd">/calendario</span><span class="cmd">/info</span></div>
+        </div>
+        <div class="cmd-group">
+          <span class="g">Agenda</span>
+          <div class="cmd-row"><span class="cmd">/calendario_schedulati</span><span class="cmd">/blocca_slot</span><span class="cmd">/libera_slot</span><span class="cmd">/periodo_rec</span></div>
+        </div>
+        <div class="cmd-group">
+          <span class="g">Valutazione</span>
+          <div class="cmd-row"><span class="cmd">/fantasocio</span><span class="cmd">/esiti</span><span class="cmd">/rifiuta</span></div>
+        </div>
+        <div class="cmd-group">
+          <span class="g">Controllo</span>
+          <div class="cmd-row"><span class="cmd">/pausa_scheduling</span><span class="cmd">/riprendi_scheduling</span><span class="cmd">/reset</span><span class="cmd">/reset_sheets</span></div>
+        </div>
+      </div>
+      <div class="bot-highlights">
+        <div class="bot-hl r">
+          <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M207.06,72.67A111.24,111.24,0,0,0,128,40h-.4C66.07,40.21,16,91,16,153.13V176a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V152A111.25,111.25,0,0,0,207.06,72.67ZM224,176H119.71l54.76-75.3a8,8,0,0,0-12.94-9.42L99.92,176H32V153.13c0-3.08.15-6.12.43-9.13H56a8,8,0,0,0,0-16H35.27c10.32-38.86,44-68.24,84.73-71.66V80a8,8,0,0,0,16,0V56.33A96.14,96.14,0,0,1,221,128H200a8,8,0,0,0,0,16h23.67c.21,2.65.33,5.31.33,8Z"/></svg>
+          <h3>Briefing del mattino</h3>
+          <p>I colloqui del giorno, con la scheda completa di ogni candidato a un tap di distanza.</p>
+        </div>
+        <div class="bot-hl r">
+          <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M213.66,181.66l-32,32a8,8,0,0,1-11.32-11.32L188.69,184H48a8,8,0,0,1,0-16H188.69l-18.35-18.34a8,8,0,0,1,11.32-11.32l32,32A8,8,0,0,1,213.66,181.66Zm-139.32-64a8,8,0,0,0,11.32-11.32L67.31,88H208a8,8,0,0,0,0-16H67.31L85.66,53.66A8,8,0,0,0,74.34,42.34l-32,32a8,8,0,0,0,0,11.32Z"/></svg>
+          <h3>Spostamenti senza attrito</h3>
+          <p>Il sistema propone tre slot alternativi reali: il candidato sceglie e tutto si riallinea da solo.</p>
+        </div>
+        <div class="bot-hl r">
+          <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M197.58,129.06,146,110l-19-51.62a15.92,15.92,0,0,0-29.88,0L78,110l-51.62,19a15.92,15.92,0,0,0,0,29.88L78,178l19,51.62a15.92,15.92,0,0,0,29.88,0L146,178l51.62-19a15.92,15.92,0,0,0,0-29.88ZM137,164.22a8,8,0,0,0-4.74,4.74L112,223.85,91.78,169A8,8,0,0,0,87,164.22L32.15,144,87,123.78A8,8,0,0,0,91.78,119L112,64.15,132.22,119a8,8,0,0,0,4.74,4.74L191.85,144ZM144,40a8,8,0,0,1,8-8h16V16a8,8,0,0,1,16,0V32h16a8,8,0,0,1,0,16H184V64a8,8,0,0,1-16,0V48H152A8,8,0,0,1,144,40ZM248,88a8,8,0,0,1-8,8h-8v8a8,8,0,0,1-16,0V96h-8a8,8,0,0,1,0-16h8V72a8,8,0,0,1,16,0v8h8A8,8,0,0,1,248,88Z"/></svg>
+          <h3>Fantasocio</h3>
+          <p>La valutazione post colloquio: promozione al tecnico con le aree, esclusione o ripescaggio.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STRUMENTI -->
+  <section class="tools section-pad" id="strumenti">
+    <div class="wrap">
+      <span class="eyebrow">Architettura</span>
+      <h2 class="r">Otto strumenti, un solo sistema</h2>
+      <div class="bento">
+        <div class="cell cell-n8n r">
+          <svg class="tool-logo" viewBox="0 0 24 24" role="img" aria-label="n8n"><path fill="currentColor" d="M21.4737 5.6842c-1.1772 0-2.1663.8051-2.4468 1.8947h-2.8955c-1.235 0-2.289.893-2.492 2.111l-.1038.623a1.263 1.263 0 0 1-1.246 1.0555H11.289c-.2805-1.0896-1.2696-1.8947-2.4468-1.8947s-2.1663.8051-2.4467 1.8947H4.973c-.2805-1.0896-1.2696-1.8947-2.4468-1.8947C1.1311 9.4737 0 10.6047 0 12s1.131 2.5263 2.5263 2.5263c1.1772 0 2.1663-.8051 2.4468-1.8947h1.4223c.2804 1.0896 1.2696 1.8947 2.4467 1.8947 1.1772 0 2.1663-.8051 2.4468-1.8947h1.0008a1.263 1.263 0 0 1 1.2459 1.0555l.1038.623c.203 1.218 1.257 2.111 2.492 2.111h.3692c.2804 1.0895 1.2696 1.8947 2.4468 1.8947 1.3952 0 2.5263-1.131 2.5263-2.5263s-1.131-2.5263-2.5263-2.5263c-1.1772 0-2.1664.805-2.4468 1.8947h-.3692a1.263 1.263 0 0 1-1.246-1.0555l-.1037-.623A2.52 2.52 0 0 0 13.9607 12a2.52 2.52 0 0 0 .821-1.4794l.1038-.623a1.263 1.263 0 0 1 1.2459-1.0555h2.8955c.2805 1.0896 1.2696 1.8947 2.4468 1.8947 1.3952 0 2.5263-1.131 2.5263-2.5263s-1.131-2.5263-2.5263-2.5263m0 1.2632a1.263 1.263 0 0 1 1.2631 1.2631 1.263 1.263 0 0 1-1.2631 1.2632 1.263 1.263 0 0 1-1.2632-1.2632 1.263 1.263 0 0 1 1.2632-1.2631M2.5263 10.7368A1.263 1.263 0 0 1 3.7895 12a1.263 1.263 0 0 1-1.2632 1.2632A1.263 1.263 0 0 1 1.2632 12a1.263 1.263 0 0 1 1.2631-1.2632m6.3158 0A1.263 1.263 0 0 1 10.1053 12a1.263 1.263 0 0 1-1.2632 1.2632A1.263 1.263 0 0 1 7.579 12a1.263 1.263 0 0 1 1.2632-1.2632m10.1053 3.7895a1.263 1.263 0 0 1 1.2631 1.2632 1.263 1.263 0 0 1-1.2631 1.2631 1.263 1.263 0 0 1-1.2632-1.2631 1.263 1.263 0 0 1 1.2632-1.2632"/></svg>
+          <h3>n8n, l'orchestratore</h3>
+          <p>Il cervello operativo del progetto: 399 nodi in 3 workflow e 5 trigger automatici, su istanza dedicata. Ogni modifica passa da backup, validazione e verifica.</p>
+          <img class="cell-mark" src="assets/pittogramma-white.png" alt="" aria-hidden="true">
+        </div>
+        <div class="cell cell-notion r">
+          <svg class="tool-logo" viewBox="0 0 24 24" role="img" aria-label="Notion"><path fill="currentColor" d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z"/></svg>
+          <h3>Notion</h3>
+          <p>La fonte unica della verità: schede candidato, stati, esiti e storico, visibili a tutto il Board in ogni momento.</p>
+        </div>
+        <div class="cell cell-telegram r">
+          <svg class="tool-logo" viewBox="0 0 24 24" role="img" aria-label="Telegram"><path fill="currentColor" d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+          <h3>Telegram</h3>
+          <p>L'interfaccia del team: comandi, schede e bottoni di azione nel gruppo dell'Area Talent.</p>
+        </div>
+        <div class="cell cell-sheets r">
+          <svg class="tool-logo" viewBox="0 0 24 24" role="img" aria-label="Google Sheets"><path fill="currentColor" d="M11.318 12.545H7.91v-1.909h3.41v1.91zM14.728 0v6h6l-6-6zm1.363 10.636h-3.41v1.91h3.41v-1.91zm0 3.273h-3.41v1.91h3.41v-1.91zM20.727 6.5v15.864c0 .904-.732 1.636-1.636 1.636H4.909a1.636 1.636 0 0 1-1.636-1.636V1.636C3.273.732 4.005 0 4.909 0h9.318v6.5h6.5zm-3.273 2.773H6.545v7.909h10.91v-7.91zm-6.136 4.636H7.91v1.91h3.41v-1.91z"/></svg>
+          <h3>Google Sheets</h3>
+          <p>Le disponibilità dei responsabili, lette dall'algoritmo e protette cella per cella a ogni prenotazione.</p>
+        </div>
+        <div class="cell cell-calendar r">
+          <svg class="tool-logo" viewBox="0 0 24 24" role="img" aria-label="Google Calendar"><path fill="currentColor" d="M18.316 5.684H24v12.632h-5.684V5.684zM5.684 24h12.632v-5.684H5.684V24zM18.316 5.684V0H1.895A1.894 1.894 0 0 0 0 1.895v16.421h5.684V5.684h12.632zm-7.207 6.25v-.065c.272-.144.5-.349.687-.617s.279-.595.279-.982c0-.379-.099-.72-.3-1.025a2.05 2.05 0 0 0-.832-.714 2.703 2.703 0 0 0-1.197-.257c-.6 0-1.094.156-1.481.467-.386.311-.65.671-.793 1.078l1.085.452c.086-.249.224-.461.413-.633.189-.172.445-.257.767-.257.33 0 .602.088.816.264a.86.86 0 0 1 .322.703c0 .33-.12.589-.36.778-.24.19-.535.284-.886.284h-.567v1.085h.633c.407 0 .748.109 1.02.327.272.218.407.499.407.843 0 .336-.129.614-.387.832s-.565.327-.924.327c-.351 0-.651-.103-.897-.311-.248-.208-.422-.502-.521-.881l-1.096.452c.178.616.505 1.082.977 1.401.472.319.984.478 1.538.477a2.84 2.84 0 0 0 1.293-.291c.382-.193.684-.458.902-.794.218-.336.327-.72.327-1.149 0-.429-.115-.797-.344-1.105a2.067 2.067 0 0 0-.881-.689zm2.093-1.931l.602.913L15 10.045v5.744h1.187V8.446h-.827l-2.158 1.557zM22.105 0h-3.289v5.184H24V1.895A1.894 1.894 0 0 0 22.105 0zm-3.289 23.5l4.684-4.684h-4.684V23.5zM0 22.105C0 23.152.848 24 1.895 24h3.289v-5.184H0v3.289z"/></svg>
+          <h3>Google Calendar</h3>
+          <p>Ogni colloquio fissato sul calendario condiviso e aggiornato a ogni spostamento o ritiro.</p>
+        </div>
+        <div class="cell cell-gmail r">
+          <svg class="tool-logo" viewBox="0 0 24 24" role="img" aria-label="Gmail"><path fill="currentColor" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg>
+          <h3>Gmail</h3>
+          <p>Convocazioni, conferme ed esiti: tutte le comunicazioni partono dalla casella ufficiale, con il template del brand.</p>
+        </div>
+        <div class="cell cell-supabase r">
+          <svg class="tool-logo" viewBox="0 0 24 24" role="img" aria-label="Supabase"><path fill="currentColor" d="M11.9 1.036c-.015-.986-1.26-1.41-1.874-.637L.764 12.05C-.33 13.427.65 15.455 2.409 15.455h9.579l.113 7.51c.014.985 1.259 1.408 1.873.636l9.262-11.653c1.093-1.375.113-3.403-1.645-3.403h-9.642z"/></svg>
+          <h3>Supabase</h3>
+          <p>La memoria tecnica: slot assegnati, lock anti duplicato e code di lavoro, sempre interrogabili.</p>
+        </div>
+        <div class="cell cell-gemini r">
+          <svg class="tool-logo" viewBox="0 0 24 24" role="img" aria-label="Gemini"><path fill="currentColor" d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81"/></svg>
+          <h3>Gemini</h3>
+          <p>Classifica le risposte dei candidati e compone le email dei casi particolari, dentro binari definiti dal team.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GOVERNANCE -->
+  <section class="section-pad" id="governance">
+    <div class="wrap">
+      <h2 class="r" style="max-width:20ch">Regole chiare, sistema sorvegliato</h2>
+      <div class="gov-grid" style="margin-top:clamp(36px,5vh,56px)">
+        <div class="gov-col r">
+          <h3><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M244.8,150.4a8,8,0,0,1-11.2-1.6A51.6,51.6,0,0,0,192,128a8,8,0,0,1-7.37-4.89,8,8,0,0,1,0-6.22A8,8,0,0,1,192,112a24,24,0,1,0-23.24-30,8,8,0,1,1-15.5-4A40,40,0,1,1,219,117.51a67.94,67.94,0,0,1,27.43,21.68A8,8,0,0,1,244.8,150.4ZM190.92,212a8,8,0,1,1-13.84,8,57,57,0,0,0-98.16,0,8,8,0,1,1-13.84-8,72.06,72.06,0,0,1,33.74-29.92,48,48,0,1,1,58.36,0A72.06,72.06,0,0,1,190.92,212ZM128,176a32,32,0,1,0-32-32A32,32,0,0,0,128,176ZM72,120a8,8,0,0,0-8-8A24,24,0,1,1,87.24,82a8,8,0,1,0,15.5-4A40,40,0,1,0,37,117.51,67.94,67.94,0,0,0,9.6,139.19a8,8,0,1,0,12.8,9.61A51.6,51.6,0,0,1,64,128,8,8,0,0,0,72,120Z"/></svg> Chi fa cosa</h3>
+          <ul class="gov-list">
+            <li><span class="who">Area Talent</span><p>Governa il processo dal bot: approva le convocazioni, registra gli esiti dei colloqui, decide promozioni e rifiuti.</p></li>
+            <li><span class="who">Responsabili di area</span><p>Tengono aggiornate le proprie disponibilità sui fogli e conducono i colloqui. Nient'altro.</p></li>
+            <li><span class="who">Board</span><p>Visibilità completa e in tempo reale su Notion: candidature, stati, esiti, senza chiedere report a nessuno.</p></li>
+          </ul>
+        </div>
+        <div class="gov-col r">
+          <h3><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,40H48A16,16,0,0,0,32,56v56c0,52.72,25.52,84.67,46.93,102.19,23.06,18.86,46,25.26,47,25.53a8,8,0,0,0,4.2,0c1-.27,23.91-6.67,47-25.53C198.48,196.67,224,164.72,224,112V56A16,16,0,0,0,208,40Zm0,72c0,37.07-13.66,67.16-40.6,89.42A129.3,129.3,0,0,1,128,223.62a128.25,128.25,0,0,1-38.92-21.81C61.82,179.51,48,149.3,48,112l0-56,160,0ZM82.34,141.66a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32l-56,56a8,8,0,0,1-11.32,0Z"/></svg> Affidabilità</h3>
+          <ul class="gov-list">
+            <li><p><strong>Niente doppi invii.</strong> Ogni comunicazione ha un lock: anche in caso di retry, l'email parte una volta sola.</p></li>
+            <li><p><strong>Errori visibili subito.</strong> Un error handler dedicato notifica nel gruppo qualsiasi anomalia, con il contesto per intervenire.</p></li>
+            <li><p><strong>Tutto tracciato.</strong> Ogni esecuzione è registrata e ispezionabile passo per passo, nodo per nodo.</p></li>
+            <li><p><strong>Credenziali protette.</strong> Token e chiavi vivono in variabili d'ambiente, mai nel codice o nelle chat.</p></li>
+            <li><p><strong>Conferme obbligatorie.</strong> Le azioni irreversibili, come il rifiuto definitivo, chiedono sempre una conferma esplicita.</p></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section class="section-pad" id="roadmap" style="padding-top:0">
+    <div class="wrap">
+      <span class="eyebrow">Adozione</span>
+      <h2 class="r">Le fasi operative</h2>
+      <ol class="roadmap-list">
+        <li class="now r">
+          <span class="when">Oggi</span>
+          <h3>Sistema in produzione</h3>
+          <p>I tre workflow sono attivi e verificati su dati reali: trigger, protezioni, notifiche e comandi funzionano ed è tutto monitorato.</p>
+        </li>
+        <li class="r">
+          <span class="when">Settembre</span>
+          <h3>Onboarding del team</h3>
+          <p>Responsabili e Area Talent ricevono fogli disponibilità e accesso al gruppo: prova generale del flusso completo su candidati di test.</p>
+        </li>
+        <li class="r">
+          <span class="when">Ottobre</span>
+          <h3>REC con il nuovo processo</h3>
+          <p>Il primo recruiting interamente orchestrato dal sistema, dall'apertura del form agli onboarding dei nuovi associati.</p>
+        </li>
+        <li class="r">
+          <span class="when">Dopo il REC</span>
+          <h3>Retrospettiva ed estensioni</h3>
+          <p>Metriche del funnel, tempi reali e feedback del team decidono le evoluzioni: statistiche, nuovi comandi, altri processi da orchestrare.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- OUTRO -->
+  <section class="outro section-pad">
+    <div class="wrap">
+      <h2 class="r">Un passo avanti, davvero.</h2>
+      <p class="lead r">Il sistema è pronto, testato e in produzione. Domande, dubbi e proposte: parliamone in riunione.</p>
+      <a class="btn r" href="mailto:hr@jetop.com">Scrivi a hr@jetop.com <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap foot-inner">
+    <img src="assets/logo-secondario-white.png" alt="JEToP, Junior Enterprise Torino Politecnico">
+    <span class="mono">Area Talent · REC Automation</span>
+    <span class="mono">#onestepforward</span>
+  </div>
+</footer>
+
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  var motionOK = window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
+  if (!motionOK || !window.gsap || !window.ScrollTrigger) return;
+
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.defaults({ ease: 'power3.out', duration: 0.9 });
+
+  /* Nav: stato compresso dopo lo scroll */
+  ScrollTrigger.create({
+    start: 40,
+    onEnter: function () { document.body.classList.add('scrolled'); },
+    onLeaveBack: function () { document.body.classList.remove('scrolled'); }
+  });
+
+  /* Barra di avanzamento lettura */
+  gsap.to('.progress', {
+    scaleX: 1, ease: 'none',
+    scrollTrigger: { start: 0, end: 'max', scrub: 0.4 }
+  });
+
+  /* Ingresso hero */
+  var intro = gsap.timeline();
+  intro.from('.hero-copy > *', { y: 34, opacity: 0, stagger: 0.12, duration: 1 })
+       .from('#logo3d', { x: 60, opacity: 0, scale: 0.94, duration: 1.2 }, 0.25)
+       .from('.nav-inner > *', { y: -16, opacity: 0, stagger: 0.08, duration: 0.7 }, 0.4);
+
+  /* Logo 3D: fluttuazione + parallasse + inclinazione al puntatore */
+  var logo = document.getElementById('logo3d');
+  gsap.to(logo, { y: -14, duration: 3.2, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: 1.6 });
+  gsap.to(logo, {
+    yPercent: 14, ease: 'none',
+    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.6 }
+  });
+  if (window.matchMedia('(pointer: fine)').matches) {
+    var hv = document.querySelector('.hero-visual');
+    var rx = gsap.quickTo(logo, 'rotationY', { duration: 0.6, ease: 'power2.out' });
+    var ry = gsap.quickTo(logo, 'rotationX', { duration: 0.6, ease: 'power2.out' });
+    gsap.set(logo, { transformPerspective: 900 });
+    hv.addEventListener('pointermove', function (e) {
+      var b = hv.getBoundingClientRect();
+      rx(((e.clientX - b.left) / b.width - 0.5) * 10);
+      ry(((e.clientY - b.top) / b.height - 0.5) * -8);
+    });
+    hv.addEventListener('pointerleave', function () { rx(0); ry(0); });
+
+    /* CTA magnetica */
+    document.querySelectorAll('.btn').forEach(function (btn) {
+      var bx = gsap.quickTo(btn, 'x', { duration: 0.4, ease: 'power3.out' });
+      var by = gsap.quickTo(btn, 'y', { duration: 0.4, ease: 'power3.out' });
+      btn.addEventListener('pointermove', function (e) {
+        var b = btn.getBoundingClientRect();
+        bx(((e.clientX - b.left) / b.width - 0.5) * 10);
+        by(((e.clientY - b.top) / b.height - 0.5) * 8);
+      });
+      btn.addEventListener('pointerleave', function () { bx(0); by(0); });
+    });
+  }
+
+  /* Contatori */
+  document.querySelectorAll('[data-count]').forEach(function (el) {
+    var target = parseInt(el.getAttribute('data-count'), 10);
+    if (!target) return;
+    var obj = { v: 0 };
+    gsap.to(obj, {
+      v: target, duration: 1.6, ease: 'power2.out',
+      onUpdate: function () { el.textContent = Math.round(obj.v); },
+      scrollTrigger: { trigger: el, start: 'top 88%', once: true }
+    });
+  });
+
+  /* Reveal generico */
+  ScrollTrigger.batch('.r', {
+    start: 'top 86%', once: true,
+    onEnter: function (els) {
+      gsap.from(els, { y: 28, opacity: 0, stagger: 0.09, duration: 0.85, overwrite: true });
+    }
+  });
+
+  /* Processo: pan orizzontale agganciato allo scroll (solo desktop) */
+  var mm = gsap.matchMedia();
+  mm.add('(min-width: 1024px)', function () {
+    var track = document.getElementById('flow-track');
+    var flow = document.querySelector('.flow');
+    var pan = gsap.to(track, {
+      x: function () { return -(track.scrollWidth - window.innerWidth); },
+      ease: 'none',
+      scrollTrigger: {
+        trigger: flow,
+        start: 'top top',
+        end: function () { return '+=' + (track.scrollWidth - window.innerWidth); },
+        pin: true,
+        scrub: 1,
+        invalidateOnRefresh: true
+      }
+    });
+    gsap.utils.toArray('.flow-panel').forEach(function (panel) {
+      gsap.from(panel, {
+        opacity: 0.25, scale: 0.97,
+        scrollTrigger: {
+          trigger: panel, containerAnimation: pan,
+          start: 'left 90%', end: 'left 55%', scrub: true
+        }
+      });
+    });
+    return function () {};
+  });
+})();
+</script>
+</body>
+</html>
