@@ -774,13 +774,17 @@ footer{border-top:1px solid var(--line);padding:34px 0;background:var(--bg-2)}
   mm.add('(min-width: 1024px)', function () {
     var track = document.getElementById('flow-track');
     var flow = document.querySelector('.flow');
+    function flowDistance() {
+      return track.scrollWidth - window.innerWidth + 360;
+    }
+    
     var pan = gsap.to(track, {
-      x: function () { return -(track.scrollWidth - window.innerWidth); },
+      x: function () { return -flowDistance(); },
       ease: 'none',
       scrollTrigger: {
         trigger: flow,
-        start: 'top top',
-        end: function () { return '+=' + (track.scrollWidth - window.innerWidth); },
+        start: 'top -140px',
+        end: function () { return '+=' + flowDistance(); },
         pin: true,
         scrub: 1,
         invalidateOnRefresh: true
