@@ -57,6 +57,12 @@ Il workflow principale è risultato sano: `Prepara Blocco Slot`, `Code - Trova S
 
 **Riallineamento dati**: le 3 protezioni + 3 CF del record di test sono state spostate sulle celle delle persone effettivamente scelte (Trombini M&C col D, Lo Vetere IT col C, Leocata T&DA col D — riga 10:00) e il DB aggiornato con colonne 0-based e i nuovi protection_id. Foglio, Supabase e Notion ora raccontano la stessa storia.
 
+## 6. Sito di presentazione: hosting e manuale
+
+Il sito `siti/jetop-rec-automation/` (presentazione Board-Resp) è pubblicato da **GitHub Pages**, già attivo sul repo (deploy automatico dalla root di `main` a ogni push, ~30-60s): `https://leocatasalvatoredaniel.github.io/siti-torino/siti/jetop-rec-automation/`. Aggiunti su richiesta di Daniel: `meta robots noindex` (il sito non compare sui motori di ricerca, il link resta accessibile a chiunque lo possieda) e un redirect alla root del repo per l'URL corto `…/siti-torino/`.
+
+Nota: essendo il repo pubblico, Pages pubblica anche `docs/` (questi report sono raggiungibili come pagine web). Per questo il **manuale operativo completo del REC Automation** è stato scritto su **Notion** (interno al team), non nel repo.
+
 ## Strumenti di sessione
 
 Helper n8n temporaneo (webhook + azioni whitelisted con credential dei workflow: SQL preparate, Sheets get/batch, Gmail search, Notion query/archive con gate sulla sola pagina di test) creato a inizio sessione ed eliminato a fine sessione. Nessun segreto in chat, repo o log; backup live solo in `/tmp`.

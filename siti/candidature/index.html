@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Candidati a JEToP — Junior Enterprise Torino Politecnico</title>
+<link rel="icon" href="../jetop-rec-automation/assets/favicon.png">
+<style>
+@font-face{font-family:'Red Hat Display';src:url('../jetop-rec-automation/fonts/RedHatDisplay-var.woff2') format('woff2');font-weight:300 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Red Hat Mono';src:url('../jetop-rec-automation/fonts/RedHatMono-var.woff2') format('woff2');font-weight:300 700;font-style:normal;font-display:swap}
+:root{
+  --bg:#0B0A10;--panel:#13111B;--panel-2:#1A1726;--text:#ECEAF4;--muted:#A6A1B6;
+  --iris:#9379C2;--iris-strong:#684DC2;--iris-soft:rgba(147,121,194,.13);--iris-line:rgba(147,121,194,.34);
+  --line:rgba(236,234,244,.09);--line-strong:rgba(236,234,244,.16);--ok:#69c98b;--err:#e07a7a;
+  --radius:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Red Hat Display',system-ui,-apple-system,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+.mono{font-family:'Red Hat Mono',ui-monospace,monospace}
+a{color:var(--iris)}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px clamp(16px,4vw,40px);border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(11,10,16,.85);backdrop-filter:blur(10px);z-index:10}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700}
+.brand img{height:30px}
+.topbar a.site{font-size:.92rem;color:var(--muted);text-decoration:none;border:1px solid var(--line-strong);padding:7px 14px;border-radius:999px}
+.topbar a.site:hover{color:var(--text);border-color:var(--iris-line)}
+.wrap{max-width:760px;margin:0 auto;padding:clamp(24px,5vw,56px) clamp(16px,4vw,32px) 80px}
+.hero h1{font-size:clamp(1.7rem,4.5vw,2.6rem);font-weight:800;letter-spacing:-.5px}
+.hero p.sub{color:var(--muted);margin-top:6px}
+.test-badge{display:inline-flex;align-items:center;gap:8px;margin-top:14px;background:var(--iris-soft);border:1px solid var(--iris-line);color:var(--iris);font-size:.85rem;font-weight:700;padding:6px 12px;border-radius:999px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(18px,4vw,32px);margin-top:26px}
+fieldset{border:0;margin:0 0 6px}
+legend{font-weight:800;font-size:1.05rem;padding:0;margin-bottom:14px;color:var(--text)}
+legend .n{color:var(--iris);margin-right:8px}
+.grid{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+@media(max-width:600px){.grid{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+label{font-size:.9rem;color:var(--muted);font-weight:600}
+label .req{color:var(--iris)}
+input,select,textarea{background:var(--panel-2);border:1px solid var(--line-strong);border-radius:10px;color:var(--text);padding:11px 13px;font:inherit;font-size:.97rem;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--iris);box-shadow:0 0 0 3px var(--iris-soft)}
+input[readonly]{opacity:.65}
+textarea{min-height:110px;resize:vertical}
+.choices{display:flex;flex-wrap:wrap;gap:8px}
+.choices label{display:flex;align-items:center;gap:8px;background:var(--panel-2);border:1px solid var(--line-strong);border-radius:10px;padding:9px 13px;cursor:pointer;color:var(--text);font-weight:500;font-size:.93rem}
+.choices label:has(input:checked){border-color:var(--iris);background:var(--iris-soft)}
+.choices input{width:auto}
+hr.sep{border:0;border-top:1px solid var(--line);margin:26px 0}
+.vrow{display:flex;gap:10px;align-items:stretch}
+.vrow input{flex:1}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;cursor:pointer;padding:11px 18px}
+button.primary{background:var(--iris-strong);color:#fff}
+button.primary:hover{background:var(--iris)}
+button.ghost{background:transparent;color:var(--iris);border:1px solid var(--iris-line);white-space:nowrap}
+button.ghost:hover{background:var(--iris-soft)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.hint{font-size:.82rem;color:var(--muted)}
+.status{font-size:.88rem;margin-top:4px;min-height:1.2em}
+.status.ok{color:var(--ok)} .status.err{color:var(--err)} .status.busy{color:var(--muted)}
+.badge-ok{display:inline-flex;align-items:center;gap:7px;color:var(--ok);font-weight:700;font-size:.92rem}
+#submitBtn{width:100%;padding:15px;font-size:1.05rem;margin-top:10px}
+.success{display:none;text-align:center;padding:40px 10px}
+.success h2{font-size:1.6rem;margin-bottom:10px}
+.success p{color:var(--muted)}
+footer{margin-top:40px;text-align:center;color:var(--muted);font-size:.85rem}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--muted);border-top-color:var(--iris);border-radius:50%;animation:sp 1s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.hp{position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><img src="../jetop-rec-automation/assets/pittogramma-white.png" alt="JEToP"> Candidature</div>
+  <a class="site" href="https://www.jetop.com" target="_blank" rel="noopener">jetop.com →</a>
+</div>
+
+<div class="wrap">
+  <div class="hero">
+    <h1>Candidati a JEToP</h1>
+    <p class="sub">Junior Enterprise Torino Politecnico — entra nel team.</p>
+    <span class="test-badge">🧪 VERSIONE DI TEST — le candidature inviate da qui non entrano ancora nella selezione</span>
+  </div>
+
+  <form id="form" class="card" novalidate>
+    <!-- honeypot -->
+    <div class="hp"><label>Non compilare<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+
+    <fieldset>
+      <legend><span class="n">1.</span>Dati personali</legend>
+      <div class="grid">
+        <div class="field"><label>Nome <span class="req">*</span></label><input name="nome" required autocomplete="given-name"></div>
+        <div class="field"><label>Cognome <span class="req">*</span></label><input name="cognome" required autocomplete="family-name"></div>
+        <div class="field"><label>Data di nascita <span class="req">*</span></label><input type="date" name="dataNascita" required></div>
+        <div class="field"><label>Numero di telefono <span class="req">*</span></label><input type="tel" name="telefono" required autocomplete="tel" placeholder="333 1234567"></div>
+      </div>
+    </fieldset>
+
+    <hr class="sep">
+
+    <fieldset>
+      <legend><span class="n">2.</span>Email <span class="hint">(la verifichiamo subito: ci servirà per convocarti)</span></legend>
+      <div class="grid">
+        <div class="field"><label>Email <span class="req">*</span></label><input type="email" name="email" id="email" required autocomplete="email"></div>
+        <div class="field"><label>Conferma email <span class="req">*</span></label><input type="email" id="email2" required autocomplete="off" onpaste="return false"></div>
+      </div>
+      <div class="field full" style="margin-top:12px">
+        <div class="vrow" id="sendRow">
+          <button type="button" class="ghost" id="sendCodeBtn">Inviami il codice di verifica</button>
+        </div>
+        <div class="vrow" id="codeRow" style="display:none;margin-top:8px">
+          <input id="codeInput" class="mono" inputmode="numeric" maxlength="6" placeholder="Codice a 6 cifre">
+          <button type="button" class="primary" id="verifyBtn">Verifica</button>
+        </div>
+        <div class="status" id="emailStatus"></div>
+        <span class="hint">L'email con il codice può impiegare fino a un minuto ad arrivare. Controlla anche lo spam.</span>
+      </div>
+    </fieldset>
+
+    <hr class="sep">
+
+    <fieldset>
+      <legend><span class="n">3.</span>Studi</legend>
+      <div class="grid">
+        <div class="field"><label>Università <span class="req">*</span></label>
+          <select name="universita" id="uni" required>
+            <option value="" disabled selected>Seleziona…</option>
+            <option>Politecnico di Torino</option>
+            <option>Università degli Studi di Torino</option>
+            <option>Altro</option>
+          </select>
+        </div>
+        <div class="field" id="uniAltroWrap" style="display:none"><label>Specifica università</label><input id="uniAltro"></div>
+        <div class="field"><label>Corso di Studi <span class="req">*</span></label><input name="corsoDiStudi" required placeholder="es. Ingegneria Informatica"></div>
+        <div class="field"><label>Percorso di studi <span class="req">*</span></label>
+          <select name="percorsoDiStudi" required>
+            <option value="" disabled selected>Seleziona…</option>
+            <option>Triennale</option><option>Magistrale</option>
+          </select>
+        </div>
+        <div class="field"><label>Anno di corso <span class="req">*</span></label>
+          <select name="annoDiCorso" required>
+            <option value="" disabled selected>Seleziona…</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+          </select>
+        </div>
+        <div class="field"><label>Parli italiano fluentemente? <span class="req">*</span></label>
+          <select name="italianoFluente" required>
+            <option value="" disabled selected>Seleziona…</option>
+            <option>Sì</option><option>No</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <hr class="sep">
+
+    <fieldset>
+      <legend><span class="n">4.</span>Aree di preferenza</legend>
+      <div class="grid">
+        <div class="field"><label>Prima area <span class="req">*</span></label>
+          <select name="primaArea" id="area1" required></select>
+        </div>
+        <div class="field" id="sub1Wrap" style="display:none"><label>Sotto-area (prima scelta) <span class="req">*</span></label>
+          <select id="sub1"></select>
+        </div>
+        <div class="field"><label>Seconda area <span class="req">*</span></label>
+          <select name="secondaArea" id="area2" required></select>
+        </div>
+        <div class="field" id="sub2Wrap" style="display:none"><label>Sotto-area (seconda scelta) <span class="req">*</span></label>
+          <select id="sub2"></select>
+        </div>
+      </div>
+      <div class="status" id="areaStatus"></div>
+    </fieldset>
+
+    <hr class="sep">
+
+    <fieldset>
+      <legend><span class="n">5.</span>Raccontaci di te</legend>
+      <div class="field full"><label>Perché vuoi entrare in JEToP? <span class="req">*</span></label>
+        <textarea name="motivazione" required minlength="30" placeholder="Scrivi qualche riga…"></textarea>
+      </div>
+      <div class="field full" style="margin-top:12px"><label>Come hai conosciuto JEToP? <span class="req">*</span></label>
+        <div class="choices" id="known">
+          <label><input type="checkbox" value="Instagram">Instagram</label>
+          <label><input type="checkbox" value="Tiktok">Tiktok</label>
+          <label><input type="checkbox" value="Email">Email</label>
+          <label><input type="checkbox" value="Volantinaggio">Volantinaggio</label>
+          <label><input type="checkbox" value="Presentazione in aula">Presentazione in aula</label>
+          <label><input type="checkbox" value="Amici">Amici</label>
+          <label><input type="checkbox" value="Altro (specifica)">Altro</label>
+        </div>
+        <input id="knownAltro" style="display:none;margin-top:8px" placeholder="Specifica come ci hai conosciuti">
+      </div>
+      <div class="field full" style="margin-top:12px"><label>Carica il tuo CV (PDF, max 8 MB) <span class="req">*</span></label>
+        <input type="file" id="cv" accept="application/pdf" required>
+        <div class="status" id="cvStatus"></div>
+      </div>
+    </fieldset>
+
+    <hr class="sep">
+
+    <div class="field full">
+      <label style="display:flex;gap:10px;align-items:flex-start;color:var(--text);font-weight:500;cursor:pointer">
+        <input type="checkbox" id="privacy" style="width:auto;margin-top:4px" required>
+        <span>Acconsento al trattamento dei miei dati personali da parte di JEToP per le finalità di selezione, ai sensi del Reg. UE 679/2016 (GDPR). <span class="req">*</span></span>
+      </label>
+    </div>
+
+    <button type="submit" class="primary" id="submitBtn">Invia la candidatura</button>
+    <div class="status" id="submitStatus" style="text-align:center;margin-top:10px"></div>
+  </form>
+
+  <div class="card success" id="successCard">
+    <h2>🎉 Candidatura inviata!</h2>
+    <p>Grazie! Ti ricontatteremo via email per il colloquio conoscitivo.</p>
+    <p class="hint" style="margin-top:10px">(Versione di test: la candidatura è arrivata al team ma non entra nella selezione.)</p>
+  </div>
+
+  <footer>JEToP · Junior Enterprise Torino Politecnico — <a href="https://www.jetop.com" target="_blank" rel="noopener">jetop.com</a></footer>
+</div>
+
+<script>
+const API = 'https://jetop-n8n-phue.onrender.com/webhook';
+const AREE = {
+  'Marketing & Communication': ['Marketing','Communication'],
+  'Design & Videomaking':      ['Design','Videomaking'],
+  'Information Technology':    [],
+  'Sales & Partnership':       ['Sales','Partnership'],
+  'Talent & Data Analysis':    ['Talent','Data Analysis'],
+};
+const $ = (s)=>document.querySelector(s);
+const form = $('#form');
+const loadedAt = Date.now();
+let emailVerified = false, verifiedEmail = '', cooldownT = null;
+
+/* ---- aree / sotto-aree ---- */
+function fillAreas(){
+  for (const sel of [$('#area1'), $('#area2')]){
+    sel.innerHTML = '<option value="" disabled selected>Seleziona…</option>' +
+      Object.keys(AREE).map(a=>`<option>${a}</option>`).join('');
+  }
+}
+function syncSub(which){
+  const area = $('#area'+which).value;
+  const subs = AREE[area] || [];
+  const wrap = $('#sub'+which+'Wrap'), sel = $('#sub'+which);
+  if (subs.length){ wrap.style.display=''; sel.innerHTML='<option value="" disabled selected>Seleziona…</option>'+subs.map(s=>`<option>${s}</option>`).join(''); }
+  else { wrap.style.display='none'; sel.innerHTML=''; }
+}
+function checkAreas(){
+  const a1=$('#area1').value, a2=$('#area2').value, st=$('#areaStatus');
+  if (a1 && a2 && a1===a2){ st.textContent='La seconda area deve essere diversa dalla prima.'; st.className='status err'; return false; }
+  st.textContent=''; return true;
+}
+fillAreas();
+$('#area1').addEventListener('change',()=>{syncSub(1);checkAreas();});
+$('#area2').addEventListener('change',()=>{syncSub(2);checkAreas();});
+
+/* ---- università / known altro ---- */
+$('#uni').addEventListener('change',()=>{ $('#uniAltroWrap').style.display = $('#uni').value==='Altro' ? '' : 'none'; });
+$('#known').addEventListener('change',()=>{
+  const altro=[...document.querySelectorAll('#known input')].find(i=>i.value.startsWith('Altro'));
+  $('#knownAltro').style.display = altro.checked ? '' : 'none';
+});
+
+/* ---- verifica email ---- */
+function setEmailStatus(msg, cls){ const el=$('#emailStatus'); el.innerHTML=msg; el.className='status '+cls; }
+function resetVerification(){
+  if (!emailVerified && !$('#codeRow').style.display) return;
+  emailVerified=false; verifiedEmail='';
+  $('#email').readOnly=false; $('#email2').readOnly=false;
+  $('#codeRow').style.display='none'; $('#codeInput').value='';
+  $('#sendRow').style.display=''; setEmailStatus('','');
+}
+$('#email').addEventListener('input',resetVerification);
+$('#email2').addEventListener('input',resetVerification);
+
+$('#sendCodeBtn').addEventListener('click', async ()=>{
+  const e1=$('#email').value.trim().toLowerCase(), e2=$('#email2').value.trim().toLowerCase();
+  if (!/^\S+@\S+\.\S{2,}$/.test(e1)) return setEmailStatus('Inserisci un indirizzo email valido.','err');
+  if (e1!==e2) return setEmailStatus('Le due email non coincidono: ricontrolla.','err');
+  const btn=$('#sendCodeBtn'); btn.disabled=true;
+  setEmailStatus('<span class="spin"></span>Invio del codice in corso… (può servire fino a un minuto)','busy');
+  try{
+    const r=await fetch(API+'/form-cand-send-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e1})});
+    const j=await r.json().catch(()=>({}));
+    if (r.ok && j.ok){
+      $('#codeRow').style.display='flex';
+      setEmailStatus('Codice inviato a <b>'+e1+'</b>. Inseriscilo qui sotto.','ok');
+      let s=60; btn.textContent='Reinvia codice (60s)';
+      cooldownT=setInterval(()=>{ s--; if(s<=0){clearInterval(cooldownT);btn.disabled=false;btn.textContent='Reinvia codice';} else btn.textContent=`Reinvia codice (${s}s)`; },1000);
+    } else throw new Error(j.error||'Invio non riuscito');
+  }catch(err){ btn.disabled=false; setEmailStatus('Errore: '+err.message+'. Riprova tra poco.','err'); }
+});
+
+$('#verifyBtn').addEventListener('click', async ()=>{
+  const email=$('#email').value.trim().toLowerCase(), code=$('#codeInput').value.trim();
+  if (!/^\d{6}$/.test(code)) return setEmailStatus('Il codice è di 6 cifre.','err');
+  $('#verifyBtn').disabled=true;
+  setEmailStatus('<span class="spin"></span>Verifica in corso…','busy');
+  try{
+    const r=await fetch(API+'/form-cand-verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,code})});
+    const j=await r.json().catch(()=>({}));
+    if (j.ok){
+      emailVerified=true; verifiedEmail=email;
+      $('#email').readOnly=true; $('#email2').readOnly=true;
+      $('#codeRow').style.display='none'; $('#sendRow').style.display='none';
+      if (cooldownT) clearInterval(cooldownT);
+      setEmailStatus('<span class="badge-ok">✔ Email verificata</span>','ok');
+    } else { setEmailStatus(j.error==='codice errato o scaduto' ? 'Codice errato o scaduto: ricontrolla o richiedine uno nuovo.' : 'Verifica non riuscita: riprova.','err'); }
+  }catch(err){ setEmailStatus('Errore di rete: riprova.','err'); }
+  finally{ $('#verifyBtn').disabled=false; }
+});
+
+/* ---- CV ---- */
+let cvData=null;
+$('#cv').addEventListener('change', ()=>{
+  cvData=null; const f=$('#cv').files[0]; const st=$('#cvStatus');
+  if (!f) { st.textContent=''; return; }
+  if (f.type!=='application/pdf') { st.textContent='Il CV deve essere un PDF.'; st.className='status err'; $('#cv').value=''; return; }
+  if (f.size>8*1024*1024) { st.textContent='Il file supera gli 8 MB.'; st.className='status err'; $('#cv').value=''; return; }
+  const rd=new FileReader();
+  rd.onload=()=>{ cvData={filename:f.name,size:f.size,mimeType:f.type,dataBase64:String(rd.result).split(',')[1]};
+                  st.textContent='✔ '+f.name+' ('+Math.round(f.size/1024)+' KB)'; st.className='status ok'; };
+  rd.readAsDataURL(f);
+});
+
+/* ---- submit ---- */
+form.addEventListener('submit', async (ev)=>{
+  ev.preventDefault();
+  const st=$('#submitStatus');
+  st.className='status err';
+  if (form.website.value) return;                       // honeypot
+  if (Date.now()-loadedAt<3000) return;                 // troppo veloce = bot
+  if (!form.reportValidity()) return;
+  if (!checkAreas()) { st.textContent='Correggi le aree di preferenza.'; return; }
+  for (const w of [1,2]){
+    if ($('#sub'+w+'Wrap').style.display!=='none' && !$('#sub'+w).value){ st.textContent='Scegli la sotto-area per l\'area '+w+'.'; return; }
+  }
+  if (!emailVerified || verifiedEmail!==$('#email').value.trim().toLowerCase()){ st.textContent='Prima verifica la tua email (sezione 2).'; return; }
+  const known=[...document.querySelectorAll('#known input:checked')].map(i=>i.value);
+  if (!known.length){ st.textContent='Indica come hai conosciuto JEToP.'; return; }
+  if (!cvData){ st.textContent='Carica il CV in PDF.'; return; }
+
+  const payload={
+    nome:form.nome.value.trim(), cognome:form.cognome.value.trim(),
+    email:verifiedEmail, telefono:form.telefono.value.trim(),
+    dataNascita:form.dataNascita.value, italianoFluente:form.italianoFluente.value,
+    universita:$('#uni').value==='Altro' ? ('Altro: '+($('#uniAltro').value.trim()||'n/d')) : $('#uni').value,
+    corsoDiStudi:form.corsoDiStudi.value.trim(), annoDiCorso:form.annoDiCorso.value,
+    percorsoDiStudi:form.percorsoDiStudi.value,
+    primaArea:$('#area1').value, primaSottoArea:$('#sub1').value||null,
+    secondaArea:$('#area2').value, secondaSottoArea:$('#sub2').value||null,
+    motivazione:form.motivazione.value.trim(),
+    comeConosciuto:known, comeConosciutoAltro:$('#knownAltro').value.trim()||null,
+    cv:cvData, privacy:$('#privacy').checked,
+  };
+  const btn=$('#submitBtn'); btn.disabled=true;
+  st.className='status busy'; st.innerHTML='<span class="spin"></span>Invio in corso…';
+  try{
+    const r=await fetch(API+'/form-cand-submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const j=await r.json().catch(()=>({}));
+    if (j.ok){ form.style.display='none'; $('#successCard').style.display='block'; window.scrollTo({top:0,behavior:'smooth'}); }
+    else throw new Error(j.error||'invio non riuscito');
+  }catch(err){
+    btn.disabled=false; st.className='status err';
+    st.textContent='Errore: '+err.message+'. Riprova tra qualche secondo.';
+  }
+});
+</script>
+</body>
+</html>
