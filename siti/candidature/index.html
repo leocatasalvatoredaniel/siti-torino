@@ -67,6 +67,22 @@ footer{margin-top:40px;text-align:center;color:var(--muted);font-size:.85rem}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--muted);border-top-color:var(--iris);border-radius:50%;animation:sp 1s linear infinite;vertical-align:-2px;margin-right:6px}
 @keyframes sp{to{transform:rotate(360deg)}}
 .hp{position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden}
+.areas-guide{border:1px solid var(--iris-line);background:var(--iris-soft);border-radius:12px;margin-bottom:18px;overflow:hidden}
+.areas-guide>summary{cursor:pointer;list-style:none;padding:12px 15px;font-weight:700;font-size:.93rem;color:var(--iris);display:flex;align-items:center;gap:9px;user-select:none}
+.areas-guide>summary::-webkit-details-marker{display:none}
+.areas-guide .gd-hint{font-weight:500;color:var(--muted)}
+.areas-guide .chev{display:inline-block;transition:transform .2s;font-size:1.2rem;line-height:1}
+.areas-guide[open] .chev{transform:rotate(90deg)}
+.areas-guide[open]>summary{border-bottom:1px solid var(--iris-line)}
+.areas-guide-body{padding:4px 15px 12px}
+.area-card{padding:11px 0;border-bottom:1px solid var(--line)}
+.area-card:last-child{border-bottom:0}
+.area-card .area-name{font-weight:700;color:var(--text);font-size:.92rem}
+.area-card .area-desc{color:var(--muted);font-size:.85rem;margin-top:3px}
+.sub-list{list-style:none;margin:9px 0 0;padding:0;display:flex;flex-direction:column;gap:5px}
+.sub-list li{font-size:.83rem;color:var(--muted);padding-left:15px;position:relative;line-height:1.45}
+.sub-list li::before{content:'';position:absolute;left:2px;top:7px;width:5px;height:5px;border-radius:50%;background:var(--iris)}
+.sub-list li b{color:var(--text);font-weight:600}
 </style>
 </head>
 <body>
@@ -162,6 +178,10 @@ footer{margin-top:40px;text-align:center;color:var(--muted);font-size:.85rem}
 
     <fieldset>
       <legend><span class="n">4.</span>Aree di preferenza</legend>
+      <details class="areas-guide" open>
+        <summary><span class="chev" aria-hidden="true">›</span><span>Cosa fa ogni area? <span class="gd-hint">— leggi prima di scegliere</span></span></summary>
+        <div class="areas-guide-body" id="areasGuideBody"></div>
+      </details>
       <div class="grid">
         <div class="field"><label>Prima area <span class="req">*</span></label>
           <select name="primaArea" id="area1" required></select>
@@ -228,13 +248,43 @@ footer{margin-top:40px;text-align:center;color:var(--muted);font-size:.85rem}
 
 <script>
 const API = 'https://jetop-n8n-phue.onrender.com/webhook';
-const AREE = {
-  'Marketing & Communication': ['Marketing','Communication'],
-  'Design & Videomaking':      ['Design','Videomaking'],
-  'Information Technology':    [],
-  'Sales & Partnership':       ['Sales','Partnership'],
-  'Talent & Data Analysis':    ['Talent','Data Analysis'],
+const AREA_INFO = {
+  'Marketing & Communication': {
+    desc: 'Costruisce l\'immagine di JEToP e la racconta al mondo.',
+    subs: {
+      'Marketing':     'Strategia di brand, ricerca di mercato, social e campagne di crescita.',
+      'Communication': 'Contenuti, copywriting, gestione dei social e storytelling dell\'associazione.',
+    },
+  },
+  'Design & Videomaking': {
+    desc: 'Dà forma all\'identità visiva di JEToP, dalla grafica al video.',
+    subs: {
+      'Design':      'Identità visiva, grafiche, layout e materiali per progetti ed eventi.',
+      'Videomaking': 'Riprese, montaggio e motion graphics per social e progetti.',
+    },
+  },
+  'Information Technology': {
+    desc: 'Sviluppa siti, software e automazioni per JEToP e per i clienti.',
+    subs: {},
+  },
+  'Sales & Partnership': {
+    desc: 'Trova nuovi clienti e costruisce relazioni con aziende e partner.',
+    subs: {
+      'Sales':       'Ricerca clienti, sviluppo commerciale e negoziazione dei progetti.',
+      'Partnership': 'Sponsorship e collaborazioni strategiche con aziende ed enti.',
+    },
+  },
+  'Talent & Data Analysis': {
+    desc: 'Cura le persone del team e trasforma i dati in decisioni.',
+    subs: {
+      'Talent':        'Selezione, formazione e crescita dei membri; people management.',
+      'Data Analysis': 'Raccolta e analisi dei dati, KPI e dashboard a supporto delle aree.',
+    },
+  },
 };
+const AREE = Object.fromEntries(
+  Object.entries(AREA_INFO).map(([k, v]) => [k, Object.keys(v.subs)])
+);
 const $ = (s)=>document.querySelector(s);
 const form = $('#form');
 const loadedAt = Date.now();
@@ -259,7 +309,17 @@ function checkAreas(){
   if (a1 && a2 && a1===a2){ st.textContent='La seconda area deve essere diversa dalla prima.'; st.className='status err'; return false; }
   st.textContent=''; return true;
 }
+function buildAreasGuide(){
+  $('#areasGuideBody').innerHTML = Object.entries(AREA_INFO).map(([name,info])=>{
+    const subs=Object.entries(info.subs||{});
+    const list = subs.length
+      ? `<ul class="sub-list">${subs.map(([s,d])=>`<li><b>${s}</b> — ${d}</li>`).join('')}</ul>`
+      : '';
+    return `<div class="area-card"><div class="area-name">${name}</div><div class="area-desc">${info.desc}</div>${list}</div>`;
+  }).join('');
+}
 fillAreas();
+buildAreasGuide();
 $('#area1').addEventListener('change',()=>{syncSub(1);checkAreas();});
 $('#area2').addEventListener('change',()=>{syncSub(2);checkAreas();});
 
