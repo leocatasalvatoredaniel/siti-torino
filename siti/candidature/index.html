@@ -94,7 +94,9 @@ footer{margin-top:40px;text-align:center;color:var(--muted);font-size:.85rem}
     <h1>Candidati a JEToP</h1>
     <p class="sub">Junior Enterprise Torino Politecnico — entra nel team.</p>  </div>
 
-  <form id="form" class="card" novalidate>
+  <div class="card" id="gateLoading" style="text-align:center;color:var(--muted);padding:32px">Caricamento…</div>
+
+  <form id="form" class="card" novalidate style="display:none">
     <!-- honeypot -->
     <div class="hp"><label>Non compilare<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
 
@@ -237,6 +239,12 @@ footer{margin-top:40px;text-align:center;color:var(--muted);font-size:.85rem}
     <h2>🎉 Candidatura inviata!</h2>
     <p>Grazie per esserti candidato a JEToP. Valuteremo la tua candidatura e ti ricontatteremo via email.</p>  </div>
 
+  <div class="card" id="closedCard" style="display:none">
+    <h2>🕓 Candidature non ancora aperte</h2>
+    <p id="closedMsg">Le selezioni di JEToP si tengono a <b>marzo</b> e <b>ottobre</b>. Al momento le candidature non sono aperte: torna a trovarci in quei periodi!</p>
+    <p class="hint" style="margin-top:10px">Nel frattempo scopri di più su <a href="https://www.jetop.com" target="_blank" rel="noopener">jetop.com</a>.</p>
+  </div>
+
   <footer>JEToP · Junior Enterprise Torino Politecnico — <a href="https://www.jetop.com" target="_blank" rel="noopener">jetop.com</a></footer>
 </div>
 
@@ -314,6 +322,23 @@ function buildAreasGuide(){
 }
 fillAreas();
 buildAreasGuide();
+
+/* ---- gate: candidature aperte? ---- */
+function gateShow(w){
+  $('#gateLoading').style.display = w==='loading'?'block':'none';
+  $('#form').style.display        = w==='form'?'':'none';
+  $('#closedCard').style.display  = w==='closed'?'block':'none';
+}
+async function checkGate(){
+  try{
+    const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),10000);
+    const r=await fetch(API+'/form-cand-status',{signal:ctrl.signal}); clearTimeout(t);
+    const j=await r.json();
+    if (j && j.open===false){ if(j.message) $('#closedMsg').textContent=j.message; gateShow('closed'); }
+    else gateShow('form');
+  }catch(e){ gateShow('form'); }   // su errore/timeout mostra il form (il backend blocca comunque se chiuso)
+}
+checkGate();
 $('#area1').addEventListener('change',()=>{syncSub(1);checkAreas();});
 $('#area2').addEventListener('change',()=>{syncSub(2);checkAreas();});
 
@@ -422,6 +447,7 @@ form.addEventListener('submit', async (ev)=>{
     const r=await fetch(API+'/form-cand-submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const j=await r.json().catch(()=>({}));
     if (j.ok){ form.style.display='none'; $('#successCard').style.display='block'; window.scrollTo({top:0,behavior:'smooth'}); }
+    else if (j.closed){ form.style.display='none'; if(j.message)$('#closedMsg').textContent=j.message; $('#closedCard').style.display='block'; window.scrollTo({top:0,behavior:'smooth'}); }
     else throw new Error(j.error||'invio non riuscito');
   }catch(err){
     btn.disabled=false; st.className='status err';
