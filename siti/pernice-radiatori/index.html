@@ -1,430 +1,380 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Pernice Officina – Radiatori di tutti i tipi, saldature in genere e ricarica condizionatori auto a Torino. Via Somalia 108/32. Tel. 011.611.568.">
-  <title>Pernice Officina – Radiatori & Saldature Torino</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --yellow: #F5C400;
-      --yellow-dim: rgba(245,196,0,0.12);
-      --navy: #050A18;
-      --navy-mid: #0D1B3E;
-      --white: #FFFFFF;
-      --gray: rgba(255,255,255,0.55);
-    }
-    html { scroll-behavior: smooth; }
-    body { background: var(--navy); color: var(--white); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Pernice Officina – Radiatori, saldature e ricarica climatizzatori auto a Torino. Via Somalia 108/32. Tel. 011.611.568.">
+<title>Pernice Officina – Radiatori & Saldature Torino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --y:#F5C400; --y2:rgba(245,196,0,.12); --n:#050A18; --nm:#0D1B3E;
+  --w:#fff; --g:rgba(255,255,255,.5);
+}
+html{scroll-behavior:smooth}
+body{background:var(--n);color:var(--w);font-family:'Inter',sans-serif;overflow-x:hidden}
 
-    /* ── Loader ── */
-    #loader {
-      position: fixed; inset: 0; z-index: 9999;
-      background: var(--navy);
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px;
-    }
-    #loader-text {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(3rem, 12vw, 8rem);
-      color: var(--yellow);
-      letter-spacing: 0.12em;
-      opacity: 0;
-      transition: opacity 0.5s;
-    }
-    #loader-bar-wrap { width: 220px; height: 2px; background: rgba(255,255,255,0.08); overflow: hidden; }
-    #loader-bar { height: 100%; background: var(--yellow); width: 0; transition: width 1.3s cubic-bezier(.4,0,.2,1); }
+/* ── BG CANVAS: full fixed viewport ── */
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
 
-    /* ── Nav ── */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      padding: 18px 5vw;
-      display: flex; align-items: center; justify-content: space-between;
-      transition: background 0.4s, backdrop-filter 0.4s, border-color 0.4s;
-      border-bottom: 1px solid transparent;
-    }
-    nav.scrolled { background: rgba(5,10,24,0.88); backdrop-filter: blur(20px); border-color: rgba(245,196,0,0.15); }
-    .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.12em; color: var(--white); text-decoration: none; }
-    .nav-logo span { color: var(--yellow); }
-    .nav-links { display: flex; align-items: center; gap: 32px; }
-    .nav-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.82rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.2s; }
-    .nav-links a:hover { color: var(--yellow); }
-    .nav-cta { background: var(--yellow); color: var(--navy); padding: 10px 22px; font-weight: 700; font-size: 0.82rem; letter-spacing: 0.06em; text-decoration: none; transition: box-shadow 0.2s; }
-    .nav-cta:hover { box-shadow: 0 8px 30px rgba(245,196,0,0.4); }
-    @media (max-width: 768px) { .nav-links { display: none; } }
+/* ── LOADER ── */
+#ld{position:fixed;inset:0;z-index:9999;background:var(--n);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+#lt{font-family:'Bebas Neue';font-size:clamp(4rem,14vw,9rem);color:var(--y);
+  letter-spacing:.1em;opacity:0;transition:opacity .4s}
+#lb{width:200px;height:2px;background:rgba(255,255,255,.08);overflow:hidden}
+#lp{height:100%;background:var(--y);width:0;transition:width 1.4s cubic-bezier(.4,0,.2,1)}
+#lsub{font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;
+  color:rgba(255,255,255,.3);opacity:0;transition:opacity .6s .2s}
 
-    /* ── Hero ── */
-    #hero { min-height: 100dvh; position: relative; overflow: hidden; display: flex; align-items: center; padding: 120px 5vw 80px; }
-    #three-canvas {
-      position: absolute; top: 0; right: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-    }
-    #sparks-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
-    .hero-grid {
-      position: absolute; inset: 0; pointer-events: none;
-      background-image: linear-gradient(rgba(245,196,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(245,196,0,0.03) 1px, transparent 1px);
-      background-size: 60px 60px;
-    }
-    .hero-content { position: relative; z-index: 10; max-width: 680px; }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      border: 1px solid rgba(245,196,0,0.35);
-      padding: 6px 16px; margin-bottom: 32px;
-      font-size: 0.75rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--yellow);
-      opacity: 0; transform: translateY(20px);
-    }
-    .hero-badge::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--yellow); animation: blink 2s infinite; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-    .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3.8rem, 11vw, 9.5rem); line-height: 0.92; letter-spacing: 0.02em; margin-bottom: 10px; }
-    .hero-title .line { display: block; overflow: hidden; }
-    .hero-title .line span { display: block; transform: translateY(110%); }
-    .hero-title .accent { color: var(--yellow); }
-    .hero-sub { font-size: clamp(0.85rem, 1.8vw, 1rem); color: rgba(255,255,255,0.5); font-weight: 300; line-height: 1.8; margin-bottom: 44px; opacity: 0; transform: translateY(20px); }
-    .hero-sub strong { color: rgba(255,255,255,0.9); font-weight: 600; }
-    .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; opacity: 0; transform: translateY(20px); }
-    .btn-p {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: var(--yellow); color: var(--navy);
-      padding: 15px 34px; font-weight: 700; font-size: 0.88rem; letter-spacing: 0.05em;
-      text-decoration: none; border: none; cursor: pointer;
-      transition: box-shadow 0.2s, transform 0.15s;
-    }
-    .btn-p:hover { box-shadow: 0 16px 50px rgba(245,196,0,0.4); transform: translateY(-2px); }
-    .btn-s {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: transparent; color: var(--white);
-      padding: 14px 34px; font-weight: 600; font-size: 0.88rem; letter-spacing: 0.05em;
-      text-decoration: none; border: 1px solid rgba(255,255,255,0.2);
-      transition: border-color 0.2s, color 0.2s, background 0.2s;
-    }
-    .btn-s:hover { border-color: var(--yellow); color: var(--yellow); background: rgba(245,196,0,0.04); }
-    .scroll-hint {
-      position: absolute; bottom: 36px; left: 5vw; z-index: 10;
-      display: flex; align-items: center; gap: 12px;
-      color: rgba(255,255,255,0.28); font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
-      opacity: 0;
-    }
-    .scroll-line { width: 40px; height: 1px; background: rgba(255,255,255,0.15); position: relative; overflow: hidden; }
-    .scroll-line::after { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:var(--yellow); animation: sline 2s ease-in-out infinite; }
-    @keyframes sline { 0%{left:-100%} 100%{left:100%} }
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:18px 5vw;display:flex;align-items:center;justify-content:space-between;
+  transition:background .4s,border-color .4s;border-bottom:1px solid transparent}
+nav.scr{background:rgba(5,10,24,.88);backdrop-filter:blur(18px);border-color:rgba(245,196,0,.15)}
+.nl{font-family:'Bebas Neue';font-size:1.5rem;letter-spacing:.12em;color:var(--w);text-decoration:none}
+.nl span{color:var(--y)}
+.nr{display:flex;align-items:center;gap:28px}
+.nr a{color:rgba(255,255,255,.55);text-decoration:none;font-size:.8rem;
+  font-weight:500;letter-spacing:.08em;text-transform:uppercase;transition:color .2s}
+.nr a:hover,.nr a:focus{color:var(--y)}
+.nc{background:var(--y);color:var(--n);padding:10px 22px;font-weight:700;
+  font-size:.8rem;letter-spacing:.05em;text-decoration:none;transition:box-shadow .25s}
+.nc:hover{box-shadow:0 8px 30px rgba(245,196,0,.4)}
+@media(max-width:680px){.nr .hide{display:none}}
 
-    /* ── Stats ── */
-    #stats {
-      padding: 56px 5vw;
-      background: linear-gradient(135deg, rgba(13,27,62,0.6), rgba(5,10,24,0.95));
-      border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
-    .stat-item { padding: 20px 28px; border-right: 1px solid rgba(255,255,255,0.05); opacity:0; transform:translateY(24px); }
-    .stat-item:last-child { border-right: none; }
-    .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 3.2rem; color: var(--yellow); line-height: 1; margin-bottom: 4px; }
-    .stat-label { font-size: 0.75rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.08em; }
+/* ── CONTENT WRAPPER ── */
+main{position:relative;z-index:1}
 
-    /* ── Section shared ── */
-    section { padding: 110px 5vw; }
-    .stag { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--yellow); margin-bottom: 14px; opacity:0; transform:translateX(-16px); }
-    .stit { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.4rem, 5.5vw, 4.5rem); line-height: 0.95; letter-spacing: 0.02em; margin-bottom: 20px; opacity:0; transform:translateY(24px); }
+/* ── HERO ── */
+#hero{min-height:100dvh;display:flex;align-items:center;
+  padding:120px 5vw 80px;position:relative;pointer-events:none}
+.hero-content{pointer-events:auto;max-width:620px}
+.hbadge{
+  display:inline-flex;align-items:center;gap:8px;
+  border:1px solid rgba(245,196,0,.38);padding:6px 16px;margin-bottom:32px;
+  font-size:.72rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--y);opacity:0;transform:translateY(18px)
+}
+.hbadge::before{content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--y);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+h1{font-family:'Bebas Neue';font-size:clamp(4rem,12vw,10rem);
+  line-height:.9;letter-spacing:.02em;margin-bottom:12px}
+h1 .ln{display:block;overflow:hidden}
+h1 .ln span{display:block;transform:translateY(110%)}
+h1 .ac{color:var(--y)}
+.hsub{font-size:clamp(.85rem,1.7vw,1rem);color:rgba(255,255,255,.45);
+  font-weight:300;line-height:1.85;margin-bottom:44px;opacity:0;transform:translateY(18px)}
+.hsub strong{color:rgba(255,255,255,.9);font-weight:600}
+.hctas{display:flex;gap:12px;flex-wrap:wrap;opacity:0;transform:translateY(18px)}
+.bp{display:inline-flex;align-items:center;gap:10px;background:var(--y);
+  color:var(--n);padding:15px 32px;font-weight:700;font-size:.86rem;
+  letter-spacing:.05em;text-decoration:none;border:none;cursor:pointer;
+  transition:box-shadow .25s,transform .15s}
+.bp:hover{box-shadow:0 16px 48px rgba(245,196,0,.45);transform:translateY(-2px)}
+.bs{display:inline-flex;align-items:center;gap:10px;background:transparent;
+  color:var(--w);padding:14px 32px;font-weight:600;font-size:.86rem;
+  letter-spacing:.05em;text-decoration:none;
+  border:1px solid rgba(255,255,255,.22);transition:border-color .2s,color .2s}
+.bs:hover{border-color:var(--y);color:var(--y)}
+.scroll-ind{position:absolute;bottom:40px;left:5vw;
+  display:flex;align-items:center;gap:12px;opacity:0;
+  color:rgba(255,255,255,.28);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase}
+.sline{width:36px;height:1px;background:rgba(255,255,255,.15);position:relative;overflow:hidden}
+.sline::after{content:'';position:absolute;top:0;left:-100%;width:100%;
+  height:100%;background:var(--y);animation:sl 2s ease-in-out infinite}
+@keyframes sl{0%{left:-100%}100%{left:100%}}
 
-    /* ── Services ── */
-    #servizi { background: var(--navy); }
-    .srv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2px; margin-top: 60px; }
-    .srv-card {
-      background: var(--navy-mid); padding: 44px 36px;
-      position: relative; overflow: hidden;
-      opacity:0; transform:translateY(36px);
-      transition: box-shadow 0.4s;
-      transform-style: preserve-3d;
-      will-change: transform;
-    }
-    .srv-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(245,196,0,0.05),transparent); opacity:0; transition:opacity 0.4s; }
-    .srv-card:hover::before { opacity:1; }
-    .srv-card::after { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--yellow); transform:scaleX(0); transform-origin:left; transition:transform 0.5s cubic-bezier(.4,0,.2,1); }
-    .srv-card:hover::after { transform:scaleX(1); }
-    .card-n { font-family:'Bebas Neue',sans-serif; font-size:4.5rem; color:rgba(245,196,0,0.07); position:absolute; top:12px; right:20px; line-height:1; transition:color 0.4s; pointer-events:none; }
-    .srv-card:hover .card-n { color:rgba(245,196,0,0.13); }
-    /* 3D CSS icon wrapper */
-    .card-3d-icon {
-      width: 64px; height: 64px;
-      margin-bottom: 28px;
-      perspective: 300px;
-    }
-    .card-3d-inner {
-      width: 100%; height: 100%;
-      position: relative;
-      transform-style: preserve-3d;
-      animation: spin3d 8s linear infinite;
-    }
-    @keyframes spin3d {
-      0%   { transform: rotateY(0deg) rotateX(0deg); }
-      25%  { transform: rotateY(90deg) rotateX(15deg); }
-      50%  { transform: rotateY(180deg) rotateX(0deg); }
-      75%  { transform: rotateY(270deg) rotateX(-15deg); }
-      100% { transform: rotateY(360deg) rotateX(0deg); }
-    }
-    .srv-card:hover .card-3d-inner { animation-play-state: paused; }
-    .face { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:var(--yellow-dim); backface-visibility:hidden; }
-    .face-back { transform: rotateY(180deg); }
-    .ctit { font-family:'Bebas Neue',sans-serif; font-size:1.85rem; letter-spacing:0.04em; margin-bottom:12px; }
-    .cdesc { font-size:0.875rem; color:rgba(255,255,255,0.5); line-height:1.75; margin-bottom:22px; }
-    .clist { list-style:none; }
-    .clist li { font-size:0.8rem; color:rgba(255,255,255,0.4); padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.04); display:flex; align-items:center; gap:8px; transition:color 0.2s; }
-    .srv-card:hover .clist li { color:rgba(255,255,255,0.6); }
-    .clist li::before { content:''; width:4px; height:4px; border-radius:50%; background:var(--yellow); flex-shrink:0; }
+/* ── GLASS PANEL base ── */
+.panel{
+  background:rgba(5,10,24,.82);
+  backdrop-filter:blur(24px);
+  border-top:1px solid rgba(255,255,255,.05);
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
 
-    /* ── Band ── */
-    .band {
-      height: 180px; overflow: hidden; position: relative;
-      background: linear-gradient(rgba(5,10,24,0.9), rgba(5,10,24,0.9)),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Ccircle cx='40' cy='40' r='35' fill='none' stroke='rgba(245,196,0,0.06)' stroke-width='1'/%3E%3C/svg%3E");
-      background-size: cover, 80px 80px;
-      display:flex; align-items:center; justify-content:center;
-    }
-    .band-text { font-family:'Bebas Neue',sans-serif; font-size:clamp(2rem,8vw,5.5rem); letter-spacing:0.3em; color:rgba(245,196,0,0.09); white-space:nowrap; position:absolute; will-change:transform; }
-    .band-cta { position:relative; z-index:2; text-align:center; }
-    .band-cta p { font-size:0.78rem; color:rgba(255,255,255,0.35); letter-spacing:0.18em; text-transform:uppercase; margin-bottom:18px; }
+/* ── STATS ── */
+#stats{padding:54px 5vw}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.si{padding:18px 26px;border-right:1px solid rgba(255,255,255,.05);opacity:0;transform:translateY(22px)}
+.si:last-child{border-right:none}
+.sn{font-family:'Bebas Neue';font-size:3.2rem;color:var(--y);line-height:1;margin-bottom:3px}
+.sl{font-size:.72rem;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.08em}
 
-    /* ── About ── */
-    #perche { background: linear-gradient(160deg, var(--navy-mid), var(--navy)); position:relative; overflow:hidden; }
-    #perche::before { content:''; position:absolute; width:500px; height:500px; border-radius:50%; background:radial-gradient(circle,rgba(245,196,0,0.04) 0%,transparent 70%); right:-150px; bottom:-150px; pointer-events:none; }
-    .perche-grid { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; }
-    @media(max-width:900px){ .perche-grid{grid-template-columns:1fr;gap:48px;} }
-    .perche-p { color:rgba(255,255,255,0.5); font-size:0.95rem; line-height:1.85; margin-bottom:36px; }
-    .tcards { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-    .tcard { background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); padding:26px 22px; transition:border-color 0.3s,background 0.3s; opacity:0; transform:scale(0.92); }
-    .tcard:hover { background:rgba(245,196,0,0.04); border-color:rgba(245,196,0,0.22); }
-    .tcard.feat { background:var(--yellow); border-color:var(--yellow); }
-    .tval { font-family:'Bebas Neue',sans-serif; font-size:2.8rem; color:var(--yellow); line-height:1; margin-bottom:4px; }
-    .tcard.feat .tval { color:var(--navy); }
-    .tlab { font-size:0.75rem; color:rgba(255,255,255,0.45); font-weight:500; text-transform:uppercase; letter-spacing:0.06em; }
-    .tcard.feat .tlab { color:rgba(5,10,24,0.6); }
+/* ── SECTIONS ── */
+section.sec{padding:100px 5vw}
+.stag{font-size:.7rem;font-weight:600;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--y);margin-bottom:14px;opacity:0;transform:translateX(-14px)}
+.stit{font-family:'Bebas Neue';font-size:clamp(2.4rem,5.5vw,4.8rem);
+  line-height:.94;letter-spacing:.02em;margin-bottom:18px;opacity:0;transform:translateY(22px)}
 
-    /* ── Contacts ── */
-    #contatti { background: var(--navy); }
-    .contacts-grid { display:grid; grid-template-columns:1fr 1.4fr; gap:60px; margin-top:60px; align-items:start; }
-    @media(max-width:900px){ .contacts-grid{grid-template-columns:1fr;gap:36px;} }
-    .citem { display:flex; align-items:flex-start; gap:18px; padding:22px; border:1px solid rgba(255,255,255,0.05); margin-bottom:4px; transition:border-color 0.3s,background 0.3s; opacity:0; transform:translateX(-26px); }
-    .citem:hover { border-color:rgba(245,196,0,0.22); background:rgba(245,196,0,0.02); }
-    .cico { width:42px; height:42px; flex-shrink:0; background:var(--yellow-dim); display:flex; align-items:center; justify-content:center; }
-    .clabel { font-size:0.7rem; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--yellow); margin-bottom:5px; }
-    .cval { font-size:0.95rem; font-weight:500; color:var(--white); text-decoration:none; display:block; transition:color 0.2s; }
-    .cval:hover { color:var(--yellow); }
-    .csub { font-size:0.78rem; color:rgba(255,255,255,0.3); margin-top:2px; }
-    .hours-block { padding:22px; border:1px solid rgba(255,255,255,0.05); margin-top:4px; opacity:0; transform:translateX(-26px); }
-    .hlabel { font-size:0.7rem; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--yellow); margin-bottom:14px; }
-    .hrow { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:0.85rem; }
-    .hrow:last-child { border-bottom:none; }
-    .hday { color:rgba(255,255,255,0.4); }
-    .htime { color:var(--white); font-weight:500; }
-    .htime.closed { color:rgba(255,255,255,0.2); }
-    .map-wrap { position:relative; opacity:0; transform:translateY(28px); }
-    .map-wrap::before { content:''; position:absolute; inset:-1px; background:linear-gradient(135deg,var(--yellow),transparent,transparent); z-index:0; }
-    .map-wrap iframe { position:relative; z-index:1; width:100%; height:420px; border:none; display:block; filter:grayscale(40%) contrast(1.1) brightness(0.75); }
+/* ── SERVIZI ── */
+#srv{background:rgba(5,10,24,.86);backdrop-filter:blur(20px)}
+.srv-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2px;margin-top:56px}
+.sc{background:var(--nm);padding:42px 34px;position:relative;overflow:hidden;
+  opacity:0;transform:translateY(34px);transition:box-shadow .4s;
+  border-top:2px solid transparent;transition:border-color .4s,box-shadow .4s}
+.sc::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(245,196,0,.06),transparent);opacity:0;transition:opacity .4s}
+.sc:hover::before{opacity:1}
+.sc:hover{border-color:var(--y);box-shadow:0 0 60px rgba(245,196,0,.08)}
+.cn{font-family:'Bebas Neue';font-size:5rem;color:rgba(245,196,0,.06);
+  position:absolute;top:8px;right:16px;pointer-events:none}
+.sico{width:56px;height:56px;margin-bottom:24px;
+  background:var(--y2);display:flex;align-items:center;justify-content:center;
+  transition:background .3s,transform .4s}
+.sc:hover .sico{background:rgba(245,196,0,.22);transform:scale(1.1) rotate(5deg)}
+.ctit{font-family:'Bebas Neue';font-size:1.9rem;letter-spacing:.04em;margin-bottom:10px}
+.cdesc{font-size:.875rem;color:rgba(255,255,255,.48);line-height:1.75;margin-bottom:20px}
+.clist{list-style:none}
+.clist li{font-size:.8rem;color:rgba(255,255,255,.38);padding:5px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:8px;transition:color .2s}
+.sc:hover .clist li{color:rgba(255,255,255,.6)}
+.clist li::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--y);flex-shrink:0}
 
-    /* ── Footer ── */
-    footer { padding:36px 5vw; background:var(--navy); border-top:1px solid rgba(245,196,0,0.12); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; }
-    .flogo { font-family:'Bebas Neue',sans-serif; font-size:1.25rem; letter-spacing:0.12em; color:rgba(255,255,255,0.35); }
-    .flogo span { color:var(--yellow); }
-    .fcopy { font-size:0.75rem; color:rgba(255,255,255,0.25); }
-    .flinks { display:flex; gap:20px; }
-    .flinks a { color:rgba(255,255,255,0.3); text-decoration:none; font-size:0.75rem; transition:color 0.2s; }
-    .flinks a:hover { color:var(--yellow); }
+/* ── MARQUEE BAND ── */
+.band{height:90px;overflow:hidden;position:relative;
+  background:rgba(245,196,0,1);display:flex;align-items:center}
+.btext{font-family:'Bebas Neue';font-size:2.8rem;letter-spacing:.3em;
+  color:rgba(5,10,24,.15);white-space:nowrap;position:absolute;will-change:transform}
 
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation:none!important; transition-duration:0.01ms!important; }
-      .hero-badge,.hero-sub,.hero-ctas,.scroll-hint,.stag,.stit,.stat-item,
-      .srv-card,.tcard,.citem,.hours-block,.map-wrap,
-      #loader-text,.hero-title .line span { opacity:1!important; transform:none!important; }
-    }
-  </style>
+/* ── PERCHÉ ── */
+#perche{background:rgba(13,27,62,.85);backdrop-filter:blur(20px)}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+@media(max-width:860px){.pgrid{grid-template-columns:1fr;gap:44px}}
+.pp{color:rgba(255,255,255,.48);font-size:.94rem;line-height:1.88;margin-bottom:32px}
+.tcards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tc{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
+  padding:24px 20px;transition:border-color .3s,background .3s;opacity:0;transform:scale(.93)}
+.tc:hover{background:rgba(245,196,0,.05);border-color:rgba(245,196,0,.25)}
+.tc.feat{background:var(--y);border-color:var(--y)}
+.tv{font-family:'Bebas Neue';font-size:2.8rem;color:var(--y);line-height:1;margin-bottom:4px}
+.tc.feat .tv{color:var(--n)}
+.tl{font-size:.72rem;color:rgba(255,255,255,.4);font-weight:500;
+  text-transform:uppercase;letter-spacing:.06em}
+.tc.feat .tl{color:rgba(5,10,24,.6)}
+
+/* ── CONTATTI ── */
+#ctt{background:rgba(5,10,24,.9);backdrop-filter:blur(20px)}
+.cgrid{display:grid;grid-template-columns:1fr 1.4fr;gap:52px;margin-top:52px;align-items:start}
+@media(max-width:860px){.cgrid{grid-template-columns:1fr;gap:32px}}
+.ci{display:flex;align-items:flex-start;gap:16px;padding:20px;
+  border:1px solid rgba(255,255,255,.05);margin-bottom:3px;opacity:0;transform:translateX(-22px);
+  transition:border-color .3s,background .3s}
+.ci:hover{border-color:rgba(245,196,0,.22);background:rgba(245,196,0,.02)}
+.cico{width:40px;height:40px;flex-shrink:0;background:var(--y2);
+  display:flex;align-items:center;justify-content:center}
+.clb{font-size:.68rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--y);margin-bottom:4px}
+.cv{font-size:.92rem;font-weight:500;color:var(--w);text-decoration:none;
+  display:block;transition:color .2s}
+.cv:hover{color:var(--y)}
+.cs{font-size:.76rem;color:rgba(255,255,255,.28);margin-top:2px}
+.hblock{padding:20px;border:1px solid rgba(255,255,255,.05);margin-top:3px;opacity:0;transform:translateX(-22px)}
+.hlb{font-size:.68rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--y);margin-bottom:12px}
+.hr{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.84rem}
+.hr:last-child{border:none}
+.hd{color:rgba(255,255,255,.38)}.ht{color:var(--w);font-weight:500}
+.ht.cls{color:rgba(255,255,255,.2)}
+.mwrap{opacity:0;transform:translateY(24px);position:relative}
+.mwrap::before{content:'';position:absolute;inset:-1px;z-index:0;
+  background:linear-gradient(135deg,var(--y),transparent 60%)}
+.mwrap iframe{position:relative;z-index:1;width:100%;height:400px;border:none;display:block;
+  filter:grayscale(50%) contrast(1.1) brightness(.7)}
+
+/* ── FOOTER ── */
+footer{padding:32px 5vw;background:rgba(5,10,24,.95);
+  border-top:1px solid rgba(245,196,0,.12);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  position:relative;z-index:1}
+.flo{font-family:'Bebas Neue';font-size:1.25rem;letter-spacing:.1em;color:rgba(255,255,255,.3)}
+.flo span{color:var(--y)}
+.fcp{font-size:.72rem;color:rgba(255,255,255,.22)}
+.fln a{color:rgba(255,255,255,.28);text-decoration:none;font-size:.72rem;
+  margin-left:18px;transition:color .2s}
+.fln a:hover{color:var(--y)}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.01ms!important}
+  .hbadge,.hsub,.hctas,.scroll-ind,.stag,.stit,.si,.sc,.tc,.ci,.hblock,.mwrap,
+  h1 .ln span{opacity:1!important;transform:none!important}
+}
+</style>
 </head>
 <body>
 
+<canvas id="bg" aria-hidden="true"></canvas>
+
 <!-- LOADER -->
-<div id="loader" role="status" aria-label="Caricamento">
-  <div id="loader-text">PERNICE</div>
-  <div id="loader-bar-wrap"><div id="loader-bar"></div></div>
+<div id="ld" role="status" aria-label="Caricamento">
+  <div id="lt">PERNICE</div>
+  <div id="lb"><div id="lp"></div></div>
+  <div id="lsub">Officina · Torino · Dal 1970</div>
 </div>
 
 <!-- NAV -->
 <nav id="nav" role="navigation" aria-label="Navigazione principale">
-  <a href="#hero" class="nav-logo" aria-label="Pernice Officina">PERNICE <span>OFFICINA</span></a>
-  <div class="nav-links">
-    <a href="#servizi">Servizi</a>
-    <a href="#perche">Chi siamo</a>
-    <a href="#contatti">Contatti</a>
+  <a href="#hero" class="nl">PERNICE <span>OFFICINA</span></a>
+  <div class="nr">
+    <a href="#srv" class="hide">Servizi</a>
+    <a href="#perche" class="hide">Chi siamo</a>
+    <a href="#ctt" class="hide">Contatti</a>
+    <a href="tel:+390116115680" class="nc">011.611.568</a>
   </div>
-  <a href="tel:+390116115680" class="nav-cta" aria-label="Chiama 011.611.568">011.611.568</a>
 </nav>
 
+<main>
 <!-- HERO -->
 <section id="hero">
-  <canvas id="three-canvas" aria-hidden="true"></canvas>
-  <canvas id="sparks-canvas" aria-hidden="true"></canvas>
-  <div class="hero-grid" aria-hidden="true"></div>
   <div class="hero-content">
-    <div class="hero-badge" id="hbadge" aria-label="4.6 stelle su Google · 15 recensioni">★ 4.6 su Google · 15 Recensioni</div>
-    <h1 class="hero-title" aria-label="Pernice Officina Torino dal 1970">
-      <span class="line"><span id="t1">PERNICE</span></span>
-      <span class="line"><span id="t2" class="accent">OFFICINA</span></span>
-      <span class="line" style="font-size:.36em;letter-spacing:.18em;"><span id="t3" style="color:rgba(255,255,255,.28)">TORINO · DAL 1970</span></span>
+    <div class="hbadge" id="hb">★ 4.6 su Google · 15 Recensioni</div>
+    <h1 aria-label="Pernice Officina Torino dal 1970">
+      <span class="ln"><span id="t1">PERNICE</span></span>
+      <span class="ln"><span id="t2" class="ac">OFFICINA</span></span>
+      <span class="ln" style="font-size:.35em;letter-spacing:.18em">
+        <span id="t3" style="color:rgba(255,255,255,.25)">TORINO · DAL 1970</span>
+      </span>
     </h1>
-    <p class="hero-sub" id="hsub">
+    <p class="hsub" id="hs">
       <strong>Radiatori di tutti i tipi</strong> · <strong>Saldature in genere</strong> · <strong>Ricarica condizionatori</strong><br>
       Via Somalia 108/32 · 10127 Torino · Specialisti da oltre 50 anni
     </p>
-    <div class="hero-ctas" id="hctas">
-      <a href="tel:+390116115680" class="btn-p mag" aria-label="Chiama 011.611.568">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 14a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 3h3a2 2 0 0 1 2 1.72 19 19 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 10.6a16 16 0 0 0 6 6l1.96-1.96a2 2 0 0 1 2.11-.45 19 19 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-        011.611.568
+    <div class="hctas" id="hc">
+      <a href="tel:+390116115680" class="bp mag">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 14a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 3h3a2 2 0 0 1 2 1.72 19 19 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 10.6a16 16 0 0 0 6 6l1.96-1.96a2 2 0 0 1 2.11-.45 19 19 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Chiama ora
       </a>
-      <a href="tel:+393394466519" class="btn-s mag" aria-label="Cellulare 339.44.66.519">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      <a href="tel:+393394466519" class="bs mag">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
         339.44.66.519
       </a>
-      <a href="#servizi" class="btn-s" style="border-color:transparent;color:rgba(255,255,255,.35);">Scopri ↓</a>
+      <a href="#srv" class="bs" style="border-color:transparent;color:rgba(255,255,255,.3)">Scopri ↓</a>
     </div>
   </div>
-  <div class="scroll-hint" id="shint" aria-hidden="true"><div class="scroll-line"></div>Scorri</div>
+  <div class="scroll-ind" id="si"><div class="sline"></div>Scorri</div>
 </section>
 
 <!-- STATS -->
-<div id="stats" aria-label="Dati chiave">
-  <div class="stats-grid">
-    <div class="stat-item"><div class="stat-num" data-count="4.6" data-dec="1">0</div><div class="stat-label">Stelle Google</div></div>
-    <div class="stat-item"><div class="stat-num" data-count="50" data-sfx="+">0</div><div class="stat-label">Anni di esperienza</div></div>
-    <div class="stat-item"><div class="stat-num" data-count="3">0</div><div class="stat-label">Servizi core</div></div>
-    <div class="stat-item"><div class="stat-num" data-count="15">0</div><div class="stat-label">Recensioni verificate</div></div>
+<div id="stats" class="panel">
+  <div class="sgrid">
+    <div class="si"><div class="sn" data-count="4.6" data-dec="1">0</div><div class="sl">Stelle Google</div></div>
+    <div class="si"><div class="sn" data-count="50" data-sfx="+">0</div><div class="sl">Anni di esperienza</div></div>
+    <div class="si"><div class="sn" data-count="3">0</div><div class="sl">Servizi specializzati</div></div>
+    <div class="si"><div class="sn" data-count="15">0</div><div class="sl">Recensioni verificate</div></div>
   </div>
 </div>
 
 <!-- SERVIZI -->
-<section id="servizi">
+<section id="srv" class="sec">
   <p class="stag">— Cosa facciamo</p>
-  <h2 class="stit">I NOSTRI SERVIZI</h2>
-  <div class="srv-grid">
-
-    <article class="srv-card">
-      <div class="card-n" aria-hidden="true">01</div>
-      <div class="card-3d-icon" aria-hidden="true">
-        <div class="card-3d-inner">
-          <div class="face">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="11" y1="3" x2="11" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="19" y1="3" x2="19" y2="21"/></svg>
-          </div>
-          <div class="face face-back">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="11" y1="3" x2="11" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="19" y1="3" x2="19" y2="21"/></svg>
-          </div>
-        </div>
+  <h2 class="stit">I NOSTRI<br>SERVIZI</h2>
+  <div class="srv-g">
+    <article class="sc">
+      <div class="cn" aria-hidden="true">01</div>
+      <div class="sico" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="11" y1="3" x2="11" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="19" y1="3" x2="19" y2="21"/></svg>
       </div>
       <h3 class="ctit">Radiatori Auto</h3>
       <p class="cdesc">Riparazione e sostituzione radiatori per auto, furgoni, camion e mezzi agricoli. Lavorazione artigianale, tutte le marche.</p>
-      <ul class="clist" role="list"><li>Radiatori acqua e olio</li><li>Intercooler</li><li>Restauro d'epoca</li><li>Tutti i marchi</li></ul>
+      <ul class="clist" role="list">
+        <li>Radiatori acqua e olio</li><li>Intercooler</li><li>Restauro d'epoca</li><li>Tutti i marchi</li>
+      </ul>
     </article>
-
-    <article class="srv-card">
-      <div class="card-n" aria-hidden="true">02</div>
-      <div class="card-3d-icon" aria-hidden="true">
-        <div class="card-3d-inner" style="animation-delay:-2.5s">
-          <div class="face">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-          </div>
-          <div class="face face-back">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-          </div>
-        </div>
+    <article class="sc">
+      <div class="cn" aria-hidden="true">02</div>
+      <div class="sico" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
       </div>
       <h3 class="ctit">Saldature in Genere</h3>
       <p class="cdesc">Saldatura MIG, TIG e autogena su acciaio, alluminio e rame. Riparazioni strutturali e costruzioni su misura.</p>
-      <ul class="clist" role="list"><li>Saldatura MIG/MAG e TIG</li><li>Alluminio e acciaio inox</li><li>Riparazioni carrozzeria</li><li>Costruzioni su misura</li></ul>
+      <ul class="clist" role="list">
+        <li>Saldatura MIG/MAG e TIG</li><li>Alluminio e acciaio inox</li><li>Riparazioni carrozzeria</li><li>Costruzioni su misura</li>
+      </ul>
     </article>
-
-    <article class="srv-card">
-      <div class="card-n" aria-hidden="true">03</div>
-      <div class="card-3d-icon" aria-hidden="true">
-        <div class="card-3d-inner" style="animation-delay:-5s">
-          <div class="face">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 16h8M8 12h8"/><rect x="3" y="6" width="18" height="14"/><path d="M7 6V4M12 6V4M17 6V4"/></svg>
-          </div>
-          <div class="face face-back">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 16h8M8 12h8"/><rect x="3" y="6" width="18" height="14"/><path d="M7 6V4M12 6V4M17 6V4"/></svg>
-          </div>
-        </div>
+    <article class="sc">
+      <div class="cn" aria-hidden="true">03</div>
+      <div class="sico" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 16h8M8 12h8"/><rect x="3" y="6" width="18" height="14"/><path d="M7 6V4M12 6V4M17 6V4"/></svg>
       </div>
-      <h3 class="ctit">Ricarica Clima</h3>
-      <p class="cdesc">Ricarica e revisione climatizzatore auto. Gas refrigerante, controllo perdite, sostituzione componenti. Estate fresca garantita.</p>
-      <ul class="clist" role="list"><li>Gas R134a e R1234yf</li><li>Controllo perdite</li><li>Filtro abitacolo</li><li>Igienizzazione impianto</li></ul>
+      <h3 class="ctit">Ricarica Climatizzatori</h3>
+      <p class="cdesc">Ricarica e revisione impianto clima auto. Gas refrigerante, controllo perdite, sostituzione componenti.</p>
+      <ul class="clist" role="list">
+        <li>Gas R134a e R1234yf</li><li>Controllo perdite</li><li>Filtro abitacolo</li><li>Igienizzazione impianto</li>
+      </ul>
     </article>
-
   </div>
 </section>
 
 <!-- BAND -->
 <div class="band" aria-hidden="true">
-  <div class="band-text" id="mqt">RADIATORI · SALDATURE · OFFICINA · TORINO · BULLONI · SALDATURE · OFFICINA ·&nbsp;</div>
-  <div class="band-cta">
-    <p>Servizio rapido e professionale</p>
-    <a href="tel:+393394466519" class="btn-p mag" aria-label="Prenota ora">Prenota ora →</a>
-  </div>
+  <div class="btext" id="mq">RADIATORI · SALDATURE · OFFICINA · TORINO · ESPERIENZA · QUALITÀ · RADIATORI · SALDATURE · OFFICINA ·&nbsp;</div>
 </div>
 
 <!-- PERCHÉ -->
-<section id="perche">
-  <div class="perche-grid">
+<section id="perche" class="sec">
+  <div class="pgrid">
     <div>
       <p class="stag">— Perché sceglierci</p>
       <h2 class="stit">ESPERTI,<br>NON SOLO<br>ECONOMICI</h2>
-      <p class="perche-p">Da oltre 50 anni a Torino, Pernice Officina è il punto di riferimento per chi ha bisogno di un lavoro fatto bene. Non promettiamo solo il prezzo più basso — promettiamo che il lavoro dura.</p>
-      <a href="mailto:lellopern@libero.it" class="btn-s" aria-label="Scrivi email">Scrivi un'email →</a>
+      <p class="pp">Da oltre 50 anni a Torino, Pernice Officina è il riferimento per chi vuole un lavoro fatto bene. Non promettiamo il prezzo più basso — promettiamo che il lavoro dura.</p>
+      <a href="mailto:lellopern@libero.it" class="bs">Scrivi un'email →</a>
     </div>
     <div class="tcards">
-      <div class="tcard feat"><div class="tval">4.6★</div><div class="tlab">Google Rating</div></div>
-      <div class="tcard"><div class="tval">50+</div><div class="tlab">Anni di attività</div></div>
-      <div class="tcard"><div class="tval">3</div><div class="tlab">Servizi specializzati</div></div>
-      <div class="tcard"><div class="tval">∞</div><div class="tlab">Marche trattate</div></div>
+      <div class="tc feat"><div class="tv">4.6★</div><div class="tl">Google Rating</div></div>
+      <div class="tc"><div class="tv">50+</div><div class="tl">Anni di attività</div></div>
+      <div class="tc"><div class="tv">3</div><div class="tl">Servizi core</div></div>
+      <div class="tc"><div class="tv">∞</div><div class="tl">Marche trattate</div></div>
     </div>
   </div>
 </section>
 
 <!-- CONTATTI -->
-<section id="contatti">
+<section id="ctt" class="sec">
   <p class="stag">— Dove siamo</p>
   <h2 class="stit">CONTATTI</h2>
-  <div class="contacts-grid">
+  <div class="cgrid">
     <div>
-      <div class="citem">
-        <div class="cico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-        <div><div class="clabel">Indirizzo</div><address class="not-italic"><span class="cval" style="cursor:default">Via Somalia, 108/32</span><span class="cval" style="cursor:default">10127 Torino TO</span><span class="csub">300 m da Via Sestriere</span></address></div>
+      <div class="ci">
+        <div class="cico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div><div class="clb">Indirizzo</div>
+          <address style="font-style:normal"><span class="cv" style="cursor:default">Via Somalia, 108/32</span><span class="cv" style="cursor:default">10127 Torino TO</span><span class="cs">300 m da Via Sestriere</span></address>
+        </div>
       </div>
-      <div class="citem">
-        <div class="cico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 14a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 3h3a2 2 0 0 1 2 1.72 19 19 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 10.6a16 16 0 0 0 6 6l1.96-1.96a2 2 0 0 1 2.11-.45 19 19 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
-        <div><div class="clabel">Telefono</div><a href="tel:+390116115680" class="cval">011.611.568</a><span class="csub">Tel/Fax</span><a href="tel:+393394466519" class="cval" style="margin-top:6px">339.44.66.519</a><span class="csub">Cellulare</span></div>
+      <div class="ci">
+        <div class="cico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 14a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 3h3a2 2 0 0 1 2 1.72 19 19 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 10.6a16 16 0 0 0 6 6l1.96-1.96a2 2 0 0 1 2.11-.45 19 19 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+        <div><div class="clb">Telefono</div>
+          <a href="tel:+390116115680" class="cv">011.611.568</a><span class="cs">Tel/Fax</span>
+          <a href="tel:+393394466519" class="cv" style="margin-top:6px">339.44.66.519</a><span class="cs">Cellulare</span>
+        </div>
       </div>
-      <div class="citem">
-        <div class="cico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
-        <div><div class="clabel">Email</div><a href="mailto:lellopern@libero.it" class="cval">lellopern@libero.it</a></div>
+      <div class="ci">
+        <div class="cico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <div><div class="clb">Email</div><a href="mailto:lellopern@libero.it" class="cv">lellopern@libero.it</a></div>
       </div>
-      <div class="hours-block">
-        <div class="hlabel">Orari di apertura</div>
-        <div class="hrow"><span class="hday">Lunedì – Venerdì</span><span class="htime">08:30 – 18:00</span></div>
-        <div class="hrow"><span class="hday">Sabato</span><span class="htime">08:30 – 12:30</span></div>
-        <div class="hrow"><span class="hday">Domenica</span><span class="htime closed">Chiuso</span></div>
+      <div class="hblock">
+        <div class="hlb">Orari di apertura</div>
+        <div class="hr"><span class="hd">Lunedì – Venerdì</span><span class="ht">08:30 – 18:00</span></div>
+        <div class="hr"><span class="hd">Sabato</span><span class="ht">08:30 – 12:30</span></div>
+        <div class="hr"><span class="hd">Domenica</span><span class="ht cls">Chiuso</span></div>
       </div>
     </div>
-    <div class="map-wrap">
-      <iframe title="Mappa Pernice Officina – Via Somalia 108/32, Torino" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2817.8!2d7.6377!3d45.0392!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x478869e9b5b9b9f5%3A0x0!2sVia+Somalia+108%2F32%2C+10127+Torino!5e0!3m2!1sit!2sit!4v1718000000000" loading="lazy" referrerpolicy="no-referrer-when-downgrade" aria-label="Mappa posizione Pernice Officina"></iframe>
+    <div class="mwrap">
+      <iframe title="Mappa Pernice Officina" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2817.8!2d7.6377!3d45.0392!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x478869e9b5b9b9f5%3A0x0!2sVia+Somalia+108%2F32%2C+10127+Torino!5e0!3m2!1sit!2sit!4v1718000000000">
+      </iframe>
     </div>
   </div>
 </section>
+</main>
 
-<!-- FOOTER -->
 <footer>
-  <div class="flogo">PERNICE <span>OFFICINA</span></div>
-  <div class="fcopy">© 2024 · Via Somalia 108/32, Torino</div>
-  <div class="flinks">
+  <div class="flo">PERNICE <span>OFFICINA</span></div>
+  <div class="fcp">© 2024 · Via Somalia 108/32, Torino</div>
+  <div class="fln">
     <a href="https://www.facebook.com/share/197P38tKrD/" target="_blank" rel="noopener noreferrer">Facebook</a>
     <a href="https://maps.app.goo.gl/YjouPAV2kkkkRES56" target="_blank" rel="noopener noreferrer">Maps</a>
     <a href="tel:+390116115680">Chiama</a>
@@ -432,343 +382,547 @@
 </footer>
 
 <script>
-/* ─── LOADER ─────────────────────────────────── */
-const loaderText = document.getElementById('loader-text');
-const loaderBar  = document.getElementById('loader-bar');
-const loader     = document.getElementById('loader');
-loaderText.style.opacity = '1';
-setTimeout(() => loaderBar.style.width = '100%', 50);
-setTimeout(() => {
-  loader.style.transition = 'opacity 0.55s';
-  loader.style.opacity = '0';
-  setTimeout(() => { loader.style.display = 'none'; boot(); }, 560);
-}, 1450);
+/* ═══════════════════════════════════════════════════════════
+   THREE.JS — Full immersive background
+   ═══════════════════════════════════════════════════════════ */
+(function initScene() {
+  if (!window.THREE) return;
 
-/* ─── THREE.JS: Bolt + Nuts + Wrench ──────────── */
-function initThree() {
-  const canvas = document.getElementById('three-canvas');
-  if (!canvas || !window.THREE || window.innerWidth < 640) return;
+  const canvas = document.getElementById('bg');
+  const W = () => window.innerWidth;
+  const H = () => window.innerHeight;
 
-  const W = canvas.offsetWidth, H = canvas.offsetHeight;
-  const scene    = new THREE.Scene();
-  const camera   = new THREE.PerspectiveCamera(42, W / H, 0.1, 100);
-  camera.position.set(0, 0, 11);
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setSize(W(), H());
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.3;
 
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-  renderer.setSize(W, H);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x050A18);
+  scene.fog = new THREE.FogExp2(0x050A18, 0.032);
 
-  /* Lights */
-  scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-  const yLight = new THREE.PointLight(0xF5C400, 5, 22); yLight.position.set(-4, 5, 4); scene.add(yLight);
-  const wLight = new THREE.PointLight(0xffffff, 2.5, 18); wLight.position.set(5, 2, 4); scene.add(wLight);
-  const rLight = new THREE.DirectionalLight(0x4466cc, 0.7); rLight.position.set(1, -3, -2); scene.add(rLight);
+  const camera = new THREE.PerspectiveCamera(50, W() / H(), 0.1, 100);
+  camera.position.set(0, 0, 14);
 
-  /* Materials */
-  const chrome = new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.95, roughness: 0.12 });
-  const dark   = new THREE.MeshStandardMaterial({ color: 0x555555, metalness: 0.92, roughness: 0.28 });
-  const gold   = new THREE.MeshStandardMaterial({ color: 0xF5C400, metalness: 0.75, roughness: 0.25, emissive: 0xF5C400, emissiveIntensity: 0.08 });
+  /* ── Lights ── */
+  const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+  scene.add(ambient);
 
-  /* Hex shape helper */
-  function hex(r) {
+  // Main yellow (welding arc)
+  const yLight = new THREE.PointLight(0xF5C400, 12, 30);
+  yLight.position.set(-3, 7, 5);
+  scene.add(yLight);
+
+  // White fill from right
+  const wLight = new THREE.PointLight(0xffffff, 5, 25);
+  wLight.position.set(8, 2, 6);
+  scene.add(wLight);
+
+  // Blue rim/cool shadow
+  const bLight = new THREE.PointLight(0x3366ff, 3, 20);
+  bLight.position.set(-6, -4, -3);
+  scene.add(bLight);
+
+  // Warm orange accent (rear)
+  const oLight = new THREE.PointLight(0xff6600, 2, 18);
+  oLight.position.set(4, -5, -4);
+  scene.add(oLight);
+
+  /* ── Materials ── */
+  const matChrome = new THREE.MeshStandardMaterial({
+    color: 0xaaaaaa, metalness: 0.97, roughness: 0.08
+  });
+  const matDark = new THREE.MeshStandardMaterial({
+    color: 0x444444, metalness: 0.9, roughness: 0.32
+  });
+  const matGold = new THREE.MeshStandardMaterial({
+    color: 0xF5C400, metalness: 0.8, roughness: 0.2,
+    emissive: 0xF5C400, emissiveIntensity: 0.12
+  });
+  const matCeramic = new THREE.MeshStandardMaterial({
+    color: 0xddddee, metalness: 0.05, roughness: 0.55
+  });
+  const matRust = new THREE.MeshStandardMaterial({
+    color: 0x886644, metalness: 0.6, roughness: 0.7
+  });
+
+  /* ── Hex shape helper ── */
+  function hexShape(r) {
     const s = new THREE.Shape();
     for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2 + Math.PI / 6;
-      i === 0 ? s.moveTo(r * Math.cos(a), r * Math.sin(a)) : s.lineTo(r * Math.cos(a), r * Math.sin(a));
+      const a = (i / 6) * Math.PI * 2 - Math.PI / 6;
+      i === 0 ? s.moveTo(r * Math.cos(a), r * Math.sin(a))
+              : s.lineTo(r * Math.cos(a), r * Math.sin(a));
     }
-    s.closePath(); return s;
+    s.closePath();
+    return s;
   }
 
-  /* ── HEX BOLT ── */
-  function makeBolt(sc) {
+  /* ── BOLT ── */
+  function makeBolt(sc, mat1, mat2) {
     const g = new THREE.Group();
     // Head
-    const headGeo = new THREE.ExtrudeGeometry(hex(0.72 * sc), { depth: 0.48 * sc, bevelEnabled: true, bevelSize: 0.06 * sc, bevelThickness: 0.06 * sc, bevelSegments: 3 });
-    const head = new THREE.Mesh(headGeo, chrome); head.rotation.x = -Math.PI / 2; head.position.y = 0.28 * sc; g.add(head);
+    const headGeo = new THREE.ExtrudeGeometry(hexShape(0.72 * sc), {
+      depth: 0.52 * sc, bevelEnabled: true,
+      bevelSize: 0.07 * sc, bevelThickness: 0.07 * sc, bevelSegments: 4
+    });
+    const head = new THREE.Mesh(headGeo, mat1);
+    head.rotation.x = -Math.PI / 2; head.position.y = 0.32 * sc;
+    g.add(head);
     // Washer
-    const washerGeo = new THREE.CylinderGeometry(0.82 * sc, 0.82 * sc, 0.1 * sc, 24);
-    g.add(new THREE.Mesh(washerGeo, dark));
+    g.add(new THREE.Mesh(
+      new THREE.CylinderGeometry(0.85 * sc, 0.85 * sc, 0.1 * sc, 28),
+      mat2 || matDark
+    ));
     // Shaft
-    const shaftGeo = new THREE.CylinderGeometry(0.3 * sc, 0.3 * sc, 2.9 * sc, 20);
-    const shaft = new THREE.Mesh(shaftGeo, chrome); shaft.position.y = -1.5 * sc; g.add(shaft);
-    // Threads (12 torus rings)
-    for (let i = 0; i < 12; i++) {
-      const tg = new THREE.TorusGeometry(0.32 * sc, 0.048 * sc, 6, 16);
-      const t = new THREE.Mesh(tg, dark); t.rotation.x = Math.PI / 2; t.position.y = (-0.35 - i * 0.22) * sc; g.add(t);
+    const shaft = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.3 * sc, 0.3 * sc, 3.4 * sc, 22),
+      mat1
+    );
+    shaft.position.y = -1.75 * sc; g.add(shaft);
+    // Thread rings
+    for (let i = 0; i < 14; i++) {
+      const t = new THREE.Mesh(
+        new THREE.TorusGeometry(0.33 * sc, 0.052 * sc, 7, 18),
+        matDark
+      );
+      t.rotation.x = Math.PI / 2;
+      t.position.y = (-0.3 - i * 0.23) * sc;
+      g.add(t);
     }
     // Tip
-    const tipGeo = new THREE.ConeGeometry(0.3 * sc, 0.32 * sc, 20);
-    const tip = new THREE.Mesh(tipGeo, chrome); tip.rotation.z = Math.PI; tip.position.y = -3.07 * sc; g.add(tip);
+    const tip = new THREE.Mesh(
+      new THREE.ConeGeometry(0.3 * sc, 0.38 * sc, 22),
+      mat1
+    );
+    tip.rotation.z = Math.PI; tip.position.y = -3.6 * sc;
+    g.add(tip);
     return g;
   }
 
-  /* ── HEX NUT ── */
+  /* ── NUT ── */
   function makeNut(sc, mat) {
-    const outer = hex(0.52 * sc);
-    const hole  = new THREE.Path();
-    for (let i = 0; i <= 32; i++) {
-      const a = (i / 32) * Math.PI * 2;
-      i === 0 ? hole.moveTo(0.28 * sc * Math.cos(a), 0.28 * sc * Math.sin(a))
-              : hole.lineTo(0.28 * sc * Math.cos(a), 0.28 * sc * Math.sin(a));
+    const outer = hexShape(0.55 * sc);
+    const hole = new THREE.Path();
+    for (let i = 0; i <= 40; i++) {
+      const a = (i / 40) * Math.PI * 2;
+      i === 0 ? hole.moveTo(0.29 * sc * Math.cos(a), 0.29 * sc * Math.sin(a))
+              : hole.lineTo(0.29 * sc * Math.cos(a), 0.29 * sc * Math.sin(a));
     }
     outer.holes.push(hole);
-    const geo = new THREE.ExtrudeGeometry(outer, { depth: 0.38 * sc, bevelEnabled: true, bevelSize: 0.04 * sc, bevelThickness: 0.04 * sc, bevelSegments: 2 });
     const g = new THREE.Group();
-    const m = new THREE.Mesh(geo, mat || dark); m.rotation.x = -Math.PI / 2; g.add(m);
-    const ig = new THREE.TorusGeometry(0.29 * sc, 0.04 * sc, 8, 20);
-    const im = new THREE.Mesh(ig, chrome); im.position.y = 0.06 * sc; g.add(im);
+    const mesh = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(outer, {
+        depth: 0.4 * sc, bevelEnabled: true,
+        bevelSize: 0.045 * sc, bevelThickness: 0.045 * sc, bevelSegments: 3
+      }),
+      mat
+    );
+    mesh.rotation.x = -Math.PI / 2; g.add(mesh);
+    // Inner chrome ring
+    g.add(new THREE.Mesh(
+      new THREE.TorusGeometry(0.30 * sc, 0.04 * sc, 8, 22),
+      matChrome
+    ));
     return g;
   }
 
   /* ── WRENCH ── */
   function makeWrench(sc) {
-    const g   = new THREE.Group();
-    const mat = dark;
-    // Handle
-    const hg = new THREE.CylinderGeometry(0.13 * sc, 0.17 * sc, 3.4 * sc, 10);
-    const h  = new THREE.Mesh(hg, mat); h.position.y = -1.0 * sc; g.add(h);
-    // Open-end head (arc torus)
-    const og = new THREE.TorusGeometry(0.58 * sc, 0.2 * sc, 8, 24, Math.PI * 1.38);
-    const o  = new THREE.Mesh(og, mat); o.position.y = 0.9 * sc; o.rotation.z = 0.45; g.add(o);
+    const g = new THREE.Group();
+    // Handle – tapered
+    g.add(new THREE.Mesh(
+      new THREE.CylinderGeometry(0.14 * sc, 0.19 * sc, 3.8 * sc, 12),
+      matDark
+    )).position.y = -0.8 * sc;
+    // Open-end arc
+    g.add(new THREE.Mesh(
+      new THREE.TorusGeometry(0.62 * sc, 0.22 * sc, 10, 28, Math.PI * 1.4),
+      matDark
+    )).position.y = 1.1 * sc;
     // Fixed jaw
-    const jg = new THREE.BoxGeometry(0.5 * sc, 0.46 * sc, 0.28 * sc);
-    const j  = new THREE.Mesh(jg, mat); j.position.y = -2.76 * sc; g.add(j);
-    // Gold accent ring on handle
-    const ag = new THREE.TorusGeometry(0.19 * sc, 0.05 * sc, 8, 16);
-    const a  = new THREE.Mesh(ag, gold); a.rotation.x = Math.PI / 2; a.position.y = -0.4 * sc; g.add(a);
+    const jaw = new THREE.Mesh(
+      new THREE.BoxGeometry(0.52 * sc, 0.48 * sc, 0.32 * sc),
+      matDark
+    );
+    jaw.position.y = -2.9 * sc; g.add(jaw);
+    // Gold grip ring
+    for (let i = 0; i < 3; i++) {
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(0.2 * sc, 0.05 * sc, 8, 18),
+        matGold
+      );
+      ring.rotation.x = Math.PI / 2;
+      ring.position.y = (-0.1 - i * 0.35) * sc;
+      g.add(ring);
+    }
     return g;
   }
 
   /* ── SPARK PLUG ── */
   function makeSparkPlug(sc) {
     const g = new THREE.Group();
-    const ceramic = new THREE.MeshStandardMaterial({ color: 0xeeeeee, metalness: 0.1, roughness: 0.6 });
-    // Insulator body
-    const bg = new THREE.CylinderGeometry(0.22 * sc, 0.18 * sc, 1.4 * sc, 10);
-    g.add(new THREE.Mesh(bg, ceramic));
+    // Insulator
+    g.add(new THREE.Mesh(
+      new THREE.CylinderGeometry(0.24 * sc, 0.19 * sc, 1.6 * sc, 12),
+      matCeramic
+    ));
     // Hex base
-    const hexBase = hex(0.28 * sc);
-    const hexGeo  = new THREE.ExtrudeGeometry(hexBase, { depth: 0.28 * sc, bevelEnabled: false });
-    const hbm = new THREE.Mesh(hexGeo, chrome); hbm.rotation.x = -Math.PI / 2; hbm.position.y = -0.84 * sc; g.add(hbm);
+    const hexMesh = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(hexShape(0.3 * sc), {
+        depth: 0.32 * sc, bevelEnabled: false
+      }),
+      matChrome
+    );
+    hexMesh.rotation.x = -Math.PI / 2;
+    hexMesh.position.y = -0.96 * sc;
+    g.add(hexMesh);
     // Thread tip
-    const ttg = new THREE.CylinderGeometry(0.15 * sc, 0.12 * sc, 0.5 * sc, 10);
-    const ttm = new THREE.Mesh(ttg, chrome); ttm.position.y = -1.37 * sc; g.add(ttm);
-    for (let i = 0; i < 5; i++) {
-      const tg = new THREE.TorusGeometry(0.155 * sc, 0.03 * sc, 5, 12);
-      const tm = new THREE.Mesh(tg, dark); tm.rotation.x = Math.PI / 2; tm.position.y = (-1.15 - i * 0.09) * sc; g.add(tm);
+    const tip = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.16 * sc, 0.13 * sc, 0.55 * sc, 12),
+      matChrome
+    );
+    tip.position.y = -1.5 * sc; g.add(tip);
+    for (let i = 0; i < 6; i++) {
+      const t = new THREE.Mesh(
+        new THREE.TorusGeometry(0.16 * sc, 0.028 * sc, 5, 14),
+        matDark
+      );
+      t.rotation.x = Math.PI / 2; t.position.y = (-1.25 - i * 0.08) * sc;
+      g.add(t);
     }
-    // Terminal
-    const trmg = new THREE.CylinderGeometry(0.1 * sc, 0.1 * sc, 0.3 * sc, 8);
-    g.add(new THREE.Mesh(trmg, dark)).position.y = 0.86 * sc;
+    // Terminal top
+    const trm = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.11 * sc, 0.11 * sc, 0.32 * sc, 8),
+      matDark
+    );
+    trm.position.y = 0.97 * sc; g.add(trm);
     return g;
   }
 
-  /* Place objects */
-  const bolt = makeBolt(1.0); bolt.position.set(3.6, 0.6, 0); bolt.rotation.z = 0.18; scene.add(bolt);
-  const nut1 = makeNut(0.65, dark); nut1.position.set(-3.5, 2.0, -1.2); scene.add(nut1);
-  const nut2 = makeNut(0.45, chrome); nut2.position.set(5.5, -1.8, -1.8); scene.add(nut2);
-  const nut3 = makeNut(0.52, gold); nut3.position.set(-2.0, -2.5, -1.0); scene.add(nut3);
-  const wrench = makeWrench(0.75); wrench.position.set(-0.4, 0.2, -1.5); wrench.rotation.z = -0.5; scene.add(wrench);
-  const plug = makeSparkPlug(0.7); plug.position.set(6.0, 1.8, -2.0); plug.rotation.z = 0.3; scene.add(plug);
+  /* ── RADIATOR CORE ── */
+  function makeRadiator(sc) {
+    const g = new THREE.Group();
+    // Frame
+    g.add(new THREE.Mesh(
+      new THREE.BoxGeometry(2.8 * sc, 2.2 * sc, 0.12 * sc),
+      matRust
+    ));
+    // Tubes (vertical strips)
+    for (let i = -5; i <= 5; i++) {
+      const tube = new THREE.Mesh(
+        new THREE.BoxGeometry(0.12 * sc, 1.9 * sc, 0.2 * sc),
+        matChrome
+      );
+      tube.position.x = i * 0.23 * sc; g.add(tube);
+    }
+    // Fins
+    for (let j = -4; j <= 4; j++) {
+      const fin = new THREE.Mesh(
+        new THREE.BoxGeometry(2.5 * sc, 0.025 * sc, 0.22 * sc),
+        matDark
+      );
+      fin.position.y = j * 0.22 * sc; g.add(fin);
+    }
+    return g;
+  }
 
-  /* Mouse */
-  let mx = 0, my = 0;
-  document.addEventListener('mousemove', e => { mx = (e.clientX / window.innerWidth - 0.5) * 2; my = (e.clientY / window.innerHeight - 0.5) * 2; }, { passive: true });
+  /* ── PLACE OBJECTS ── */
+  // Giant centerpiece bolt
+  const boltMain = makeBolt(2.2, matChrome, matGold);
+  boltMain.position.set(3.8, 1.0, 0);
+  boltMain.rotation.z = 0.15;
+  scene.add(boltMain);
 
-  /* Animate */
+  // Big wrench left
+  const wrench = makeWrench(1.6);
+  wrench.position.set(-5.2, 0.5, -0.5);
+  wrench.rotation.z = 0.65;
+  scene.add(wrench);
+
+  // Nuts scattered
+  const nut1 = makeNut(1.3, matDark);
+  nut1.position.set(-2.8, 4.2, -1.0);
+  scene.add(nut1);
+
+  const nut2 = makeNut(1.0, matChrome);
+  nut2.position.set(7.5, -2.5, -1.5);
+  scene.add(nut2);
+
+  const nut3 = makeNut(1.6, matGold);
+  nut3.position.set(-7.0, -3.0, -2.0);
+  scene.add(nut3);
+
+  const nut4 = makeNut(0.8, matDark);
+  nut4.position.set(0.5, -4.5, -0.8);
+  scene.add(nut4);
+
+  // Small bolt upper-right
+  const bolt2 = makeBolt(0.9, matGold, matChrome);
+  bolt2.position.set(7.0, 3.8, -1.5);
+  bolt2.rotation.z = -0.4;
+  scene.add(bolt2);
+
+  // Spark plug
+  const plug = makeSparkPlug(1.1);
+  plug.position.set(-0.5, -3.8, -0.5);
+  plug.rotation.z = 0.2;
+  scene.add(plug);
+
+  // Radiator far background
+  const rad = makeRadiator(0.7);
+  rad.position.set(-3.5, 0, -4.0);
+  rad.rotation.y = 0.3;
+  scene.add(rad);
+
+  /* ── ATMOSPHERIC PARTICLES ── */
+  const pCount = 600;
+  const pPos = new Float32Array(pCount * 3);
+  const pVel = new Float32Array(pCount * 3);
+  for (let i = 0; i < pCount; i++) {
+    pPos[i*3]   = (Math.random() - 0.5) * 40;
+    pPos[i*3+1] = (Math.random() - 0.5) * 28;
+    pPos[i*3+2] = (Math.random() - 0.5) * 20 - 5;
+    pVel[i*3]   = (Math.random() - 0.5) * 0.004;
+    pVel[i*3+1] = (Math.random() - 0.5) * 0.003;
+    pVel[i*3+2] = 0;
+  }
+  const pGeo = new THREE.BufferGeometry();
+  const pBuf = new THREE.BufferAttribute(pPos, 3);
+  pGeo.setAttribute('position', pBuf);
+
+  // Two particle layers: gold + white
+  const dustGold = new THREE.Points(pGeo, new THREE.PointsMaterial({
+    color: 0xF5C400, size: 0.06, transparent: true, opacity: 0.55, sizeAttenuation: true
+  }));
+  scene.add(dustGold);
+
+  const pPos2 = new Float32Array(pCount * 3);
+  for (let i = 0; i < pCount; i++) {
+    pPos2[i*3]   = (Math.random() - 0.5) * 38;
+    pPos2[i*3+1] = (Math.random() - 0.5) * 26;
+    pPos2[i*3+2] = (Math.random() - 0.5) * 18 - 6;
+  }
+  const pGeo2 = new THREE.BufferGeometry();
+  pGeo2.setAttribute('position', new THREE.BufferAttribute(pPos2, 3));
+  const dustWhite = new THREE.Points(pGeo2, new THREE.PointsMaterial({
+    color: 0xffffff, size: 0.03, transparent: true, opacity: 0.28, sizeAttenuation: true
+  }));
+  scene.add(dustWhite);
+
+  /* ── MOUSE & SCROLL state ── */
+  let mx = 0, my = 0, scrollP = 0;
+  document.addEventListener('mousemove', e => {
+    mx = (e.clientX / window.innerWidth  - 0.5) * 2;
+    my = (e.clientY / window.innerHeight - 0.5) * 2;
+  }, { passive: true });
+
+  window.addEventListener('scroll', () => {
+    const max = document.body.scrollHeight - window.innerHeight;
+    scrollP = max > 0 ? window.scrollY / max : 0;
+  }, { passive: true });
+
+  /* ── CLOCK & ANIMATION LOOP ── */
   const clk = new THREE.Clock();
+
   (function tick() {
     requestAnimationFrame(tick);
     const t = clk.getElapsedTime();
 
-    bolt.rotation.y = t * 0.28;
-    bolt.position.y = 0.6 + Math.sin(t * 0.55) * 0.22;
-    bolt.position.x = 3.6 + mx * 0.18;
+    // Welding flicker
+    yLight.intensity = 10 + Math.sin(t * 11.3) * 2.5 + Math.sin(t * 17.7) * 1.2;
 
-    nut1.rotation.y = t * 0.55; nut1.rotation.z = t * 0.22;
-    nut1.position.y = 2.0 + Math.sin(t * 0.75) * 0.28;
-    nut1.position.x = -3.5 + Math.sin(t * 0.3) * 0.15;
+    // Main bolt — slow majestic rotation + float
+    boltMain.rotation.y = t * 0.22;
+    boltMain.position.y = 1.0 + Math.sin(t * 0.45) * 0.35;
+    boltMain.position.x = 3.8 + mx * 0.25;
 
-    nut2.rotation.y = -t * 0.42; nut2.rotation.x = t * 0.3;
-    nut2.position.y = -1.8 + Math.cos(t * 0.65) * 0.25;
+    // Wrench — gentle sway
+    wrench.rotation.z = 0.65 + Math.sin(t * 0.3) * 0.08;
+    wrench.position.y = 0.5 + Math.sin(t * 0.58) * 0.28;
+    wrench.rotation.y = t * 0.15;
 
-    nut3.rotation.y = t * 0.65; nut3.rotation.x = t * 0.22;
-    nut3.position.y = -2.5 + Math.sin(t * 0.88) * 0.3;
+    // Nuts — spin freely in space
+    nut1.rotation.y = t * 0.55; nut1.rotation.x = t * 0.22;
+    nut1.position.y = 4.2 + Math.sin(t * 0.72) * 0.32;
+    nut1.position.x = -2.8 + Math.sin(t * 0.28) * 0.2;
 
-    wrench.rotation.z = -0.5 + Math.sin(t * 0.38) * 0.09;
-    wrench.position.y = 0.2 + Math.sin(t * 0.52) * 0.2;
+    nut2.rotation.y = -t * 0.42; nut2.rotation.z = t * 0.3;
+    nut2.position.y = -2.5 + Math.cos(t * 0.65) * 0.28;
 
-    plug.rotation.y = t * 0.35; plug.rotation.z = 0.3 + Math.sin(t * 0.48) * 0.05;
-    plug.position.y = 1.8 + Math.cos(t * 0.62) * 0.22;
+    nut3.rotation.y = t * 0.65; nut3.rotation.x = -t * 0.2;
+    nut3.position.y = -3.0 + Math.sin(t * 0.88) * 0.4;
 
-    /* Yellow light flicker: simula arco di saldatura */
-    yLight.intensity = 4.5 + Math.sin(t * 9.3) * 0.8 + Math.sin(t * 15.7) * 0.4;
+    nut4.rotation.y = -t * 0.8; nut4.rotation.z = t * 0.35;
+    nut4.position.y = -4.5 + Math.cos(t * 1.0) * 0.25;
 
-    camera.position.x += (mx * 0.3 - camera.position.x) * 0.04;
-    camera.position.y += (-my * 0.2 - camera.position.y) * 0.04;
-    camera.lookAt(new THREE.Vector3(1.5, 0, 0));
+    bolt2.rotation.y = t * 0.38;
+    bolt2.position.y = 3.8 + Math.sin(t * 0.55) * 0.3;
+
+    plug.rotation.y = t * 0.35; plug.rotation.z = 0.2 + Math.sin(t * 0.48) * 0.06;
+    plug.position.y = -3.8 + Math.cos(t * 0.62) * 0.25;
+
+    rad.rotation.y = 0.3 + Math.sin(t * 0.2) * 0.04;
+
+    // Dust particles drift
+    for (let i = 0; i < pCount; i++) {
+      pPos[i*3]   += pVel[i*3];
+      pPos[i*3+1] += pVel[i*3+1];
+      if (Math.abs(pPos[i*3]) > 20) pVel[i*3] *= -1;
+      if (Math.abs(pPos[i*3+1]) > 14) pVel[i*3+1] *= -1;
+    }
+    pBuf.needsUpdate = true;
+    dustGold.rotation.y = t * 0.015;
+    dustWhite.rotation.y = -t * 0.01;
+
+    // Scroll-driven scene shift
+    const targetX = mx * 0.5 + scrollP * 2.0;
+    const targetY = -my * 0.35 - scrollP * 1.5;
+    camera.position.x += (targetX - camera.position.x) * 0.045;
+    camera.position.y += (targetY - camera.position.y) * 0.045;
+    camera.lookAt(new THREE.Vector3(1.5, 0.5 - scrollP * 2, 0));
+
+    // Scene tilt on scroll
+    scene.rotation.z = scrollP * 0.06;
 
     renderer.render(scene, camera);
   })();
 
   window.addEventListener('resize', () => {
-    const W = canvas.offsetWidth, H = canvas.offsetHeight;
-    camera.aspect = W / H; camera.updateProjectionMatrix();
-    renderer.setSize(W, H);
+    camera.aspect = W() / H();
+    camera.updateProjectionMatrix();
+    renderer.setSize(W(), H());
   });
-}
+})();
 
-/* ─── SPARKS CANVAS ──────────────────────────── */
-function initSparks() {
-  const c = document.getElementById('sparks-canvas');
-  if (!c) return;
-  const ctx = c.getContext('2d');
-  let W, H, ps = [];
-  const resize = () => { W = c.width = c.offsetWidth; H = c.height = c.offsetHeight; };
-  resize(); window.addEventListener('resize', resize, { passive: true });
-  class P {
-    constructor() { this.reset(); }
-    reset() {
-      this.x = Math.random() * W * 0.55 + W * 0.15;
-      this.y = H * 0.55 + Math.random() * H * 0.25;
-      this.vx = (Math.random() - 0.5) * 7; this.vy = -(Math.random() * 6 + 2);
-      this.life = 1; this.dec = 0.013 + Math.random() * 0.022;
-      this.sz = Math.random() * 2.2 + 0.4;
-      this.col = Math.random() > 0.35 ? '#F5C400' : '#FF8800';
-    }
-    update() { this.x += this.vx; this.y += this.vy; this.vy += 0.13; this.vx *= 0.97; this.life -= this.dec; if (this.life <= 0) this.reset(); }
-    draw() {
-      ctx.save(); ctx.globalAlpha = this.life * 0.65;
-      ctx.fillStyle = this.col; ctx.shadowColor = this.col; ctx.shadowBlur = 7;
-      ctx.beginPath(); ctx.arc(this.x, this.y, this.sz, 0, Math.PI * 2); ctx.fill();
-      ctx.restore();
-    }
-  }
-  for (let i = 0; i < 65; i++) { const p = new P(); p.life = Math.random(); ps.push(p); }
-  (function tick() { ctx.clearRect(0, 0, W, H); ps.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(tick); })();
-}
+/* ═══════════════════════════════════════════════════════════
+   UI ANIMATIONS
+   ═══════════════════════════════════════════════════════════ */
 
-/* ─── NAV ────────────────────────────────────── */
-function initNav() {
-  const nav = document.getElementById('nav');
-  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 55), { passive: true });
-}
+/* Loader */
+const lt = document.getElementById('lt');
+const lp = document.getElementById('lp');
+const ls = document.getElementById('lsub');
+const ld = document.getElementById('ld');
+lt.style.opacity = '1';
+ls.style.opacity = '1';
+setTimeout(() => { lp.style.width = '100%'; }, 60);
+setTimeout(() => {
+  ld.style.transition = 'opacity .55s';
+  ld.style.opacity = '0';
+  setTimeout(() => { ld.style.display = 'none'; startUI(); }, 570);
+}, 1600);
 
-/* ─── HERO ENTRANCE ──────────────────────────── */
-function initHero() {
-  [
-    [document.getElementById('t1'), 0, true],
-    [document.getElementById('t2'), 80, true],
-    [document.getElementById('t3'), 190, true],
-    [document.getElementById('hbadge'), 320, false, true],
-    [document.getElementById('hsub'),   430, false, true],
-    [document.getElementById('hctas'),  550, false, true],
-    [document.getElementById('shint'),  820, false, true],
-  ].forEach(([el, d, isSpan, isOp]) => {
+function startUI() {
+  /* Hero text entrance */
+  const seq = [
+    [document.getElementById('t1'), 0,   true],
+    [document.getElementById('t2'), 90,  true],
+    [document.getElementById('t3'), 200, true],
+    [document.getElementById('hb'), 340, false],
+    [document.getElementById('hs'), 460, false],
+    [document.getElementById('hc'), 580, false],
+    [document.getElementById('si'), 850, false],
+  ];
+  seq.forEach(([el, d, isSpan]) => {
     if (!el) return;
     setTimeout(() => {
-      el.style.transition = 'transform 0.9s cubic-bezier(.16,1,.3,1), opacity 0.75s ease';
-      if (isSpan) el.style.transform = 'translateY(0)';
-      if (isOp) { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }
+      el.style.transition = 'transform .9s cubic-bezier(.16,1,.3,1), opacity .8s ease';
+      if (isSpan) { el.style.transform = 'translateY(0)'; }
+      else { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }
     }, d);
   });
-}
 
-/* ─── INTERSECTION OBSERVER ──────────────────── */
-function initReveal() {
+  /* Scroll reveal */
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => {
       if (!e.isIntersecting) return;
       const el = e.target, d = +(el.dataset.d || 0);
-      setTimeout(() => { el.style.transition = 'opacity 0.8s cubic-bezier(.16,1,.3,1), transform 0.8s cubic-bezier(.16,1,.3,1)'; el.style.opacity = '1'; el.style.transform = 'none'; }, d);
+      setTimeout(() => {
+        el.style.transition = 'opacity .85s cubic-bezier(.16,1,.3,1), transform .85s cubic-bezier(.16,1,.3,1)';
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+      }, d);
       obs.unobserve(el);
     });
-  }, { threshold: 0.12 });
+  }, { threshold: 0.1 });
 
   document.querySelectorAll('.stag,.stit').forEach(el => obs.observe(el));
-  document.querySelectorAll('.stat-item').forEach((el, i) => { el.dataset.d = i * 80; obs.observe(el); });
-  document.querySelectorAll('.srv-card').forEach((el, i) => { el.dataset.d = i * 110; obs.observe(el); });
-  document.querySelectorAll('.tcard').forEach((el, i) => { el.dataset.d = i * 90; obs.observe(el); });
-  document.querySelectorAll('.citem,.hours-block').forEach((el, i) => { el.dataset.d = i * 75; obs.observe(el); });
-  const mw = document.querySelector('.map-wrap'); if (mw) obs.observe(mw);
-}
+  document.querySelectorAll('.si').forEach((el, i) => { el.dataset.d = i * 80; obs.observe(el); });
+  document.querySelectorAll('.sc').forEach((el, i) => { el.dataset.d = i * 120; obs.observe(el); });
+  document.querySelectorAll('.tc').forEach((el, i) => { el.dataset.d = i * 90; obs.observe(el); });
+  document.querySelectorAll('.ci,.hblock').forEach((el, i) => { el.dataset.d = i * 70; obs.observe(el); });
+  const mw = document.querySelector('.mwrap'); if (mw) obs.observe(mw);
 
-/* ─── COUNTERS ───────────────────────────────── */
-function initCounters() {
-  const obs = new IntersectionObserver(entries => {
+  /* Counters */
+  const cobs = new IntersectionObserver(entries => {
     entries.forEach(e => {
       if (!e.isIntersecting) return;
-      const el = e.target, end = parseFloat(el.dataset.count), dec = +(el.dataset.dec || 0), sfx = el.dataset.sfx || '';
-      let cur = 0; const step = end / (1500 / 16);
-      const t = setInterval(() => { cur = Math.min(cur + step, end); el.textContent = cur.toFixed(dec) + sfx; if (cur >= end) clearInterval(t); }, 16);
-      obs.unobserve(el);
+      const el = e.target;
+      const end = parseFloat(el.dataset.count);
+      const dec = +(el.dataset.dec || 0);
+      const sfx = el.dataset.sfx || '';
+      let cur = 0;
+      const step = end / (1400 / 16);
+      const interval = setInterval(() => {
+        cur = Math.min(cur + step, end);
+        el.textContent = cur.toFixed(dec) + sfx;
+        if (cur >= end) clearInterval(interval);
+      }, 16);
+      cobs.unobserve(el);
     });
   }, { threshold: 0.5 });
-  document.querySelectorAll('[data-count]').forEach(el => obs.observe(el));
-}
+  document.querySelectorAll('[data-count]').forEach(el => cobs.observe(el));
 
-/* ─── 3D TILT on cards ───────────────────────── */
-function initTilt() {
-  document.querySelectorAll('.srv-card').forEach(card => {
+  /* Nav scroll */
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scr', scrollY > 50);
+  }, { passive: true });
+
+  /* Card 3D tilt */
+  document.querySelectorAll('.sc').forEach(card => {
     card.addEventListener('mousemove', e => {
       const r = card.getBoundingClientRect();
-      const dx = (e.clientX - r.left - r.width / 2)  / (r.width  / 2);
-      const dy = (e.clientY - r.top  - r.height / 2) / (r.height / 2);
-      card.style.transition = 'transform 0.05s linear, box-shadow 0.3s';
-      card.style.transform  = `perspective(800px) rotateX(${-dy * 7}deg) rotateY(${dx * 7}deg) translateZ(10px)`;
-      card.style.boxShadow  = `${-dx * 14}px ${-dy * 14}px 40px rgba(245,196,0,0.1)`;
+      const dx = (e.clientX - r.left - r.width / 2) / (r.width / 2);
+      const dy = (e.clientY - r.top - r.height / 2) / (r.height / 2);
+      card.style.transition = 'transform .06s linear';
+      card.style.transform = `perspective(900px) rotateX(${-dy * 6}deg) rotateY(${dx * 6}deg) translateZ(8px)`;
     });
     card.addEventListener('mouseleave', () => {
-      card.style.transition = 'transform 0.65s cubic-bezier(.16,1,.3,1), box-shadow 0.4s';
-      card.style.transform  = 'none'; card.style.boxShadow = 'none';
+      card.style.transition = 'transform .7s cubic-bezier(.16,1,.3,1)';
+      card.style.transform = 'none';
     });
   });
-}
 
-/* ─── MAGNETIC buttons ───────────────────────── */
-function initMag() {
+  /* Magnetic buttons */
   document.querySelectorAll('.mag').forEach(b => {
     b.addEventListener('mousemove', e => {
       const r = b.getBoundingClientRect();
-      b.style.transition = 'transform 0.2s cubic-bezier(.16,1,.3,1)';
-      b.style.transform  = `translate(${(e.clientX - r.left - r.width/2) * 0.28}px, ${(e.clientY - r.top - r.height/2) * 0.28}px)`;
+      b.style.transition = 'transform .2s cubic-bezier(.16,1,.3,1)';
+      b.style.transform = `translate(${(e.clientX - r.left - r.width/2) * 0.3}px,${(e.clientY - r.top - r.height/2) * 0.3}px)`;
     });
-    b.addEventListener('mouseleave', () => { b.style.transition = 'transform 0.5s cubic-bezier(.16,1,.3,1)'; b.style.transform = 'none'; });
+    b.addEventListener('mouseleave', () => {
+      b.style.transition = 'transform .55s cubic-bezier(.16,1,.3,1)';
+      b.style.transform = 'none';
+    });
   });
-}
 
-/* ─── MARQUEE ────────────────────────────────── */
-function initMarquee() {
-  const el = document.getElementById('mqt'); if (!el) return;
-  const clone = el.cloneNode(true); el.parentNode.insertBefore(clone, el.nextSibling);
-  let x = 0;
-  (function tick() {
-    x -= 0.45;
-    if (Math.abs(x) >= el.offsetWidth) x = 0;
-    el.style.transform = `translateX(${x}px)`;
-    clone.style.transform = `translateX(${x + el.offsetWidth}px)`;
-    requestAnimationFrame(tick);
-  })();
-}
-
-/* ─── PARALLAX ───────────────────────────────── */
-function initParallax() {
-  const grid = document.querySelector('.hero-grid');
-  window.addEventListener('scroll', () => { if (grid) grid.style.transform = `translateY(${scrollY * 0.15}px)`; }, { passive: true });
-}
-
-/* ─── BOOT ───────────────────────────────────── */
-function boot() {
-  initThree();
-  initSparks();
-  initNav();
-  initHero();
-  initReveal();
-  initCounters();
-  initTilt();
-  initMag();
-  initMarquee();
-  initParallax();
+  /* Marquee */
+  const mq = document.getElementById('mq');
+  if (mq) {
+    const clone = mq.cloneNode(true);
+    mq.parentNode.appendChild(clone);
+    let x = 0;
+    (function marqueeTick() {
+      x -= 0.5;
+      if (Math.abs(x) >= mq.offsetWidth) x = 0;
+      mq.style.transform = `translateX(${x}px)`;
+      clone.style.transform = `translateX(${x + mq.offsetWidth}px)`;
+      requestAnimationFrame(marqueeTick);
+    })();
+  }
 }
 </script>
 </body>
