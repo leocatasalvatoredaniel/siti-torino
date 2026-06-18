@@ -532,22 +532,24 @@ footer{padding:32px 5vw;background:rgba(5,10,24,.95);
   function makeWrench(sc) {
     const g = new THREE.Group();
     // Handle – tapered
-    g.add(new THREE.Mesh(
+    const handle = new THREE.Mesh(
       new THREE.CylinderGeometry(0.14 * sc, 0.19 * sc, 3.8 * sc, 12),
       matDark
-    )).position.y = -0.8 * sc;
+    );
+    handle.position.y = -0.8 * sc; g.add(handle);
     // Open-end arc
-    g.add(new THREE.Mesh(
+    const arc = new THREE.Mesh(
       new THREE.TorusGeometry(0.62 * sc, 0.22 * sc, 10, 28, Math.PI * 1.4),
       matDark
-    )).position.y = 1.1 * sc;
+    );
+    arc.position.y = 1.1 * sc; g.add(arc);
     // Fixed jaw
     const jaw = new THREE.Mesh(
       new THREE.BoxGeometry(0.52 * sc, 0.48 * sc, 0.32 * sc),
       matDark
     );
     jaw.position.y = -2.9 * sc; g.add(jaw);
-    // Gold grip ring
+    // Gold grip rings
     for (let i = 0; i < 3; i++) {
       const ring = new THREE.Mesh(
         new THREE.TorusGeometry(0.2 * sc, 0.05 * sc, 8, 18),
