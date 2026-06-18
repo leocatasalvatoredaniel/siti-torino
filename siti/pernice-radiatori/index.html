@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Pernice Officina – Radiatori di tutti i tipi, saldature in genere e ricarica condizionatori auto a Torino. Via Somalia 108/32. Tel. 011.611.568.">
+  <title>Pernice Officina – Radiatori & Saldature Torino</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy:   { DEFAULT: '#0D1B3E', light: '#1A2B5E', dark: '#060F24' },
+            yellow: { DEFAULT: '#F5C400', dark: '#D4AB00' },
+          },
+          fontFamily: {
+            heading: ['Poppins', 'sans-serif'],
+            body:    ['Open Sans', 'sans-serif'],
+          },
+          boxShadow: {
+            hard: '4px 4px 0px 0px #0D1B3E',
+            'hard-yellow': '4px 4px 0px 0px #F5C400',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Open Sans', sans-serif; }
+    h1,h2,h3,h4 { font-family: 'Poppins', sans-serif; }
+
+    .btn-primary {
+      background: #F5C400;
+      color: #0D1B3E;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      border: 2px solid #0D1B3E;
+      box-shadow: 4px 4px 0px 0px #0D1B3E;
+      transition: transform 0.1s, box-shadow 0.1s;
+      cursor: pointer;
+    }
+    .btn-primary:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px 0px #0D1B3E;
+    }
+    .btn-primary:active {
+      transform: translate(4px, 4px);
+      box-shadow: none;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: #F5C400;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      border: 2px solid #F5C400;
+      box-shadow: 4px 4px 0px 0px #F5C400;
+      transition: transform 0.1s, box-shadow 0.1s;
+      cursor: pointer;
+    }
+    .btn-outline:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px 0px #F5C400;
+    }
+    .btn-outline:active {
+      transform: translate(4px, 4px);
+      box-shadow: none;
+    }
+
+    .card {
+      border: 2px solid #0D1B3E;
+      box-shadow: 4px 4px 0px 0px #0D1B3E;
+    }
+
+    .section-divider {
+      height: 4px;
+      background: #F5C400;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; transform: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-navy">
+
+  <!-- NAV -->
+  <nav class="bg-navy sticky top-0 z-50 border-b-4 border-yellow" role="navigation" aria-label="Navigazione principale">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="#home" class="flex items-center gap-2" aria-label="Pernice Officina – torna su">
+        <!-- Wrench icon -->
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+        </svg>
+        <span class="text-yellow font-heading font-900 text-xl tracking-tight">PERNICE</span>
+        <span class="text-white font-heading font-600 text-sm hidden sm:inline">OFFICINA</span>
+      </a>
+      <div class="flex items-center gap-2 sm:gap-4">
+        <a href="#servizi" class="text-white hover:text-yellow font-heading font-600 text-sm transition-colors duration-150 hidden md:inline">Servizi</a>
+        <a href="#contatti" class="text-white hover:text-yellow font-heading font-600 text-sm transition-colors duration-150 hidden md:inline">Contatti</a>
+        <a href="tel:+390116115680" class="btn-primary px-4 py-2 text-sm rounded-none inline-flex items-center gap-2" aria-label="Chiama Pernice Officina">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 14a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 3h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.6a16 16 0 0 0 6 6l1.96-1.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          Chiama
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section id="home" class="bg-navy min-h-[90dvh] flex items-center relative overflow-hidden">
+    <!-- Geometric background pattern -->
+    <div class="absolute inset-0 opacity-5" aria-hidden="true">
+      <div class="absolute top-0 right-0 w-96 h-96 border-4 border-yellow translate-x-1/3 -translate-y-1/3"></div>
+      <div class="absolute bottom-0 left-0 w-64 h-64 border-4 border-yellow -translate-x-1/3 translate-y-1/3"></div>
+      <div class="absolute top-1/2 left-1/2 w-48 h-48 border-4 border-yellow -translate-x-1/2 -translate-y-1/2 rotate-45"></div>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-4 py-20 relative z-10">
+      <div class="max-w-3xl">
+        <!-- Badge rating -->
+        <div class="inline-flex items-center gap-2 bg-yellow px-3 py-1 mb-6 border-2 border-navy" role="img" aria-label="Valutazione 4.6 stelle su Google">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#0D1B3E" stroke="none" aria-hidden="true">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          <span class="font-heading font-700 text-navy text-sm">4.6 su Google · 15 recensioni</span>
+        </div>
+
+        <h1 class="font-heading font-900 text-white text-5xl sm:text-6xl lg:text-7xl leading-none tracking-tight mb-4">
+          PERNICE<br>
+          <span class="text-yellow">OFFICINA</span>
+        </h1>
+
+        <p class="text-white/80 text-lg sm:text-xl font-body leading-relaxed mb-2">
+          Radiatori di tutti i tipi · Saldature in genere · Ricarica condizionatori
+        </p>
+        <p class="text-yellow font-heading font-600 text-base mb-10">
+          Torino, Via Somalia 108/32 · dal 1970
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4">
+          <a href="tel:+390116115680" class="btn-primary px-8 py-4 text-base inline-flex items-center justify-center gap-3 rounded-none">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 14a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 3h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.6a16 16 0 0 0 6 6l1.96-1.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+            011.611.568
+          </a>
+          <a href="tel:+393394466519" class="btn-outline px-8 py-4 text-base inline-flex items-center justify-center gap-3 rounded-none">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
+            339.44.66.519
+          </a>
+          <a href="#servizi" class="text-white/70 hover:text-yellow font-heading font-600 text-base inline-flex items-center justify-center gap-2 transition-colors duration-150 sm:ml-2">
+            Scopri i servizi
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider" aria-hidden="true"></div>
+
+  <!-- SERVIZI -->
+  <section id="servizi" class="py-20 bg-white">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="mb-12">
+        <p class="font-heading font-700 text-yellow text-sm uppercase tracking-widest mb-2">Cosa facciamo</p>
+        <h2 class="font-heading font-900 text-navy text-4xl sm:text-5xl leading-none">I NOSTRI<br>SERVIZI</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- Radiatori -->
+        <article class="card bg-white p-8">
+          <div class="w-14 h-14 bg-navy flex items-center justify-center mb-6" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="0"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="11" y1="3" x2="11" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="19" y1="3" x2="19" y2="21"/>
+            </svg>
+          </div>
+          <h3 class="font-heading font-700 text-navy text-xl mb-3">Radiatori Auto</h3>
+          <p class="text-gray-600 font-body leading-relaxed text-sm">
+            Riparazione e sostituzione di radiatori per auto, furgoni, camion e mezzi agricoli. Tutti i tipi e tutte le marche. Lavorazione artigianale con decenni di esperienza.
+          </p>
+          <ul class="mt-4 space-y-1" role="list">
+            <li class="text-sm text-gray-700 flex items-center gap-2">
+              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Radiatori acqua
+            </li>
+            <li class="text-sm text-gray-700 flex items-center gap-2">
+              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Radiatori olio
+            </li>
+            <li class="text-sm text-gray-700 flex items-center gap-2">
+              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Intercooler
+            </li>
+            <li class="text-sm text-gray-700 flex items-center gap-2">
+              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Restauro radiatori d'epoca
+            </li>
+          </ul>
+        </article>
+
+        <!-- Saldature -->
+        <article class="card bg-navy p-8">
+          <div class="w-14 h-14 bg-yellow flex items-center justify-center mb-6" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0D1B3E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22V12"/><path d="m15 9-3 3-3-3"/><path d="M8 5.5C8 3.57 9.57 2 11.5 2h1C14.43 2 16 3.57 16 5.5v0c0 1.93-1.57 3.5-3.5 3.5h-1C9.57 9 8 7.43 8 5.5z"/><line x1="6" y1="22" x2="18" y2="22"/>
+            </svg>
+          </div>
+          <h3 class="font-heading font-700 text-yellow text-xl mb-3">Saldature in Genere</h3>
+          <p class="text-white/80 font-body leading-relaxed text-sm">
+            Saldatura MIG, TIG e autogena su acciaio, alluminio e rame. Riparazioni strutturali, costruzione di componenti su misura, saldatura carrozzeria.
+          </p>
+          <ul class="mt-4 space-y-1" role="list">
+            <li class="text-sm text-white/90 flex items-center gap-2">
+              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Saldatura MIG/MAG
+            </li>
+            <li class="text-sm text-white/90 flex items-center gap-2">
+              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Saldatura TIG alluminio
+            </li>
+            <li class="text-sm text-white/90 flex items-center gap-2">
+              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Saldatura autogena
+            </li>
+            <li class="text-sm text-white/90 flex items-center gap-2">
+              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Riparazioni su misura
+            </li>
+          </ul>
+        </article>
+
+        <!-- Condizionatori -->
+        <article class="card bg-white p-8">
+          <div class="w-14 h-14 bg-navy flex items-center justify-center mb-6" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 16h8M8 12h8"/><rect x="3" y="6" width="18" height="14" rx="0"/><path d="M7 6V4M12 6V4M17 6V4"/>
+            </svg>
+          </div>
+          <h3 class="font-heading font-700 text-navy text-xl mb-3">Ricarica Condizionatori</h3>
+          <p class="text-gray-600 font-body leading-relaxed text-sm">
+            Ricarica e revisione del climatizzatore auto. Gas refrigerante, controllo perdite, sostituzione componenti. Per un'estate fresca senza sorprese.
+          </p>
+          <ul class="mt-4 space-y-1" role="list">
+            <li class="text-sm text-gray-700 flex items-center gap-2">
+              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Ricarica gas R134a / R1234yf
+            </li>
+            <li class="text-sm text-gray-700 flex items-center gap-2">
+              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Controllo perdite
+            </li>
+            <li class="text-sm text-gray-700 flex items-center gap-2">
+              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Sostituzione filtro abitacolo
+            </li>
+            <li class="text-sm text-gray-700 flex items-center gap-2">
+              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Igienizzazione impianto
+            </li>
+          </ul>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider" aria-hidden="true"></div>
+
+  <!-- PERCHÉ NOI -->
+  <section class="py-20 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+
+        <div>
+          <p class="font-heading font-700 text-yellow text-sm uppercase tracking-widest mb-2">Perché sceglierci</p>
+          <h2 class="font-heading font-900 text-navy text-4xl sm:text-5xl leading-none mb-6">ESPERTI,<br>NON SOLO<br>ECONOMICI</h2>
+          <p class="text-gray-600 font-body leading-relaxed text-base mb-8">
+            Da decenni a Torino, Pernice Officina è il punto di riferimento per chi ha bisogno di un lavoro fatto bene. Non promettiamo solo il prezzo più basso — promettiamo che il lavoro dura.
+          </p>
+          <a href="tel:+390116115680" class="btn-primary px-6 py-3 text-base inline-flex items-center gap-2 rounded-none">
+            Chiedi un preventivo
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </a>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="card bg-yellow p-6">
+            <div class="font-heading font-900 text-navy text-4xl mb-1" aria-label="4.6 stelle">4.6 ★</div>
+            <div class="font-heading font-600 text-navy text-sm">Su Google Maps</div>
+            <div class="text-navy/70 text-xs font-body mt-1">15 recensioni verificate</div>
+          </div>
+          <div class="card bg-white p-6">
+            <div class="font-heading font-900 text-navy text-4xl mb-1">50+</div>
+            <div class="font-heading font-600 text-navy text-sm">Anni di esperienza</div>
+            <div class="text-gray-500 text-xs font-body mt-1">Officina storica a Torino</div>
+          </div>
+          <div class="card bg-navy p-6">
+            <div class="font-heading font-900 text-yellow text-4xl mb-1">3</div>
+            <div class="font-heading font-600 text-white text-sm">Servizi specializzati</div>
+            <div class="text-white/60 text-xs font-body mt-1">Radiatori, saldature, clima</div>
+          </div>
+          <div class="card bg-white p-6">
+            <div class="font-heading font-900 text-navy text-4xl mb-1">∞</div>
+            <div class="font-heading font-600 text-navy text-sm">Marche e modelli</div>
+            <div class="text-gray-500 text-xs font-body mt-1">Auto, furgoni, camion</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider" aria-hidden="true"></div>
+
+  <!-- CONTATTI -->
+  <section id="contatti" class="py-20 bg-navy">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="mb-12">
+        <p class="font-heading font-700 text-yellow text-sm uppercase tracking-widest mb-2">Dove siamo</p>
+        <h2 class="font-heading font-900 text-white text-4xl sm:text-5xl leading-none">CONTATTI</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+
+        <!-- Indirizzo -->
+        <div class="border-2 border-yellow/40 p-6 hover:border-yellow transition-colors duration-200">
+          <div class="mb-3" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+          </div>
+          <h3 class="font-heading font-700 text-yellow text-sm uppercase tracking-wide mb-2">Indirizzo</h3>
+          <address class="not-italic text-white font-body text-sm leading-relaxed">
+            Via Somalia, 108/32<br>10127 Torino TO<br>
+            <span class="text-white/60 text-xs">(300 m da Via Sestriere)</span>
+          </address>
+          <a href="https://maps.app.goo.gl/YjouPAV2kkkkRES56" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-yellow text-xs font-heading font-600 mt-3 hover:underline">
+            Apri in Maps
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+            </svg>
+          </a>
+        </div>
+
+        <!-- Telefono -->
+        <div class="border-2 border-yellow/40 p-6 hover:border-yellow transition-colors duration-200">
+          <div class="mb-3" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 14a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 3h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.6a16 16 0 0 0 6 6l1.96-1.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <h3 class="font-heading font-700 text-yellow text-sm uppercase tracking-wide mb-2">Telefono</h3>
+          <a href="tel:+390116115680" class="text-white font-body text-sm block hover:text-yellow transition-colors duration-150">011.611.568</a>
+          <span class="text-white/50 text-xs font-body">Tel/Fax</span>
+          <a href="tel:+393394466519" class="text-white font-body text-sm block mt-2 hover:text-yellow transition-colors duration-150">339.44.66.519</a>
+          <span class="text-white/50 text-xs font-body">Cellulare</span>
+        </div>
+
+        <!-- Email -->
+        <div class="border-2 border-yellow/40 p-6 hover:border-yellow transition-colors duration-200">
+          <div class="mb-3" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <h3 class="font-heading font-700 text-yellow text-sm uppercase tracking-wide mb-2">Email</h3>
+          <a href="mailto:lellopern@libero.it" class="text-white font-body text-sm break-all hover:text-yellow transition-colors duration-150">lellopern@libero.it</a>
+        </div>
+
+        <!-- Orari -->
+        <div class="border-2 border-yellow/40 p-6 hover:border-yellow transition-colors duration-200">
+          <div class="mb-3" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <h3 class="font-heading font-700 text-yellow text-sm uppercase tracking-wide mb-2">Orari</h3>
+          <dl class="text-white font-body text-sm space-y-1">
+            <div class="flex justify-between gap-4">
+              <dt class="text-white/60">Lun–Ven</dt>
+              <dd>08:30 – 18:00</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-white/60">Sabato</dt>
+              <dd>08:30 – 12:30</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-white/60">Domenica</dt>
+              <dd class="text-white/40">Chiuso</dd>
+            </div>
+          </dl>
+        </div>
+
+      </div>
+
+      <!-- Map embed -->
+      <div class="border-2 border-yellow/40 overflow-hidden" style="height: 320px;">
+        <iframe
+          title="Mappa Pernice Officina – Via Somalia 108/32 Torino"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2817.2!2d7.6377!3d45.0392!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zVmlhIFNvbWFsaWEgMTA4LzMyLCBUb3Jpbm8!5e0!3m2!1sit!2sit!4v1718000000000"
+          width="100%"
+          height="320"
+          style="border:0;"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          aria-label="Mappa Google con la posizione di Pernice Officina">
+        </iframe>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-navy-dark bg-[#060F24] py-8 border-t-4 border-yellow">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="text-white/60 font-body text-sm text-center sm:text-left">
+        © 2024 Pernice Officina · Via Somalia 108/32, Torino
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="https://www.facebook.com/share/197P38tKrD/" target="_blank" rel="noopener noreferrer" class="text-white/60 hover:text-yellow transition-colors duration-150" aria-label="Pagina Facebook Pernice Officina">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+          </svg>
+        </a>
+        <a href="https://maps.app.goo.gl/YjouPAV2kkkkRES56" target="_blank" rel="noopener noreferrer" class="text-white/60 hover:text-yellow transition-colors duration-150" aria-label="Pernice Officina su Google Maps">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+        </a>
+        <a href="tel:+390116115680" class="btn-primary px-4 py-2 text-xs rounded-none" aria-label="Chiama Pernice Officina">
+          Chiama ora
+        </a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
