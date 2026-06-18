@@ -17,8 +17,20 @@
 html{scroll-behavior:smooth}
 body{background:var(--n);color:var(--w);font-family:'Inter',sans-serif;overflow-x:hidden}
 
-/* ── BG CANVAS: full fixed viewport ── */
-#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+/* ── BG: full fixed viewport ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 55% at 72% 45%, rgba(245,196,0,.08) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 60% at 20% 60%, rgba(30,60,180,.1) 0%, transparent 60%),
+    linear-gradient(160deg,#050A18 0%,#0D1B3E 60%,#050A18 100%);
+  animation:bgPulse 8s ease-in-out infinite;
+}
+@keyframes bgPulse{
+  0%,100%{opacity:1}
+  50%{opacity:.85}
+}
+#bg{position:fixed;inset:0;z-index:1;pointer-events:none}
 
 /* ── LOADER ── */
 #ld{position:fixed;inset:0;z-index:9999;background:var(--n);
@@ -47,7 +59,7 @@ nav.scr{background:rgba(5,10,24,.88);backdrop-filter:blur(18px);border-color:rgb
 @media(max-width:680px){.nr .hide{display:none}}
 
 /* ── CONTENT WRAPPER ── */
-main{position:relative;z-index:1}
+main{position:relative;z-index:2}
 
 /* ── HERO ── */
 #hero{min-height:100dvh;display:flex;align-items:center;
@@ -115,6 +127,7 @@ section.sec{padding:100px 5vw}
 /* ── SERVIZI ── */
 #srv{background:rgba(5,10,24,.86);backdrop-filter:blur(20px)}
 .srv-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2px;margin-top:56px}
+@media(max-width:640px){.srv-g{grid-template-columns:1fr}}
 .sc{background:var(--nm);padding:42px 34px;position:relative;overflow:hidden;
   opacity:0;transform:translateY(34px);transition:box-shadow .4s;
   border-top:2px solid transparent;transition:border-color .4s,box-shadow .4s}
@@ -389,10 +402,21 @@ footer{padding:32px 5vw;background:rgba(5,10,24,.95);
   if (!window.THREE) return;
 
   const canvas = document.getElementById('bg');
+  if (!canvas) return;
+
+  // Test WebGL availability without touching the actual canvas
+  const probe = document.createElement('canvas');
+  const probeCtx = probe.getContext('webgl2') || probe.getContext('webgl');
+  if (!probeCtx) return;
+  probeCtx.getExtension('WEBGL_lose_context')?.loseContext();
+
   const W = () => window.innerWidth;
   const H = () => window.innerHeight;
 
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  } catch(e) { return; }
   renderer.setSize(W(), H());
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
