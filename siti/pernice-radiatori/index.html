@@ -5,436 +5,1193 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Pernice Officina – Radiatori di tutti i tipi, saldature in genere e ricarica condizionatori auto a Torino. Via Somalia 108/32. Tel. 011.611.568.">
   <title>Pernice Officina – Radiatori & Saldature Torino</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            navy:   { DEFAULT: '#0D1B3E', light: '#1A2B5E', dark: '#060F24' },
-            yellow: { DEFAULT: '#F5C400', dark: '#D4AB00' },
-          },
-          fontFamily: {
-            heading: ['Poppins', 'sans-serif'],
-            body:    ['Open Sans', 'sans-serif'],
-          },
-          boxShadow: {
-            hard: '4px 4px 0px 0px #0D1B3E',
-            'hard-yellow': '4px 4px 0px 0px #F5C400',
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    body { font-family: 'Open Sans', sans-serif; }
-    h1,h2,h3,h4 { font-family: 'Poppins', sans-serif; }
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    .btn-primary {
-      background: #F5C400;
-      color: #0D1B3E;
-      font-family: 'Poppins', sans-serif;
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --yellow: #F5C400;
+      --yellow-dim: rgba(245,196,0,0.15);
+      --navy: #050A18;
+      --navy-mid: #0D1B3E;
+      --navy-light: #1A2B5E;
+      --white: #FFFFFF;
+      --gray: rgba(255,255,255,0.6);
+      --gray-dim: rgba(255,255,255,0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--navy);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── Loader ──────────────────────────────── */
+    #loader {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 20px;
+    }
+    #loader .logo-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 10vw, 7rem);
+      color: var(--yellow);
+      letter-spacing: 0.1em;
+      opacity: 0;
+    }
+    #loader .bar-wrap {
+      width: 200px; height: 2px;
+      background: rgba(255,255,255,0.1);
+      overflow: hidden;
+    }
+    #loader .bar {
+      height: 100%;
+      background: var(--yellow);
+      width: 0%;
+      transition: width 1.2s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ── Nav ─────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      padding: 18px 5vw;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.4s, backdrop-filter 0.4s;
+    }
+    nav.scrolled {
+      background: rgba(5,10,24,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(245,196,0,0.2);
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.12em;
+      color: var(--white);
+      text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-logo span { color: var(--yellow); }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--yellow); }
+    .nav-cta {
+      background: var(--yellow);
+      color: var(--navy);
+      padding: 10px 24px;
       font-weight: 700;
-      border: 2px solid #0D1B3E;
-      box-shadow: 4px 4px 0px 0px #0D1B3E;
-      transition: transform 0.1s, box-shadow 0.1s;
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      border: none;
       cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .nav-cta::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(255,255,255,0.2);
+      transform: translateX(-100%);
+      transition: transform 0.3s;
+    }
+    .nav-cta:hover::after { transform: translateX(0); }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+    }
+
+    /* ── Hero ────────────────────────────────── */
+    #hero {
+      min-height: 100dvh;
+      display: flex; align-items: center;
+      position: relative; overflow: hidden;
+      padding: 120px 5vw 80px;
+    }
+    #sparks-canvas {
+      position: absolute; inset: 0;
+      pointer-events: none;
+    }
+    .hero-bg-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(245,196,0,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245,196,0,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+    .hero-bg-glow {
+      position: absolute;
+      width: 60vw; height: 60vw;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,196,0,0.08) 0%, transparent 70%);
+      right: -20vw; top: -10vw;
+      pointer-events: none;
+    }
+    .hero-content { position: relative; z-index: 2; max-width: 900px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1px solid rgba(245,196,0,0.4);
+      padding: 6px 16px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      margin-bottom: 32px;
+      opacity: 0; transform: translateY(20px);
+    }
+    .hero-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--yellow);
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4rem, 12vw, 10rem);
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .hero-title .line { display: block; overflow: hidden; }
+    .hero-title .line span {
+      display: block;
+      transform: translateY(110%);
+    }
+    .hero-title .accent { color: var(--yellow); }
+    .hero-sub {
+      font-size: clamp(0.9rem, 2vw, 1.1rem);
+      color: rgba(255,255,255,0.55);
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      margin-bottom: 48px;
+      opacity: 0; transform: translateY(20px);
+    }
+    .hero-sub strong { color: rgba(255,255,255,0.9); font-weight: 600; }
+    .hero-ctas {
+      display: flex; gap: 16px; flex-wrap: wrap;
+      opacity: 0; transform: translateY(20px);
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--yellow);
+      color: var(--navy);
+      padding: 16px 36px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+      will-change: transform;
     }
     .btn-primary:hover {
-      transform: translate(2px, 2px);
-      box-shadow: 2px 2px 0px 0px #0D1B3E;
+      box-shadow: 0 20px 50px rgba(245,196,0,0.35);
     }
-    .btn-primary:active {
-      transform: translate(4px, 4px);
-      box-shadow: none;
-    }
-
-    .btn-outline {
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 10px;
       background: transparent;
-      color: #F5C400;
-      font-family: 'Poppins', sans-serif;
-      font-weight: 700;
-      border: 2px solid #F5C400;
-      box-shadow: 4px 4px 0px 0px #F5C400;
-      transition: transform 0.1s, box-shadow 0.1s;
+      color: var(--white);
+      padding: 15px 36px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.25);
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
       cursor: pointer;
     }
-    .btn-outline:hover {
-      transform: translate(2px, 2px);
-      box-shadow: 2px 2px 0px 0px #F5C400;
+    .btn-secondary:hover {
+      border-color: var(--yellow);
+      color: var(--yellow);
+      background: rgba(245,196,0,0.05);
     }
-    .btn-outline:active {
-      transform: translate(4px, 4px);
-      box-shadow: none;
+    .hero-scroll-hint {
+      position: absolute; bottom: 40px; left: 5vw;
+      display: flex; align-items: center; gap: 12px;
+      color: rgba(255,255,255,0.35);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0;
+    }
+    .scroll-line {
+      width: 40px; height: 1px;
+      background: rgba(255,255,255,0.2);
+      position: relative; overflow: hidden;
+    }
+    .scroll-line::after {
+      content: '';
+      position: absolute; top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: var(--yellow);
+      animation: scroll-slide 2s ease-in-out infinite;
+    }
+    @keyframes scroll-slide {
+      0% { left: -100%; } 100% { left: 100%; }
     }
 
-    .card {
-      border: 2px solid #0D1B3E;
-      box-shadow: 4px 4px 0px 0px #0D1B3E;
+    /* ── Stats bar ───────────────────────────── */
+    #stats {
+      padding: 60px 5vw;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(135deg, rgba(13,27,62,0.6), rgba(5,10,24,0.8));
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0;
+    }
+    .stat-item {
+      padding: 24px 32px;
+      border-right: 1px solid rgba(255,255,255,0.06);
+      opacity: 0; transform: translateY(30px);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.5rem;
+      color: var(--yellow);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.5);
+      font-weight: 400;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
     }
 
-    .section-divider {
-      height: 4px;
-      background: #F5C400;
+    /* ── Section shared ──────────────────────── */
+    section { padding: 120px 5vw; }
+    .section-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      margin-bottom: 16px;
+      opacity: 0; transform: translateX(-20px);
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      line-height: 0.95;
+      letter-spacing: 0.02em;
+      margin-bottom: 24px;
     }
 
+    /* ── Services ────────────────────────────── */
+    #servizi { background: var(--navy); }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2px;
+      margin-top: 64px;
+    }
+    .service-card {
+      background: var(--navy-mid);
+      padding: 48px 40px;
+      position: relative;
+      overflow: hidden;
+      cursor: default;
+      opacity: 0; transform: translateY(40px);
+      transition: transform 0.05s linear;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+    .service-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(245,196,0,0.06), transparent);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .service-card:hover::before { opacity: 1; }
+    .service-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--yellow);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.5s cubic-bezier(.4,0,.2,1);
+    }
+    .service-card:hover::after { transform: scaleX(1); }
+    .card-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 5rem;
+      color: rgba(245,196,0,0.08);
+      position: absolute;
+      top: 16px; right: 24px;
+      line-height: 1;
+      transition: color 0.4s;
+    }
+    .service-card:hover .card-num { color: rgba(245,196,0,0.14); }
+    .card-icon {
+      width: 56px; height: 56px;
+      background: var(--yellow-dim);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 28px;
+      position: relative;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .service-card:hover .card-icon {
+      background: rgba(245,196,0,0.25);
+      transform: scale(1.05) rotate(3deg);
+    }
+    .card-icon svg { transition: stroke 0.3s; }
+    .card-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.04em;
+      margin-bottom: 14px;
+    }
+    .card-desc {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.75;
+      margin-bottom: 24px;
+    }
+    .card-list { list-style: none; }
+    .card-list li {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.45);
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex; align-items: center; gap: 10px;
+      transition: color 0.2s;
+    }
+    .service-card:hover .card-list li { color: rgba(255,255,255,0.65); }
+    .card-list li::before {
+      content: '';
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--yellow);
+      flex-shrink: 0;
+    }
+
+    /* ── Why us ──────────────────────────────── */
+    #perche {
+      background: linear-gradient(160deg, var(--navy-mid) 0%, var(--navy) 100%);
+      position: relative; overflow: hidden;
+    }
+    #perche::before {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,196,0,0.05) 0%, transparent 70%);
+      right: -200px; bottom: -200px;
+      pointer-events: none;
+    }
+    .perche-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    @media (max-width: 900px) {
+      .perche-grid { grid-template-columns: 1fr; gap: 48px; }
+    }
+    .perche-text p {
+      color: rgba(255,255,255,0.55);
+      font-size: 1rem;
+      line-height: 1.8;
+      margin-bottom: 36px;
+    }
+    .trust-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .trust-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+      opacity: 0; transform: scale(0.9);
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .trust-card:hover {
+      background: rgba(245,196,0,0.04);
+      border-color: rgba(245,196,0,0.25);
+    }
+    .trust-card.featured {
+      background: var(--yellow);
+      border-color: var(--yellow);
+    }
+    .trust-val {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      color: var(--yellow);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .trust-card.featured .trust-val { color: var(--navy); }
+    .trust-label {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.5);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .trust-card.featured .trust-label { color: rgba(5,10,24,0.7); }
+
+    /* ── Parallax divider ─────────────────────── */
+    .parallax-band {
+      height: 200px;
+      background:
+        linear-gradient(rgba(5,10,24,0.85), rgba(5,10,24,0.85)),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cpath d='M0 50 L50 0 L100 50 L50 100 Z' fill='none' stroke='rgba(245,196,0,0.06)' stroke-width='1'/%3E%3C/svg%3E");
+      background-size: cover, 100px 100px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+    }
+    .band-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 8vw, 6rem);
+      letter-spacing: 0.3em;
+      color: rgba(245,196,0,0.12);
+      white-space: nowrap;
+      position: absolute;
+      will-change: transform;
+    }
+    .band-cta {
+      position: relative; z-index: 2;
+      text-align: center;
+    }
+    .band-cta p {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    /* ── Contacts ────────────────────────────── */
+    #contatti {
+      background: var(--navy);
+      position: relative;
+    }
+    .contacts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 64px;
+      margin-top: 64px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .contacts-grid { grid-template-columns: 1fr; gap: 40px; }
+    }
+    .contact-items { display: flex; flex-direction: column; gap: 4px; }
+    .contact-item {
+      display: flex; align-items: flex-start; gap: 20px;
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,0.06);
+      transition: border-color 0.3s, background 0.3s;
+      opacity: 0; transform: translateX(-30px);
+    }
+    .contact-item:hover {
+      border-color: rgba(245,196,0,0.25);
+      background: rgba(245,196,0,0.03);
+    }
+    .contact-icon {
+      width: 44px; height: 44px; flex-shrink: 0;
+      background: var(--yellow-dim);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .contact-info { flex: 1; }
+    .contact-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      margin-bottom: 6px;
+    }
+    .contact-val {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--white);
+      text-decoration: none;
+      transition: color 0.2s;
+      display: block;
+    }
+    .contact-val:hover { color: var(--yellow); }
+    .contact-sub {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.35);
+      margin-top: 2px;
+    }
+    .map-wrap {
+      position: relative;
+      opacity: 0; transform: translateY(30px);
+    }
+    .map-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      background: linear-gradient(135deg, var(--yellow), transparent, transparent);
+      z-index: 0;
+    }
+    .map-wrap iframe {
+      position: relative; z-index: 1;
+      width: 100%; height: 400px;
+      border: none;
+      display: block;
+      filter: grayscale(30%) contrast(1.1) brightness(0.8);
+    }
+
+    /* ── Hours ───────────────────────────────── */
+    .hours-block {
+      margin-top: 4px;
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,0.06);
+      opacity: 0; transform: translateX(-30px);
+    }
+    .hours-title {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      margin-bottom: 16px;
+    }
+    .hours-row {
+      display: flex; justify-content: space-between;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.88rem;
+    }
+    .hours-row:last-child { border-bottom: none; }
+    .hours-day { color: rgba(255,255,255,0.45); }
+    .hours-time { color: var(--white); font-weight: 500; }
+    .hours-time.closed { color: rgba(255,255,255,0.25); }
+
+    /* ── Footer ──────────────────────────────── */
+    footer {
+      padding: 40px 5vw;
+      background: var(--navy);
+      border-top: 1px solid rgba(245,196,0,0.15);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.4);
+    }
+    .footer-logo span { color: var(--yellow); }
+    .footer-copy {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.3);
+    }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a {
+      color: rgba(255,255,255,0.35);
+      text-decoration: none;
+      font-size: 0.78rem;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--yellow); }
+
+    /* ── Scroll reveal base ───────────────────── */
+    .reveal { opacity: 0; }
+
+    /* ── Reduced motion ───────────────────────── */
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { transition: none !important; transform: none !important; animation: none !important; }
+      *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; }
+      .reveal, .stat-item, .service-card, .trust-card, .contact-item,
+      .hours-block, .map-wrap, .section-tag, .hero-badge, .hero-sub, .hero-ctas,
+      .hero-scroll-hint, .hero-title .line span { opacity: 1 !important; transform: none !important; }
     }
   </style>
 </head>
-<body class="bg-white text-navy">
+<body>
 
-  <!-- NAV -->
-  <nav class="bg-navy sticky top-0 z-50 border-b-4 border-yellow" role="navigation" aria-label="Navigazione principale">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="#home" class="flex items-center gap-2" aria-label="Pernice Officina – torna su">
-        <!-- Wrench icon -->
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-        </svg>
-        <span class="text-yellow font-heading font-900 text-xl tracking-tight">PERNICE</span>
-        <span class="text-white font-heading font-600 text-sm hidden sm:inline">OFFICINA</span>
+<!-- ── Loader ─────────────────────────────────── -->
+<div id="loader" role="status" aria-label="Caricamento">
+  <div class="logo-text" id="loader-text">PERNICE</div>
+  <div class="bar-wrap"><div class="bar" id="loader-bar"></div></div>
+</div>
+
+<!-- ── Nav ───────────────────────────────────── -->
+<nav id="nav" role="navigation" aria-label="Navigazione principale">
+  <a href="#hero" class="nav-logo" aria-label="Torna su">PERNICE <span>OFFICINA</span></a>
+  <div class="nav-links">
+    <a href="#servizi">Servizi</a>
+    <a href="#perche">Chi siamo</a>
+    <a href="#contatti">Contatti</a>
+  </div>
+  <a href="tel:+390116115680" class="nav-cta" aria-label="Chiama 011.611.568">011.611.568</a>
+</nav>
+
+<!-- ── Hero ──────────────────────────────────── -->
+<section id="hero">
+  <canvas id="sparks-canvas" aria-hidden="true"></canvas>
+  <div class="hero-bg-grid" aria-hidden="true"></div>
+  <div class="hero-bg-glow" aria-hidden="true"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge" id="hero-badge" aria-label="4.6 stelle su Google – 15 recensioni">
+      ★ 4.6 · 15 Recensioni Google
+    </div>
+
+    <h1 class="hero-title" aria-label="Pernice Officina Torino">
+      <span class="line"><span id="t1">PERNICE</span></span>
+      <span class="line"><span id="t2" class="accent">OFFICINA</span></span>
+      <span class="line" style="font-size:0.38em;letter-spacing:0.15em;"><span id="t3" style="color:rgba(255,255,255,0.35)">TORINO · DAL 1970</span></span>
+    </h1>
+
+    <p class="hero-sub" id="hero-sub">
+      <strong>Radiatori di tutti i tipi</strong> · <strong>Saldature in genere</strong> · <strong>Ricarica condizionatori</strong><br>
+      Via Somalia 108/32 · 10127 Torino · Specialisti da oltre 50 anni
+    </p>
+
+    <div class="hero-ctas" id="hero-ctas">
+      <a href="tel:+390116115680" class="btn-primary magnetic" aria-label="Chiama allo 011.611.568">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 14a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 3h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.6a16 16 0 0 0 6 6l1.96-1.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        011.611.568
       </a>
-      <div class="flex items-center gap-2 sm:gap-4">
-        <a href="#servizi" class="text-white hover:text-yellow font-heading font-600 text-sm transition-colors duration-150 hidden md:inline">Servizi</a>
-        <a href="#contatti" class="text-white hover:text-yellow font-heading font-600 text-sm transition-colors duration-150 hidden md:inline">Contatti</a>
-        <a href="tel:+390116115680" class="btn-primary px-4 py-2 text-sm rounded-none inline-flex items-center gap-2" aria-label="Chiama Pernice Officina">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 14a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 3h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.6a16 16 0 0 0 6 6l1.96-1.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-          </svg>
-          Chiama
-        </a>
+      <a href="tel:+393394466519" class="btn-secondary magnetic" aria-label="Cellulare 339.44.66.519">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        339.44.66.519
+      </a>
+      <a href="#servizi" class="btn-secondary" style="border-color:transparent;color:rgba(255,255,255,0.4);">
+        Scopri ↓
+      </a>
+    </div>
+  </div>
+
+  <div class="hero-scroll-hint" id="hero-scroll" aria-hidden="true">
+    <div class="scroll-line"></div>
+    Scorri
+  </div>
+</section>
+
+<!-- ── Stats ──────────────────────────────────── -->
+<div id="stats" aria-label="Numeri chiave">
+  <div class="stats-grid">
+    <div class="stat-item">
+      <div class="stat-num" data-count="4.6" data-dec="1">0</div>
+      <div class="stat-label">Stelle Google ★</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" data-count="50" data-suffix="+">0</div>
+      <div class="stat-label">Anni di esperienza</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" data-count="3">0</div>
+      <div class="stat-label">Servizi specializzati</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" data-count="15">0</div>
+      <div class="stat-label">Recensioni verificate</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Servizi ────────────────────────────────── -->
+<section id="servizi">
+  <p class="section-tag">— Cosa facciamo</p>
+  <h2 class="section-title reveal">I NOSTRI<br>SERVIZI</h2>
+
+  <div class="services-grid">
+
+    <article class="service-card" role="article">
+      <div class="card-num" aria-hidden="true">01</div>
+      <div class="card-icon" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="11" y1="3" x2="11" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="19" y1="3" x2="19" y2="21"/>
+        </svg>
+      </div>
+      <h3 class="card-title">Radiatori Auto</h3>
+      <p class="card-desc">Riparazione e sostituzione radiatori per auto, furgoni, camion e mezzi agricoli. Lavorazione artigianale, tutte le marche.</p>
+      <ul class="card-list" role="list">
+        <li>Radiatori acqua e olio</li>
+        <li>Intercooler</li>
+        <li>Restauro radiatori d'epoca</li>
+        <li>Tutti i marchi e modelli</li>
+      </ul>
+    </article>
+
+    <article class="service-card" role="article">
+      <div class="card-num" aria-hidden="true">02</div>
+      <div class="card-icon" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22V12"/><path d="m15 9-3 3-3-3"/><path d="M8 5.5C8 3.57 9.57 2 11.5 2h1C14.43 2 16 3.57 16 5.5v0c0 1.93-1.57 3.5-3.5 3.5h-1C9.57 9 8 7.43 8 5.5z"/><line x1="6" y1="22" x2="18" y2="22"/>
+        </svg>
+      </div>
+      <h3 class="card-title">Saldature in Genere</h3>
+      <p class="card-desc">Saldatura MIG, TIG e autogena su acciaio, alluminio e rame. Riparazioni strutturali e costruzione componenti su misura.</p>
+      <ul class="card-list" role="list">
+        <li>Saldatura MIG/MAG e TIG</li>
+        <li>Alluminio e acciaio inox</li>
+        <li>Riparazioni carrozzeria</li>
+        <li>Costruzioni su misura</li>
+      </ul>
+    </article>
+
+    <article class="service-card" role="article">
+      <div class="card-num" aria-hidden="true">03</div>
+      <div class="card-icon" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 16h8M8 12h8"/><rect x="3" y="6" width="18" height="14"/><path d="M7 6V4M12 6V4M17 6V4"/>
+        </svg>
+      </div>
+      <h3 class="card-title">Ricarica Clima</h3>
+      <p class="card-desc">Ricarica e revisione del climatizzatore auto. Gas refrigerante, controllo perdite, sostituzione componenti. Estate fresca garantita.</p>
+      <ul class="card-list" role="list">
+        <li>Gas R134a e R1234yf</li>
+        <li>Controllo perdite</li>
+        <li>Sostituzione filtro abitacolo</li>
+        <li>Igienizzazione impianto</li>
+      </ul>
+    </article>
+
+  </div>
+</section>
+
+<!-- ── Parallax band ─────────────────────────── -->
+<div class="parallax-band" aria-hidden="true">
+  <div class="band-text" id="marquee">RADIATORI · SALDATURE · OFFICINA · TORINO · RADIATORI · SALDATURE · OFFICINA ·&nbsp;</div>
+  <div class="band-cta">
+    <p>Servizio rapido e professionale</p>
+    <a href="tel:+393394466519" class="btn-primary magnetic" aria-label="Chiama il cellulare 339.44.66.519">
+      Prenota ora →
+    </a>
+  </div>
+</div>
+
+<!-- ── Perché noi ──────────────────────────────── -->
+<section id="perche">
+  <div class="perche-grid">
+    <div class="perche-text">
+      <p class="section-tag">— Perché sceglierci</p>
+      <h2 class="section-title reveal">ESPERTI,<br>NON SOLO<br>ECONOMICI</h2>
+      <p>Da oltre 50 anni a Torino, Pernice Officina è il punto di riferimento per chi ha bisogno di un lavoro fatto bene. Non promettiamo solo il prezzo più basso — promettiamo che il lavoro dura.</p>
+      <a href="mailto:lellopern@libero.it" class="btn-secondary" style="margin-top:8px;" aria-label="Scrivi a lellopern@libero.it">
+        Scrivi un'email →
+      </a>
+    </div>
+    <div class="trust-cards">
+      <div class="trust-card featured">
+        <div class="trust-val">4.6★</div>
+        <div class="trust-label">Google Rating</div>
+      </div>
+      <div class="trust-card">
+        <div class="trust-val">50+</div>
+        <div class="trust-label">Anni di attività</div>
+      </div>
+      <div class="trust-card">
+        <div class="trust-val">3</div>
+        <div class="trust-label">Servizi core</div>
+      </div>
+      <div class="trust-card">
+        <div class="trust-val">∞</div>
+        <div class="trust-label">Marche trattate</div>
       </div>
     </div>
-  </nav>
+  </div>
+</section>
 
-  <!-- HERO -->
-  <section id="home" class="bg-navy min-h-[90dvh] flex items-center relative overflow-hidden">
-    <!-- Geometric background pattern -->
-    <div class="absolute inset-0 opacity-5" aria-hidden="true">
-      <div class="absolute top-0 right-0 w-96 h-96 border-4 border-yellow translate-x-1/3 -translate-y-1/3"></div>
-      <div class="absolute bottom-0 left-0 w-64 h-64 border-4 border-yellow -translate-x-1/3 translate-y-1/3"></div>
-      <div class="absolute top-1/2 left-1/2 w-48 h-48 border-4 border-yellow -translate-x-1/2 -translate-y-1/2 rotate-45"></div>
+<!-- ── Contatti ───────────────────────────────── -->
+<section id="contatti">
+  <p class="section-tag">— Dove siamo</p>
+  <h2 class="section-title reveal">CONTATTI</h2>
+
+  <div class="contacts-grid">
+    <div>
+      <div class="contact-items">
+        <div class="contact-item">
+          <div class="contact-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="contact-info">
+            <div class="contact-label">Indirizzo</div>
+            <address class="not-italic">
+              <span class="contact-val" style="cursor:default">Via Somalia, 108/32</span>
+              <span class="contact-val" style="cursor:default">10127 Torino TO</span>
+              <span class="contact-sub">300 m da Via Sestriere</span>
+            </address>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="contact-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 14a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 3h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.6a16 16 0 0 0 6 6l1.96-1.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div class="contact-info">
+            <div class="contact-label">Telefono</div>
+            <a href="tel:+390116115680" class="contact-val">011.611.568</a>
+            <span class="contact-sub">Tel / Fax</span>
+            <a href="tel:+393394466519" class="contact-val" style="margin-top:6px">339.44.66.519</a>
+            <span class="contact-sub">Cellulare</span>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="contact-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <div class="contact-info">
+            <div class="contact-label">Email</div>
+            <a href="mailto:lellopern@libero.it" class="contact-val">lellopern@libero.it</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hours-block">
+        <div class="hours-title">Orari di apertura</div>
+        <div class="hours-row">
+          <span class="hours-day">Lunedì – Venerdì</span>
+          <span class="hours-time">08:30 – 18:00</span>
+        </div>
+        <div class="hours-row">
+          <span class="hours-day">Sabato</span>
+          <span class="hours-time">08:30 – 12:30</span>
+        </div>
+        <div class="hours-row">
+          <span class="hours-day">Domenica</span>
+          <span class="hours-time closed">Chiuso</span>
+        </div>
+      </div>
     </div>
 
-    <div class="max-w-6xl mx-auto px-4 py-20 relative z-10">
-      <div class="max-w-3xl">
-        <!-- Badge rating -->
-        <div class="inline-flex items-center gap-2 bg-yellow px-3 py-1 mb-6 border-2 border-navy" role="img" aria-label="Valutazione 4.6 stelle su Google">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#0D1B3E" stroke="none" aria-hidden="true">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-          </svg>
-          <span class="font-heading font-700 text-navy text-sm">4.6 su Google · 15 recensioni</span>
-        </div>
-
-        <h1 class="font-heading font-900 text-white text-5xl sm:text-6xl lg:text-7xl leading-none tracking-tight mb-4">
-          PERNICE<br>
-          <span class="text-yellow">OFFICINA</span>
-        </h1>
-
-        <p class="text-white/80 text-lg sm:text-xl font-body leading-relaxed mb-2">
-          Radiatori di tutti i tipi · Saldature in genere · Ricarica condizionatori
-        </p>
-        <p class="text-yellow font-heading font-600 text-base mb-10">
-          Torino, Via Somalia 108/32 · dal 1970
-        </p>
-
-        <div class="flex flex-col sm:flex-row gap-4">
-          <a href="tel:+390116115680" class="btn-primary px-8 py-4 text-base inline-flex items-center justify-center gap-3 rounded-none">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 14a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 3h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.6a16 16 0 0 0 6 6l1.96-1.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-            </svg>
-            011.611.568
-          </a>
-          <a href="tel:+393394466519" class="btn-outline px-8 py-4 text-base inline-flex items-center justify-center gap-3 rounded-none">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
-            </svg>
-            339.44.66.519
-          </a>
-          <a href="#servizi" class="text-white/70 hover:text-yellow font-heading font-600 text-base inline-flex items-center justify-center gap-2 transition-colors duration-150 sm:ml-2">
-            Scopri i servizi
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
-            </svg>
-          </a>
-        </div>
-      </div>
+    <div class="map-wrap">
+      <iframe
+        title="Mappa Pernice Officina – Via Somalia 108/32, Torino"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1408.5!2d7.637!3d45.039!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x478869e9a5b9b9f5%3A0x0!2sVia+Somalia+108%2F32%2C+10127+Torino!5e0!3m2!1sit!2sit!4v1718000000000"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        aria-label="Mappa con la posizione di Pernice Officina, Via Somalia 108/32 Torino">
+      </iframe>
     </div>
-  </section>
+  </div>
+</section>
 
-  <div class="section-divider" aria-hidden="true"></div>
+<!-- ── Footer ─────────────────────────────────── -->
+<footer>
+  <div class="footer-logo">PERNICE <span>OFFICINA</span></div>
+  <div class="footer-copy">© 2024 · Via Somalia 108/32, Torino</div>
+  <div class="footer-links">
+    <a href="https://www.facebook.com/share/197P38tKrD/" target="_blank" rel="noopener noreferrer" aria-label="Facebook">Facebook</a>
+    <a href="https://maps.app.goo.gl/YjouPAV2kkkkRES56" target="_blank" rel="noopener noreferrer" aria-label="Google Maps">Maps</a>
+    <a href="tel:+390116115680" aria-label="Chiama">Chiama</a>
+  </div>
+</footer>
 
-  <!-- SERVIZI -->
-  <section id="servizi" class="py-20 bg-white">
-    <div class="max-w-6xl mx-auto px-4">
-      <div class="mb-12">
-        <p class="font-heading font-700 text-yellow text-sm uppercase tracking-widest mb-2">Cosa facciamo</p>
-        <h2 class="font-heading font-900 text-navy text-4xl sm:text-5xl leading-none">I NOSTRI<br>SERVIZI</h2>
-      </div>
+<script>
+/* ═══════════════════════════════════════════════
+   LOADER
+═══════════════════════════════════════════════ */
+const loaderText = document.getElementById('loader-text');
+const loaderBar  = document.getElementById('loader-bar');
+const loader     = document.getElementById('loader');
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+loaderText.style.transition = 'opacity 0.5s';
+loaderText.style.opacity = '1';
+setTimeout(() => { loaderBar.style.width = '100%'; }, 50);
 
-        <!-- Radiatori -->
-        <article class="card bg-white p-8">
-          <div class="w-14 h-14 bg-navy flex items-center justify-center mb-6" aria-hidden="true">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="0"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="11" y1="3" x2="11" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="19" y1="3" x2="19" y2="21"/>
-            </svg>
-          </div>
-          <h3 class="font-heading font-700 text-navy text-xl mb-3">Radiatori Auto</h3>
-          <p class="text-gray-600 font-body leading-relaxed text-sm">
-            Riparazione e sostituzione di radiatori per auto, furgoni, camion e mezzi agricoli. Tutti i tipi e tutte le marche. Lavorazione artigianale con decenni di esperienza.
-          </p>
-          <ul class="mt-4 space-y-1" role="list">
-            <li class="text-sm text-gray-700 flex items-center gap-2">
-              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Radiatori acqua
-            </li>
-            <li class="text-sm text-gray-700 flex items-center gap-2">
-              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Radiatori olio
-            </li>
-            <li class="text-sm text-gray-700 flex items-center gap-2">
-              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Intercooler
-            </li>
-            <li class="text-sm text-gray-700 flex items-center gap-2">
-              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Restauro radiatori d'epoca
-            </li>
-          </ul>
-        </article>
+setTimeout(() => {
+  loader.style.transition = 'opacity 0.6s';
+  loader.style.opacity = '0';
+  setTimeout(() => {
+    loader.style.display = 'none';
+    initAnimations();
+  }, 600);
+}, 1500);
 
-        <!-- Saldature -->
-        <article class="card bg-navy p-8">
-          <div class="w-14 h-14 bg-yellow flex items-center justify-center mb-6" aria-hidden="true">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0D1B3E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22V12"/><path d="m15 9-3 3-3-3"/><path d="M8 5.5C8 3.57 9.57 2 11.5 2h1C14.43 2 16 3.57 16 5.5v0c0 1.93-1.57 3.5-3.5 3.5h-1C9.57 9 8 7.43 8 5.5z"/><line x1="6" y1="22" x2="18" y2="22"/>
-            </svg>
-          </div>
-          <h3 class="font-heading font-700 text-yellow text-xl mb-3">Saldature in Genere</h3>
-          <p class="text-white/80 font-body leading-relaxed text-sm">
-            Saldatura MIG, TIG e autogena su acciaio, alluminio e rame. Riparazioni strutturali, costruzione di componenti su misura, saldatura carrozzeria.
-          </p>
-          <ul class="mt-4 space-y-1" role="list">
-            <li class="text-sm text-white/90 flex items-center gap-2">
-              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Saldatura MIG/MAG
-            </li>
-            <li class="text-sm text-white/90 flex items-center gap-2">
-              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Saldatura TIG alluminio
-            </li>
-            <li class="text-sm text-white/90 flex items-center gap-2">
-              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Saldatura autogena
-            </li>
-            <li class="text-sm text-white/90 flex items-center gap-2">
-              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Riparazioni su misura
-            </li>
-          </ul>
-        </article>
+/* ═══════════════════════════════════════════════
+   SPARKS CANVAS (welding sparks effect)
+═══════════════════════════════════════════════ */
+function initSparks() {
+  const canvas = document.getElementById('sparks-canvas');
+  const ctx    = canvas.getContext('2d');
+  let W, H, particles = [];
 
-        <!-- Condizionatori -->
-        <article class="card bg-white p-8">
-          <div class="w-14 h-14 bg-navy flex items-center justify-center mb-6" aria-hidden="true">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M8 16h8M8 12h8"/><rect x="3" y="6" width="18" height="14" rx="0"/><path d="M7 6V4M12 6V4M17 6V4"/>
-            </svg>
-          </div>
-          <h3 class="font-heading font-700 text-navy text-xl mb-3">Ricarica Condizionatori</h3>
-          <p class="text-gray-600 font-body leading-relaxed text-sm">
-            Ricarica e revisione del climatizzatore auto. Gas refrigerante, controllo perdite, sostituzione componenti. Per un'estate fresca senza sorprese.
-          </p>
-          <ul class="mt-4 space-y-1" role="list">
-            <li class="text-sm text-gray-700 flex items-center gap-2">
-              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Ricarica gas R134a / R1234yf
-            </li>
-            <li class="text-sm text-gray-700 flex items-center gap-2">
-              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Controllo perdite
-            </li>
-            <li class="text-sm text-gray-700 flex items-center gap-2">
-              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Sostituzione filtro abitacolo
-            </li>
-            <li class="text-sm text-gray-700 flex items-center gap-2">
-              <span class="w-2 h-2 bg-yellow inline-block flex-shrink-0" aria-hidden="true"></span>Igienizzazione impianto
-            </li>
-          </ul>
-        </article>
+  function resize() {
+    W = canvas.width  = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
 
-      </div>
-    </div>
-  </section>
+  class Particle {
+    constructor() { this.reset(); }
+    reset() {
+      this.x   = Math.random() * W * 0.6 + W * 0.2;
+      this.y   = H * 0.6 + Math.random() * H * 0.2;
+      this.vx  = (Math.random() - 0.5) * 6;
+      this.vy  = -(Math.random() * 5 + 2);
+      this.life  = 1;
+      this.decay = 0.012 + Math.random() * 0.02;
+      this.size  = Math.random() * 2.5 + 0.5;
+      this.color = Math.random() > 0.3 ? '#F5C400' : '#FF8C00';
+    }
+    update() {
+      this.x    += this.vx;
+      this.y    += this.vy;
+      this.vy   += 0.12;
+      this.vx   *= 0.98;
+      this.life -= this.decay;
+      if (this.life <= 0) this.reset();
+    }
+    draw() {
+      ctx.save();
+      ctx.globalAlpha = this.life * 0.7;
+      ctx.fillStyle = this.color;
+      ctx.shadowColor = this.color;
+      ctx.shadowBlur  = 6;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
 
-  <div class="section-divider" aria-hidden="true"></div>
+  for (let i = 0; i < 60; i++) {
+    const p = new Particle();
+    p.life = Math.random();
+    particles.push(p);
+  }
 
-  <!-- PERCHÉ NOI -->
-  <section class="py-20 bg-gray-50">
-    <div class="max-w-6xl mx-auto px-4">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+  let frame;
+  function tick() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => { p.update(); p.draw(); });
+    frame = requestAnimationFrame(tick);
+  }
+  tick();
+}
 
-        <div>
-          <p class="font-heading font-700 text-yellow text-sm uppercase tracking-widest mb-2">Perché sceglierci</p>
-          <h2 class="font-heading font-900 text-navy text-4xl sm:text-5xl leading-none mb-6">ESPERTI,<br>NON SOLO<br>ECONOMICI</h2>
-          <p class="text-gray-600 font-body leading-relaxed text-base mb-8">
-            Da decenni a Torino, Pernice Officina è il punto di riferimento per chi ha bisogno di un lavoro fatto bene. Non promettiamo solo il prezzo più basso — promettiamo che il lavoro dura.
-          </p>
-          <a href="tel:+390116115680" class="btn-primary px-6 py-3 text-base inline-flex items-center gap-2 rounded-none">
-            Chiedi un preventivo
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-            </svg>
-          </a>
-        </div>
+/* ═══════════════════════════════════════════════
+   NAV SCROLL
+═══════════════════════════════════════════════ */
+function initNav() {
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  }, { passive: true });
+}
 
-        <div class="grid grid-cols-2 gap-4">
-          <div class="card bg-yellow p-6">
-            <div class="font-heading font-900 text-navy text-4xl mb-1" aria-label="4.6 stelle">4.6 ★</div>
-            <div class="font-heading font-600 text-navy text-sm">Su Google Maps</div>
-            <div class="text-navy/70 text-xs font-body mt-1">15 recensioni verificate</div>
-          </div>
-          <div class="card bg-white p-6">
-            <div class="font-heading font-900 text-navy text-4xl mb-1">50+</div>
-            <div class="font-heading font-600 text-navy text-sm">Anni di esperienza</div>
-            <div class="text-gray-500 text-xs font-body mt-1">Officina storica a Torino</div>
-          </div>
-          <div class="card bg-navy p-6">
-            <div class="font-heading font-900 text-yellow text-4xl mb-1">3</div>
-            <div class="font-heading font-600 text-white text-sm">Servizi specializzati</div>
-            <div class="text-white/60 text-xs font-body mt-1">Radiatori, saldature, clima</div>
-          </div>
-          <div class="card bg-white p-6">
-            <div class="font-heading font-900 text-navy text-4xl mb-1">∞</div>
-            <div class="font-heading font-600 text-navy text-sm">Marche e modelli</div>
-            <div class="text-gray-500 text-xs font-body mt-1">Auto, furgoni, camion</div>
-          </div>
-        </div>
+/* ═══════════════════════════════════════════════
+   HERO ENTRANCE
+═══════════════════════════════════════════════ */
+function initHero() {
+  const els = [
+    { el: document.getElementById('t1'),          delay: 0,    y: '110%' },
+    { el: document.getElementById('t2'),          delay: 80,   y: '110%' },
+    { el: document.getElementById('t3'),          delay: 180,  y: '110%' },
+    { el: document.getElementById('hero-badge'),  delay: 320,  y: '20px', opacity: true },
+    { el: document.getElementById('hero-sub'),    delay: 420,  y: '20px', opacity: true },
+    { el: document.getElementById('hero-ctas'),   delay: 540,  y: '20px', opacity: true },
+    { el: document.getElementById('hero-scroll'), delay: 800,  opacity: true },
+  ];
+  els.forEach(({ el, delay, y, opacity }) => {
+    if (!el) return;
+    setTimeout(() => {
+      el.style.transition = 'transform 0.9s cubic-bezier(.16,1,.3,1), opacity 0.7s ease';
+      if (y) el.style.transform = 'translateY(0)';
+      if (opacity) el.style.opacity = '1';
+    }, delay);
+  });
+}
 
-      </div>
-    </div>
-  </section>
+/* ═══════════════════════════════════════════════
+   INTERSECTION OBSERVER (scroll reveals)
+═══════════════════════════════════════════════ */
+function initReveal() {
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const el = e.target;
+      const delay = el.dataset.delay || 0;
+      setTimeout(() => {
+        el.style.transition = 'opacity 0.8s cubic-bezier(.16,1,.3,1), transform 0.8s cubic-bezier(.16,1,.3,1)';
+        el.style.opacity    = '1';
+        el.style.transform  = 'none';
+      }, +delay);
+      obs.unobserve(el);
+    });
+  }, { threshold: 0.15 });
 
-  <div class="section-divider" aria-hidden="true"></div>
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  document.querySelectorAll('.section-tag').forEach(el => obs.observe(el));
 
-  <!-- CONTATTI -->
-  <section id="contatti" class="py-20 bg-navy">
-    <div class="max-w-6xl mx-auto px-4">
-      <div class="mb-12">
-        <p class="font-heading font-700 text-yellow text-sm uppercase tracking-widest mb-2">Dove siamo</p>
-        <h2 class="font-heading font-900 text-white text-4xl sm:text-5xl leading-none">CONTATTI</h2>
-      </div>
+  document.querySelectorAll('.stat-item').forEach((el, i) => {
+    el.dataset.delay = i * 80;
+    obs.observe(el);
+  });
+  document.querySelectorAll('.service-card').forEach((el, i) => {
+    el.dataset.delay = i * 120;
+    obs.observe(el);
+  });
+  document.querySelectorAll('.trust-card').forEach((el, i) => {
+    el.dataset.delay = i * 90;
+    obs.observe(el);
+  });
+  document.querySelectorAll('.contact-item, .hours-block').forEach((el, i) => {
+    el.dataset.delay = i * 80;
+    obs.observe(el);
+  });
+  const mapWrap = document.querySelector('.map-wrap');
+  if (mapWrap) obs.observe(mapWrap);
+}
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+/* ═══════════════════════════════════════════════
+   COUNTER ANIMATION
+═══════════════════════════════════════════════ */
+function initCounters() {
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const el  = e.target;
+      const end = parseFloat(el.dataset.count);
+      const dec = parseInt(el.dataset.dec || 0);
+      const sfx = el.dataset.suffix || '';
+      const dur = 1600;
+      const step = 16;
+      const steps = dur / step;
+      let current = 0;
+      const increment = end / steps;
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= end) { current = end; clearInterval(timer); }
+        el.textContent = current.toFixed(dec) + sfx;
+      }, step);
+      obs.unobserve(el);
+    });
+  }, { threshold: 0.5 });
 
-        <!-- Indirizzo -->
-        <div class="border-2 border-yellow/40 p-6 hover:border-yellow transition-colors duration-200">
-          <div class="mb-3" aria-hidden="true">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-            </svg>
-          </div>
-          <h3 class="font-heading font-700 text-yellow text-sm uppercase tracking-wide mb-2">Indirizzo</h3>
-          <address class="not-italic text-white font-body text-sm leading-relaxed">
-            Via Somalia, 108/32<br>10127 Torino TO<br>
-            <span class="text-white/60 text-xs">(300 m da Via Sestriere)</span>
-          </address>
-          <a href="https://maps.app.goo.gl/YjouPAV2kkkkRES56" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-yellow text-xs font-heading font-600 mt-3 hover:underline">
-            Apri in Maps
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
-            </svg>
-          </a>
-        </div>
+  document.querySelectorAll('[data-count]').forEach(el => obs.observe(el));
+}
 
-        <!-- Telefono -->
-        <div class="border-2 border-yellow/40 p-6 hover:border-yellow transition-colors duration-200">
-          <div class="mb-3" aria-hidden="true">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 14a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 3h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.6a16 16 0 0 0 6 6l1.96-1.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-            </svg>
-          </div>
-          <h3 class="font-heading font-700 text-yellow text-sm uppercase tracking-wide mb-2">Telefono</h3>
-          <a href="tel:+390116115680" class="text-white font-body text-sm block hover:text-yellow transition-colors duration-150">011.611.568</a>
-          <span class="text-white/50 text-xs font-body">Tel/Fax</span>
-          <a href="tel:+393394466519" class="text-white font-body text-sm block mt-2 hover:text-yellow transition-colors duration-150">339.44.66.519</a>
-          <span class="text-white/50 text-xs font-body">Cellulare</span>
-        </div>
+/* ═══════════════════════════════════════════════
+   3D TILT on service cards
+═══════════════════════════════════════════════ */
+function initTilt() {
+  document.querySelectorAll('.service-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const rect   = card.getBoundingClientRect();
+      const cx     = rect.left + rect.width  / 2;
+      const cy     = rect.top  + rect.height / 2;
+      const dx     = (e.clientX - cx) / (rect.width  / 2);
+      const dy     = (e.clientY - cy) / (rect.height / 2);
+      const rotX   = -dy * 8;
+      const rotY   =  dx * 8;
+      card.style.transition = 'transform 0.05s linear, box-shadow 0.3s';
+      card.style.transform  = `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(8px)`;
+      card.style.boxShadow  = `${-dx * 12}px ${-dy * 12}px 40px rgba(245,196,0,0.12)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transition = 'transform 0.6s cubic-bezier(.16,1,.3,1), box-shadow 0.4s';
+      card.style.transform  = 'perspective(900px) rotateX(0) rotateY(0) translateZ(0)';
+      card.style.boxShadow  = 'none';
+    });
+  });
+}
 
-        <!-- Email -->
-        <div class="border-2 border-yellow/40 p-6 hover:border-yellow transition-colors duration-200">
-          <div class="mb-3" aria-hidden="true">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
-            </svg>
-          </div>
-          <h3 class="font-heading font-700 text-yellow text-sm uppercase tracking-wide mb-2">Email</h3>
-          <a href="mailto:lellopern@libero.it" class="text-white font-body text-sm break-all hover:text-yellow transition-colors duration-150">lellopern@libero.it</a>
-        </div>
+/* ═══════════════════════════════════════════════
+   MAGNETIC BUTTONS
+═══════════════════════════════════════════════ */
+function initMagnetic() {
+  document.querySelectorAll('.magnetic').forEach(btn => {
+    btn.addEventListener('mousemove', e => {
+      const rect = btn.getBoundingClientRect();
+      const dx   = e.clientX - (rect.left + rect.width  / 2);
+      const dy   = e.clientY - (rect.top  + rect.height / 2);
+      btn.style.transition = 'transform 0.2s cubic-bezier(.16,1,.3,1)';
+      btn.style.transform  = `translate(${dx * 0.25}px, ${dy * 0.25}px)`;
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transition = 'transform 0.5s cubic-bezier(.16,1,.3,1)';
+      btn.style.transform  = 'translate(0,0)';
+    });
+  });
+}
 
-        <!-- Orari -->
-        <div class="border-2 border-yellow/40 p-6 hover:border-yellow transition-colors duration-200">
-          <div class="mb-3" aria-hidden="true">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-            </svg>
-          </div>
-          <h3 class="font-heading font-700 text-yellow text-sm uppercase tracking-wide mb-2">Orari</h3>
-          <dl class="text-white font-body text-sm space-y-1">
-            <div class="flex justify-between gap-4">
-              <dt class="text-white/60">Lun–Ven</dt>
-              <dd>08:30 – 18:00</dd>
-            </div>
-            <div class="flex justify-between gap-4">
-              <dt class="text-white/60">Sabato</dt>
-              <dd>08:30 – 12:30</dd>
-            </div>
-            <div class="flex justify-between gap-4">
-              <dt class="text-white/60">Domenica</dt>
-              <dd class="text-white/40">Chiuso</dd>
-            </div>
-          </dl>
-        </div>
+/* ═══════════════════════════════════════════════
+   MARQUEE (parallax band text)
+═══════════════════════════════════════════════ */
+function initMarquee() {
+  const el = document.getElementById('marquee');
+  if (!el) return;
+  let x = 0;
+  const speed = 0.4;
+  const clone = el.cloneNode(true);
+  el.parentNode.insertBefore(clone, el.nextSibling);
 
-      </div>
+  function tick() {
+    x -= speed;
+    const w = el.offsetWidth;
+    if (Math.abs(x) >= w) x = 0;
+    el.style.transform   = `translateX(${x}px)`;
+    clone.style.transform = `translateX(${x + w}px)`;
+    requestAnimationFrame(tick);
+  }
+  tick();
+}
 
-      <!-- Map embed -->
-      <div class="border-2 border-yellow/40 overflow-hidden" style="height: 320px;">
-        <iframe
-          title="Mappa Pernice Officina – Via Somalia 108/32 Torino"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2817.2!2d7.6377!3d45.0392!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zVmlhIFNvbWFsaWEgMTA4LzMyLCBUb3Jpbm8!5e0!3m2!1sit!2sit!4v1718000000000"
-          width="100%"
-          height="320"
-          style="border:0;"
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
-          aria-label="Mappa Google con la posizione di Pernice Officina">
-        </iframe>
-      </div>
+/* ═══════════════════════════════════════════════
+   PARALLAX on scroll
+═══════════════════════════════════════════════ */
+function initParallax() {
+  const glow = document.querySelector('.hero-bg-glow');
+  const grid = document.querySelector('.hero-bg-grid');
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    if (glow) glow.style.transform = `translateY(${y * 0.3}px)`;
+    if (grid) grid.style.transform = `translateY(${y * 0.15}px)`;
+  }, { passive: true });
+}
 
-    </div>
-  </section>
-
-  <!-- FOOTER -->
-  <footer class="bg-navy-dark bg-[#060F24] py-8 border-t-4 border-yellow">
-    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="text-white/60 font-body text-sm text-center sm:text-left">
-        © 2024 Pernice Officina · Via Somalia 108/32, Torino
-      </div>
-      <div class="flex items-center gap-4">
-        <a href="https://www.facebook.com/share/197P38tKrD/" target="_blank" rel="noopener noreferrer" class="text-white/60 hover:text-yellow transition-colors duration-150" aria-label="Pagina Facebook Pernice Officina">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
-          </svg>
-        </a>
-        <a href="https://maps.app.goo.gl/YjouPAV2kkkkRES56" target="_blank" rel="noopener noreferrer" class="text-white/60 hover:text-yellow transition-colors duration-150" aria-label="Pernice Officina su Google Maps">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-          </svg>
-        </a>
-        <a href="tel:+390116115680" class="btn-primary px-4 py-2 text-xs rounded-none" aria-label="Chiama Pernice Officina">
-          Chiama ora
-        </a>
-      </div>
-    </div>
-  </footer>
-
+/* ═══════════════════════════════════════════════
+   INIT ALL
+═══════════════════════════════════════════════ */
+function initAnimations() {
+  initSparks();
+  initNav();
+  initHero();
+  initReveal();
+  initCounters();
+  initTilt();
+  initMagnetic();
+  initMarquee();
+  initParallax();
+}
+</script>
 </body>
 </html>
