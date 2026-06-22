@@ -22,13 +22,19 @@ body{background:var(--bg);color:var(--text);font-family:'Red Hat Display',system
 .brand{display:flex;align-items:center;gap:10px;font-weight:700}
 .brand img{height:30px}
 .status{display:flex;align-items:center;gap:9px;font-size:.85rem;color:var(--muted)}
-.dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(105,201,139,.5);animation:pulse 2s infinite}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
 .dot.load{background:var(--iris);animation:none}
 .dot.err{background:var(--err);animation:none}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(105,201,139,.45)}70%{box-shadow:0 0 0 7px rgba(105,201,139,0)}100%{box-shadow:0 0 0 0 rgba(105,201,139,0)}}
 .wrap{max-width:1200px;margin:0 auto;padding:clamp(18px,3vw,32px) clamp(14px,3vw,28px) 80px}
 h1.hd{font-size:clamp(1.4rem,3vw,2rem);font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
-p.sub{color:var(--muted);font-size:.92rem;margin-bottom:22px}
+p.sub{color:var(--muted);font-size:.92rem;margin-bottom:18px}
+.recbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px 16px;margin-bottom:22px}
+.recbar label{font-size:.78rem;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:700}
+.recbar select{background:var(--panel-2);border:1px solid var(--iris-line);color:var(--text);font:inherit;font-weight:700;font-size:1rem;padding:9px 14px;border-radius:10px;cursor:pointer;min-width:200px}
+.recbar select:focus{outline:none;border-color:var(--iris);box-shadow:0 0 0 3px var(--iris-soft)}
+.recbar .meta{margin-left:auto;font-size:.85rem;color:var(--muted)}
+.recbar .meta b{color:var(--iris);font-weight:800}
 .kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:8px}
 .kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px 16px}
 .kpi .v{font-size:1.7rem;font-weight:800;letter-spacing:-.5px;line-height:1.1}
@@ -48,6 +54,7 @@ p.sub{color:var(--muted);font-size:.92rem;margin-bottom:22px}
 .op .v{font-size:1.35rem;font-weight:800}
 .op .l{font-size:.76rem;color:var(--muted);margin-top:2px}
 .banner{background:var(--panel);border:1px solid var(--err);border-radius:12px;padding:14px 16px;color:var(--text);margin-bottom:18px;font-size:.9rem}
+.note{color:var(--muted);font-size:.82rem;margin-top:8px}
 .hidden{display:none}
 .foot{margin-top:40px;color:var(--muted);font-size:.78rem;text-align:center}
 </style>
@@ -62,7 +69,15 @@ p.sub{color:var(--muted);font-size:.92rem;margin-bottom:22px}
   <p class="sub">Dati in tempo reale dal funnel di selezione · aggiornamento automatico ogni 60s</p>
   <div id="err" class="banner hidden"></div>
 
+  <div class="recbar">
+    <label for="recSel">Edizione REC</label>
+    <select id="recSel"></select>
+    <span class="meta" id="recMeta"></span>
+  </div>
+
   <div class="kpis" id="kpis"></div>
+
+  <div class="card wide hidden" id="cmpCard"><h2>Candidature per edizione</h2><div class="cv"><canvas id="cCmp"></canvas></div></div>
 
   <div class="section-t">Funnel di selezione</div>
   <div class="card wide"><h2>Stato dei candidati</h2><div class="cv tall"><canvas id="cFunnel"></canvas></div></div>
@@ -96,8 +111,11 @@ p.sub{color:var(--muted);font-size:.92rem;margin-bottom:22px}
     <div class="card"><h2>Motivo esclusione</h2><div class="cv"><canvas id="cMotivo"></canvas></div></div>
   </div>
 
-  <div class="section-t">Operatività</div>
-  <div class="opgrid" id="ops"></div>
+  <div id="opSection">
+    <div class="section-t">Operatività · REC corrente</div>
+    <div class="opgrid" id="ops"></div>
+    <p class="note">I contatori operativi (slot, spostamenti, blocchi) si riferiscono al REC attualmente in corso: Supabase conserva solo lo stato attivo.</p>
+  </div>
 
   <div class="foot">JEToP — Junior Enterprise Torino Politecnico · dashboard interna</div>
 </div>
@@ -107,6 +125,7 @@ p.sub{color:var(--muted);font-size:.92rem;margin-bottom:22px}
 const API='https://jetop-n8n-phue.onrender.com/webhook';
 const STATS_PATH='rec-stats-0c3ca2d1f337';
 const REFRESH_MS=60000;
+const RECAP='__recap__';
 
 const IRIS='#9379C2', IRIS2='#684DC2';
 const AREA_COLORS={
@@ -128,12 +147,12 @@ Chart.defaults.plugins.legend.labels.boxWidth=12;
 Chart.defaults.plugins.legend.labels.padding=14;
 Chart.defaults.maintainAspectRatio=false;
 
+let DATA=null;
 const charts={};
 function draw(id,cfg){const el=document.getElementById(id);if(!el)return;if(charts[id])charts[id].destroy();charts[id]=new Chart(el,cfg);}
 function sortEntries(o,limit){let e=Object.entries(o||{}).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]);if(limit)e=e.slice(0,limit);return e;}
 function orderEntries(o,order){return order.filter(k=>o&&o[k]>0).map(k=>[k,o[k]]);}
 function colorsFor(labels,map){return labels.map((l,i)=>(map&&map[l])||PALETTE[i%PALETTE.length]);}
-function isEmpty(o){return !o||Object.values(o).every(v=>!v);}
 function emptyMsg(id){const el=document.getElementById(id);if(el&&el.parentElement)el.parentElement.innerHTML='<div class="empty">Nessun dato</div>';}
 
 function bar(id,entries,colors,horizontal){
@@ -152,11 +171,10 @@ function line(id,obj){
   draw(id,{type:'line',data:{labels:keys,datasets:[{data:keys.map(k=>obj[k]),borderColor:IRIS,backgroundColor:'rgba(147,121,194,.18)',fill:true,tension:.3,pointRadius:3,pointBackgroundColor:IRIS}]},
     options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(236,234,244,.06)'},ticks:{precision:0}}}}});
 }
-
 function kpiCard(v,l,cls){return '<div class="kpi '+(cls||'')+'"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';}
 function opCard(v,l){return '<div class="op"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';}
 
-function render(d){
+function renderStats(d, showOps, isRecap){
   const k=d.kpi||{};
   document.getElementById('kpis').innerHTML=[
     kpiCard(k.totale||0,'Candidature totali','accent'),
@@ -169,43 +187,71 @@ function render(d){
     kpiCard((k.tasso_accettazione||0)+'%','Tasso accettazione')
   ].join('');
 
+  const cmp=document.getElementById('cmpCard');
+  if(isRecap && DATA && DATA.recap && DATA.recap.candidature_per_edizione){
+    cmp.classList.remove('hidden');
+    const ed=DATA.editions.slice().reverse();
+    bar('cCmp',ed.map(e=>[e,DATA.recap.candidature_per_edizione[e]||0]),ed.map((e)=>e===DATA.current?IRIS:IRIS2),false);
+  } else { cmp.classList.add('hidden'); }
+
   const fo=orderEntries(d.funnel,STATO_ORDER);
   bar('cFunnel',fo,colorsFor(fo.map(e=>e[0]),STATO_COLORS),true);
-
   const pa=sortEntries(d.prima_area); doughnut('cPrimaArea',pa,colorsFor(pa.map(e=>e[0]),AREA_COLORS));
   const sea=sortEntries(d.seconda_area); doughnut('cSecondaArea',sea,colorsFor(sea.map(e=>e[0]),AREA_COLORS));
   bar('cPrimaSotto',sortEntries(d.prima_sotto_area),PALETTE,true);
   bar('cSecondaSotto',sortEntries(d.seconda_sotto_area),PALETTE,true);
-
   line('cTrendCand',d.candidature_per_giorno);
   const cg=d.colloqui_per_giorno||{};const ck=Object.keys(cg).sort();
   if(ck.length)bar('cTrendColloqui',ck.map(k=>[k,cg[k]]),ck.map(()=>IRIS2),false);else emptyMsg('cTrendColloqui');
-
   bar('cAnno',orderEntries(d.anno_corso,ANNO_ORDER),PALETTE,false);
   doughnut('cPercorso',sortEntries(d.percorso),PALETTE);
   bar('cUni',sortEntries(d.universita,12),sortEntries(d.universita,12).map(()=>IRIS),true);
   bar('cFonte',sortEntries(d.come_conosciuti),PALETTE,false);
-
   doughnut('cEsito',sortEntries(d.esito_conoscitivo),colorsFor(sortEntries(d.esito_conoscitivo).map(e=>e[0]),{'Promosso al tecnico':'#69c98b','Escluso':'#e07a7a','Ripescato':'#d6c46a'}));
   bar('cApprov',sortEntries(d.stato_approvazione),PALETTE,true);
   bar('cMotivo',sortEntries(d.motivo_esclusione),PALETTE,false);
 
-  const op=d.operativi||{};
-  document.getElementById('ops').innerHTML=[
-    opCard(op.slot_occupati||0,'Slot occupati'),
-    opCard(op.reschedule_pending||0,'Spostamenti in sospeso'),
-    opCard(op.blocked_slots||0,'Slot bloccati'),
-    opCard(op.telegram_pending||0,'Conferme Telegram pendenti'),
-    opCard(op.deliveries_tot||0,'Email/notifiche inviate'),
-    opCard(k.ritirati||0,'Ritirati'),
-    opCard(k.da_ricontrollare||0,'Da ricontrollare'),
-    opCard(k.rifiutati||0,'Rifiutati')
-  ].join('');
+  const opSec=document.getElementById('opSection');
+  if(showOps){
+    opSec.classList.remove('hidden');
+    const op=(DATA&&DATA.operativi)||{};
+    document.getElementById('ops').innerHTML=[
+      opCard(op.slot_occupati||0,'Slot occupati'),
+      opCard(op.reschedule_pending||0,'Spostamenti in sospeso'),
+      opCard(op.blocked_slots||0,'Slot bloccati'),
+      opCard(op.telegram_pending||0,'Conferme Telegram pendenti'),
+      opCard(op.deliveries_tot||0,'Email/notifiche inviate'),
+      opCard(k.ritirati||0,'Ritirati'),
+      opCard(k.da_ricontrollare||0,'Da ricontrollare'),
+      opCard(k.rifiutati||0,'Rifiutati')
+    ].join('');
+  } else { opSec.classList.add('hidden'); }
+}
 
-  const dt=d.generatedAt?new Date(d.generatedAt):new Date();
-  document.getElementById('updated').textContent='aggiornato '+dt.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
-  document.getElementById('dot').className='dot';
-  document.getElementById('err').classList.add('hidden');
+function apply(){
+  if(!DATA)return;
+  const sel=document.getElementById('recSel');
+  const v=sel.value;
+  const meta=document.getElementById('recMeta');
+  if(v===RECAP){
+    renderStats(DATA.recap,false,true);
+    meta.innerHTML='<b>'+(DATA.editions.length)+'</b> edizioni · <b>'+(DATA.recap.totale||0)+'</b> candidature totali';
+  } else {
+    const st=DATA.byEdition[v];
+    renderStats(st, v===DATA.current, false);
+    meta.innerHTML='<b>'+(st&&st.totale||0)+'</b> candidature'+(v===DATA.current?' · in corso':'');
+  }
+}
+
+function buildSel(){
+  const sel=document.getElementById('recSel');
+  const prev=sel.value;
+  let opts=DATA.editions.map(e=>'<option value="'+e+'">'+e+(e===DATA.current?'  ·  in corso':'')+'</option>');
+  if(DATA.editions.length>1) opts.push('<option value="'+RECAP+'">Recap — tutte le edizioni</option>');
+  sel.innerHTML=opts.join('');
+  const want=(prev&&[...sel.options].some(o=>o.value===prev))?prev:(DATA.current||DATA.editions[0]);
+  sel.value=want;
+  sel.onchange=apply;
 }
 
 async function load(){
@@ -213,7 +259,13 @@ async function load(){
   try{
     const r=await fetch(API+'/'+STATS_PATH,{cache:'no-store'});
     if(!r.ok)throw new Error('HTTP '+r.status);
-    render(await r.json());
+    DATA=await r.json();
+    buildSel();
+    apply();
+    const dt=DATA.generatedAt?new Date(DATA.generatedAt):new Date();
+    document.getElementById('updated').textContent='aggiornato '+dt.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+    dot.className='dot';
+    document.getElementById('err').classList.add('hidden');
   }catch(e){
     dot.className='dot err';
     const eb=document.getElementById('err');eb.classList.remove('hidden');
