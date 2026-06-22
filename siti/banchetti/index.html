@@ -402,20 +402,57 @@ async function loadAdmin(){
   $('#adminWrap').style.display='block';
   const min=Number(r.minHours)||6;
   const people=r.people||[];
-  const under=people.filter(p=>Number(p.hours)<min).length;
+  const totalM=Number(r.totalMembers)||people.length;
+  const ok_count=Number(r.membersOk)||people.filter(p=>Number(p.hours)>=min).length;
+  const under=Number(r.membersUnder)||people.filter(p=>Number(p.hours)<min).length;
   const totalSlots=WEEKS.length*5*SLOTS.length;
   const filled=(r.coverage||[]).filter(c=>c.c>=MINP).length;
+  const totH=(r.totalBookings||0)*1.5;
   $('#admStats').innerHTML=`
-    <div class="s"><b>${r.totalBookings||0}</b>prenotazioni</div>
-    <div class="s"><b>${people.length}</b>persone attive</div>
-    <div class="s"><b>${((r.totalBookings||0)*1.5)%1?((r.totalBookings||0)*1.5).toFixed(1):(r.totalBookings||0)*1.5}h</b>ore totali</div>
-    <div class="s"><b>${filled}/${totalSlots}</b>turni con ≥${MINP}</div>
-    <div class="s"><b style="color:${under?'var(--err)':'var(--ok)'}">${under}</b>sotto le ${min}h</div>`;
-  $('#admBody').innerHTML = people.length ? people.map(p=>{
-    const h=Number(p.hours)||0, ok=h>=min;
-    return `<tr class="${ok?'':'under'}"><td>${p.name||p.email}</td><td>${p.slots}</td><td class="h">${h%1?h.toFixed(1):h}</td><td><span class="pill ${ok?'':'no'}">${ok?'ok':'sotto'}</span></td></tr>`;
-  }).join('') : `<tr><td colspan="4" class="hint">Nessuna prenotazione ancora.</td></tr>`;
-  $('#admNote').textContent=`Soglia minima: ${min}h a persona. Le righe in rosso sono sotto soglia.`;
+    <div class="s"><b>${r.totalBookings||0}</b>prenotazioni totali</div>
+    <div class="s"><b>${totH%1?totH.toFixed(1):totH}h</b>ore totali</div>
+    <div class="s"><b>${filled}/${totalSlots}</b>turni con ≥${MINP} persone</div>
+    <div class="s"><b style="color:var(--ok)">${ok_count}/${totalM}</b>hanno raggiunto le ${min}h</div>
+    <div class="s"><b style="color:${under?'var(--err)':'var(--ok)'}">${under}</b>ancora sotto soglia</div>`;
+  // Filtro rapido: mostra tutti o solo chi è sotto
+  const filterBtns=`<div style="display:flex;gap:8px;margin-bottom:10px">
+    <button class="ghost" id="admAll" style="padding:5px 12px;font-size:.8rem">Tutti (${totalM})</button>
+    <button class="ghost" id="admUnder" style="padding:5px 12px;font-size:.8rem;color:var(--err);border-color:rgba(224,122,122,.4)">Sotto soglia (${under})</button>
+  </div>`;
+  const rows=people.map(p=>{
+    const h=Number(p.hours)||0, isOk=h>=min;
+    return `<tr class="${isOk?'':'under'}" data-ok="${isOk}">
+      <td>${p.name||p.email}<div style="font-size:.75rem;color:var(--muted)">${p.email}</div></td>
+      <td>${p.slots||0}</td>
+      <td class="h">${h===0?'—':h%1?h.toFixed(1):h}</td>
+      <td><span class="pill ${isOk?'':'no'}">${isOk?'✓ ok':'sotto'}</span></td></tr>`;
+  }).join('');
+  document.querySelector('.adm').innerHTML=`
+    <div class="statline" id="admStats"></div>
+    ${filterBtns}
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>Persona</th><th>Turni</th><th style="text-align:right">Ore</th><th>Obiettivo</th></tr></thead>
+      <tbody id="admBody">${rows}</tbody>
+    </table></div>
+    <p class="hint" id="admNote" style="margin-top:12px">Soglia minima: ${min}h a persona · ${totalM} soci totali · le righe in rosso sono sotto soglia.</p>`;
+  // Re-inject stats
+  document.querySelector('#admStats').innerHTML=`
+    <div class="s"><b>${r.totalBookings||0}</b>prenotazioni totali</div>
+    <div class="s"><b>${totH%1?totH.toFixed(1):totH}h</b>ore totali</div>
+    <div class="s"><b>${filled}/${totalSlots}</b>turni con ≥${MINP} persone</div>
+    <div class="s"><b style="color:var(--ok)">${ok_count}/${totalM}</b>hanno raggiunto le ${min}h</div>
+    <div class="s"><b style="color:${under?'var(--err)':'var(--ok)'}">${under}</b>ancora sotto soglia</div>`;
+  // Filter buttons
+  document.querySelector('#admAll').addEventListener('click',()=>{
+    document.querySelectorAll('#admBody tr').forEach(r=>r.style.display='');
+    document.querySelector('#admAll').style.color='var(--iris)';
+    document.querySelector('#admUnder').style.color='';
+  });
+  document.querySelector('#admUnder').addEventListener('click',()=>{
+    document.querySelectorAll('#admBody tr').forEach(r=>r.style.display=r.dataset.ok==='true'?'none':'');
+    document.querySelector('#admUnder').style.color='var(--err)';
+    document.querySelector('#admAll').style.color='';
+  });
 }
 
 /* ---------- BOOT ---------- */
