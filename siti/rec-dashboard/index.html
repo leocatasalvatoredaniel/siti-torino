@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Dashboard REC — JEToP</title>
+<link rel="icon" href="../jetop-rec-automation/assets/favicon.png">
+<style>
+@font-face{font-family:'Red Hat Display';src:url('../jetop-rec-automation/fonts/RedHatDisplay-var.woff2') format('woff2');font-weight:300 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Red Hat Mono';src:url('../jetop-rec-automation/fonts/RedHatMono-var.woff2') format('woff2');font-weight:300 700;font-style:normal;font-display:swap}
+:root{
+  --bg:#0B0A10;--panel:#13111B;--panel-2:#1A1726;--text:#ECEAF4;--muted:#A6A1B6;
+  --iris:#9379C2;--iris-strong:#684DC2;--iris-soft:rgba(147,121,194,.13);--iris-line:rgba(147,121,194,.34);
+  --line:rgba(236,234,244,.09);--line-strong:rgba(236,234,244,.16);--ok:#69c98b;--err:#e07a7a;
+  --radius:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Red Hat Display',system-ui,-apple-system,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+.mono{font-family:'Red Hat Mono',ui-monospace,monospace}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px clamp(16px,4vw,40px);border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(11,10,16,.85);backdrop-filter:blur(10px);z-index:10}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700}
+.brand img{height:30px}
+.status{display:flex;align-items:center;gap:9px;font-size:.85rem;color:var(--muted)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(105,201,139,.5);animation:pulse 2s infinite}
+.dot.load{background:var(--iris);animation:none}
+.dot.err{background:var(--err);animation:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(105,201,139,.45)}70%{box-shadow:0 0 0 7px rgba(105,201,139,0)}100%{box-shadow:0 0 0 0 rgba(105,201,139,0)}}
+.wrap{max-width:1200px;margin:0 auto;padding:clamp(18px,3vw,32px) clamp(14px,3vw,28px) 80px}
+h1.hd{font-size:clamp(1.4rem,3vw,2rem);font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+p.sub{color:var(--muted);font-size:.92rem;margin-bottom:22px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:8px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px 16px}
+.kpi .v{font-size:1.7rem;font-weight:800;letter-spacing:-.5px;line-height:1.1}
+.kpi .l{font-size:.78rem;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.4px}
+.kpi.accent .v{color:var(--iris)}
+.kpi.ok .v{color:var(--ok)}
+.section-t{font-size:.8rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:30px 0 12px;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 14px}
+.card.wide{grid-column:1/-1}
+.card h2{font-size:.98rem;font-weight:700;margin-bottom:14px}
+.cv{position:relative;height:260px}
+.cv.tall{height:320px}
+.empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:.88rem}
+.opgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.op{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.op .v{font-size:1.35rem;font-weight:800}
+.op .l{font-size:.76rem;color:var(--muted);margin-top:2px}
+.banner{background:var(--panel);border:1px solid var(--err);border-radius:12px;padding:14px 16px;color:var(--text);margin-bottom:18px;font-size:.9rem}
+.hidden{display:none}
+.foot{margin-top:40px;color:var(--muted);font-size:.78rem;text-align:center}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><img src="../jetop-rec-automation/assets/pittogramma-white.png" alt="JEToP"> Dashboard REC</div>
+  <div class="status"><span id="updated">caricamento…</span><span class="dot load" id="dot"></span></div>
+</div>
+<div class="wrap">
+  <h1 class="hd">Statistiche Recruiting</h1>
+  <p class="sub">Dati in tempo reale dal funnel di selezione · aggiornamento automatico ogni 60s</p>
+  <div id="err" class="banner hidden"></div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="section-t">Funnel di selezione</div>
+  <div class="card wide"><h2>Stato dei candidati</h2><div class="cv tall"><canvas id="cFunnel"></canvas></div></div>
+
+  <div class="section-t">Aree</div>
+  <div class="grid">
+    <div class="card"><h2>Prima area</h2><div class="cv"><canvas id="cPrimaArea"></canvas></div></div>
+    <div class="card"><h2>Seconda area</h2><div class="cv"><canvas id="cSecondaArea"></canvas></div></div>
+    <div class="card"><h2>Prima sotto-area</h2><div class="cv"><canvas id="cPrimaSotto"></canvas></div></div>
+    <div class="card"><h2>Seconda sotto-area</h2><div class="cv"><canvas id="cSecondaSotto"></canvas></div></div>
+  </div>
+
+  <div class="section-t">Andamento</div>
+  <div class="grid">
+    <div class="card wide"><h2>Candidature per giorno</h2><div class="cv"><canvas id="cTrendCand"></canvas></div></div>
+    <div class="card wide"><h2>Colloqui per giorno</h2><div class="cv"><canvas id="cTrendColloqui"></canvas></div></div>
+  </div>
+
+  <div class="section-t">Demografia candidati</div>
+  <div class="grid">
+    <div class="card"><h2>Anno di corso</h2><div class="cv"><canvas id="cAnno"></canvas></div></div>
+    <div class="card"><h2>Percorso di studi</h2><div class="cv"><canvas id="cPercorso"></canvas></div></div>
+    <div class="card wide"><h2>Università</h2><div class="cv"><canvas id="cUni"></canvas></div></div>
+    <div class="card wide"><h2>Come ci hanno conosciuti</h2><div class="cv"><canvas id="cFonte"></canvas></div></div>
+  </div>
+
+  <div class="section-t">Esiti e convocazioni</div>
+  <div class="grid">
+    <div class="card"><h2>Esito conoscitivo</h2><div class="cv"><canvas id="cEsito"></canvas></div></div>
+    <div class="card"><h2>Stato approvazione</h2><div class="cv"><canvas id="cApprov"></canvas></div></div>
+    <div class="card"><h2>Motivo esclusione</h2><div class="cv"><canvas id="cMotivo"></canvas></div></div>
+  </div>
+
+  <div class="section-t">Operatività</div>
+  <div class="opgrid" id="ops"></div>
+
+  <div class="foot">JEToP — Junior Enterprise Torino Politecnico · dashboard interna</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const API='https://jetop-n8n-phue.onrender.com/webhook';
+const STATS_PATH='rec-stats-0c3ca2d1f337';
+const REFRESH_MS=60000;
+
+const IRIS='#9379C2', IRIS2='#684DC2';
+const AREA_COLORS={
+  'Marketing & Communication':'#69c98b','M&C':'#69c98b',
+  'Design & Videomaking':'#E59866','D&V':'#E59866',
+  'Information Technology':'#b07fd6','IT':'#b07fd6',
+  'Sales & Partnership':'#6aa6e0','S&P':'#6aa6e0',
+  'Talent & Data Analysis':'#d6c46a','T&DA':'#d6c46a'
+};
+const PALETTE=['#9379C2','#69c98b','#E59866','#6aa6e0','#d6c46a','#b07fd6','#e07a7a','#7ad0c4','#c98bb0','#8b9ec9'];
+const STATO_ORDER=['Candidatura Ricevuta','Da Ricontrollare','Colloquio Schedulato','Colloquio Effettuato','Colloquio Tecnico','Accettato','Rifiutato','Ritirato','Da Escludere','Escluso'];
+const STATO_COLORS={'Candidatura Ricevuta':'#A6A1B6','Da Ricontrollare':'#c98bb0','Colloquio Schedulato':'#6aa6e0','Colloquio Effettuato':'#d6c46a','Colloquio Tecnico':'#E59866','Accettato':'#69c98b','Rifiutato':'#e07a7a','Ritirato':'#b07fd6','Da Escludere':'#8a8597','Escluso':'#6b6678'};
+const ANNO_ORDER=['1','2','3','4','5','Magistrale'];
+
+Chart.defaults.color='#A6A1B6';
+Chart.defaults.borderColor='rgba(236,234,244,.09)';
+Chart.defaults.font.family="'Red Hat Display',system-ui,sans-serif";
+Chart.defaults.plugins.legend.labels.boxWidth=12;
+Chart.defaults.plugins.legend.labels.padding=14;
+Chart.defaults.maintainAspectRatio=false;
+
+const charts={};
+function draw(id,cfg){const el=document.getElementById(id);if(!el)return;if(charts[id])charts[id].destroy();charts[id]=new Chart(el,cfg);}
+function sortEntries(o,limit){let e=Object.entries(o||{}).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]);if(limit)e=e.slice(0,limit);return e;}
+function orderEntries(o,order){return order.filter(k=>o&&o[k]>0).map(k=>[k,o[k]]);}
+function colorsFor(labels,map){return labels.map((l,i)=>(map&&map[l])||PALETTE[i%PALETTE.length]);}
+function isEmpty(o){return !o||Object.values(o).every(v=>!v);}
+function emptyMsg(id){const el=document.getElementById(id);if(el&&el.parentElement)el.parentElement.innerHTML='<div class="empty">Nessun dato</div>';}
+
+function bar(id,entries,colors,horizontal){
+  if(!entries.length){emptyMsg(id);return;}
+  draw(id,{type:'bar',data:{labels:entries.map(e=>e[0]),datasets:[{data:entries.map(e=>e[1]),backgroundColor:colors,borderRadius:6,maxBarThickness:46}]},
+    options:{indexAxis:horizontal?'y':'x',plugins:{legend:{display:false}},scales:{x:{grid:{display:!horizontal,color:'rgba(236,234,244,.06)'},ticks:{precision:0}},y:{grid:{display:horizontal?false:true,color:'rgba(236,234,244,.06)'},ticks:{precision:0}}}}});
+}
+function doughnut(id,entries,colors){
+  if(!entries.length){emptyMsg(id);return;}
+  draw(id,{type:'doughnut',data:{labels:entries.map(e=>e[0]),datasets:[{data:entries.map(e=>e[1]),backgroundColor:colors,borderColor:'#13111B',borderWidth:2}]},
+    options:{cutout:'58%',plugins:{legend:{position:'bottom'}}}});
+}
+function line(id,obj){
+  const keys=Object.keys(obj||{}).sort();
+  if(!keys.length){emptyMsg(id);return;}
+  draw(id,{type:'line',data:{labels:keys,datasets:[{data:keys.map(k=>obj[k]),borderColor:IRIS,backgroundColor:'rgba(147,121,194,.18)',fill:true,tension:.3,pointRadius:3,pointBackgroundColor:IRIS}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(236,234,244,.06)'},ticks:{precision:0}}}}});
+}
+
+function kpiCard(v,l,cls){return '<div class="kpi '+(cls||'')+'"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';}
+function opCard(v,l){return '<div class="op"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';}
+
+function render(d){
+  const k=d.kpi||{};
+  document.getElementById('kpis').innerHTML=[
+    kpiCard(k.totale||0,'Candidature totali','accent'),
+    kpiCard(k.valide||0,'Valide'),
+    kpiCard(k.in_attesa||0,'In attesa di slot'),
+    kpiCard(k.convocati||0,'Convocati'),
+    kpiCard(k.effettuati||0,'Colloqui svolti'),
+    kpiCard(k.accettati||0,'Accettati','ok'),
+    kpiCard((k.tasso_convocazione||0)+'%','Tasso convocazione'),
+    kpiCard((k.tasso_accettazione||0)+'%','Tasso accettazione')
+  ].join('');
+
+  const fo=orderEntries(d.funnel,STATO_ORDER);
+  bar('cFunnel',fo,colorsFor(fo.map(e=>e[0]),STATO_COLORS),true);
+
+  const pa=sortEntries(d.prima_area); doughnut('cPrimaArea',pa,colorsFor(pa.map(e=>e[0]),AREA_COLORS));
+  const sea=sortEntries(d.seconda_area); doughnut('cSecondaArea',sea,colorsFor(sea.map(e=>e[0]),AREA_COLORS));
+  bar('cPrimaSotto',sortEntries(d.prima_sotto_area),PALETTE,true);
+  bar('cSecondaSotto',sortEntries(d.seconda_sotto_area),PALETTE,true);
+
+  line('cTrendCand',d.candidature_per_giorno);
+  const cg=d.colloqui_per_giorno||{};const ck=Object.keys(cg).sort();
+  if(ck.length)bar('cTrendColloqui',ck.map(k=>[k,cg[k]]),ck.map(()=>IRIS2),false);else emptyMsg('cTrendColloqui');
+
+  bar('cAnno',orderEntries(d.anno_corso,ANNO_ORDER),PALETTE,false);
+  doughnut('cPercorso',sortEntries(d.percorso),PALETTE);
+  bar('cUni',sortEntries(d.universita,12),sortEntries(d.universita,12).map(()=>IRIS),true);
+  bar('cFonte',sortEntries(d.come_conosciuti),PALETTE,false);
+
+  doughnut('cEsito',sortEntries(d.esito_conoscitivo),colorsFor(sortEntries(d.esito_conoscitivo).map(e=>e[0]),{'Promosso al tecnico':'#69c98b','Escluso':'#e07a7a','Ripescato':'#d6c46a'}));
+  bar('cApprov',sortEntries(d.stato_approvazione),PALETTE,true);
+  bar('cMotivo',sortEntries(d.motivo_esclusione),PALETTE,false);
+
+  const op=d.operativi||{};
+  document.getElementById('ops').innerHTML=[
+    opCard(op.slot_occupati||0,'Slot occupati'),
+    opCard(op.reschedule_pending||0,'Spostamenti in sospeso'),
+    opCard(op.blocked_slots||0,'Slot bloccati'),
+    opCard(op.telegram_pending||0,'Conferme Telegram pendenti'),
+    opCard(op.deliveries_tot||0,'Email/notifiche inviate'),
+    opCard(k.ritirati||0,'Ritirati'),
+    opCard(k.da_ricontrollare||0,'Da ricontrollare'),
+    opCard(k.rifiutati||0,'Rifiutati')
+  ].join('');
+
+  const dt=d.generatedAt?new Date(d.generatedAt):new Date();
+  document.getElementById('updated').textContent='aggiornato '+dt.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('dot').className='dot';
+  document.getElementById('err').classList.add('hidden');
+}
+
+async function load(){
+  const dot=document.getElementById('dot');dot.className='dot load';
+  try{
+    const r=await fetch(API+'/'+STATS_PATH,{cache:'no-store'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    render(await r.json());
+  }catch(e){
+    dot.className='dot err';
+    const eb=document.getElementById('err');eb.classList.remove('hidden');
+    eb.textContent='Impossibile caricare i dati ('+e.message+'). Riprovo automaticamente…';
+    document.getElementById('updated').textContent='errore';
+  }
+}
+load();
+setInterval(load,REFRESH_MS);
+</script>
+</body>
+</html>
