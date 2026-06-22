@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Banchetti — Prenotazioni volantinaggio JEToP</title>
+<link rel="icon" href="../jetop-rec-automation/assets/favicon.png">
+<style>
+@font-face{font-family:'Red Hat Display';src:url('../jetop-rec-automation/fonts/RedHatDisplay-var.woff2') format('woff2');font-weight:300 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Red Hat Mono';src:url('../jetop-rec-automation/fonts/RedHatMono-var.woff2') format('woff2');font-weight:300 700;font-style:normal;font-display:swap}
+:root{
+  --bg:#0B0A10;--panel:#13111B;--panel-2:#1A1726;--text:#ECEAF4;--muted:#A6A1B6;
+  --iris:#9379C2;--iris-strong:#684DC2;--iris-soft:rgba(147,121,194,.13);--iris-line:rgba(147,121,194,.34);
+  --line:rgba(236,234,244,.09);--line-strong:rgba(236,234,244,.16);
+  --ok:#69c98b;--ok-soft:rgba(105,201,139,.14);--warn:#e0b070;--warn-soft:rgba(224,176,112,.13);
+  --err:#e07a7a;--full:rgba(104,77,194,.30);--radius:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Red Hat Display',system-ui,-apple-system,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+.mono{font-family:'Red Hat Mono',ui-monospace,monospace}
+a{color:var(--iris)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px clamp(14px,4vw,36px);border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(11,10,16,.88);backdrop-filter:blur(10px);z-index:20}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700}
+.brand img{height:28px}
+.who{display:flex;align-items:center;gap:12px;font-size:.86rem;color:var(--muted)}
+.who b{color:var(--text);font-weight:700}
+.wrap{max-width:980px;margin:0 auto;padding:clamp(18px,4vw,34px) clamp(13px,3vw,28px) 90px}
+h1.hd{font-size:clamp(1.5rem,4vw,2.2rem);font-weight:800;letter-spacing:-.5px}
+p.sub{color:var(--muted);font-size:.95rem;margin-top:5px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(16px,3.5vw,26px);margin-top:22px}
+label{font-size:.88rem;color:var(--muted);font-weight:600;display:block;margin-bottom:6px}
+input{background:var(--panel-2);border:1px solid var(--line-strong);border-radius:10px;color:var(--text);padding:11px 13px;font:inherit;font-size:.97rem;width:100%}
+input:focus{outline:none;border-color:var(--iris);box-shadow:0 0 0 3px var(--iris-soft)}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;cursor:pointer;padding:11px 18px}
+button.primary{background:var(--iris-strong);color:#fff}
+button.primary:hover{background:var(--iris)}
+button.ghost{background:transparent;color:var(--iris);border:1px solid var(--iris-line);white-space:nowrap}
+button.ghost:hover{background:var(--iris-soft)}
+button.danger{background:transparent;color:var(--err);border:1px solid rgba(224,122,122,.4)}
+button.danger:hover{background:rgba(224,122,122,.1)}
+button:disabled{opacity:.4;cursor:not-allowed}
+.vrow{display:flex;gap:10px;align-items:stretch}.vrow input{flex:1}
+.status{font-size:.86rem;margin-top:10px;min-height:1.1em}
+.status.ok{color:var(--ok)}.status.err{color:var(--err)}.status.busy{color:var(--muted)}
+.hint{font-size:.82rem;color:var(--muted)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--muted);border-top-color:var(--iris);border-radius:50%;animation:sp 1s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* progress */
+.prog-card{display:flex;flex-wrap:wrap;align-items:center;gap:16px}
+.prog-main{flex:1;min-width:220px}
+.prog-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.prog-top .h{font-size:1.6rem;font-weight:800;letter-spacing:-.5px}
+.prog-top .h small{font-size:.95rem;color:var(--muted);font-weight:600}
+.prog-top .goal{font-size:.82rem;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+.bar{height:11px;background:var(--panel-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--iris-strong),var(--iris));border-radius:99px;transition:width .5s}
+.bar.done>i{background:linear-gradient(90deg,#4ea96f,var(--ok))}
+.prog-badge{font-size:.9rem;font-weight:700;padding:8px 14px;border-radius:99px;border:1px solid var(--line-strong);color:var(--muted)}
+.prog-badge.done{color:var(--ok);border-color:rgba(105,201,139,.4);background:var(--ok-soft)}
+
+/* tabs */
+.tabs{display:flex;gap:8px;margin:24px 0 4px;flex-wrap:wrap}
+.tab{flex:1;min-width:140px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 14px;cursor:pointer;text-align:left;color:var(--text)}
+.tab .t{font-weight:700;font-size:.95rem}.tab .s{font-size:.8rem;color:var(--muted);margin-top:2px}
+.tab.active{border-color:var(--iris);background:var(--iris-soft)}
+.tab.active .t{color:var(--iris)}
+
+/* legend */
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:16px 2px 8px;font-size:.8rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.lg{width:13px;height:13px;border-radius:4px;border:1px solid var(--line-strong)}
+.lg.under{background:var(--warn-soft);border-color:rgba(224,176,112,.5)}
+.lg.ok{background:var(--ok-soft);border-color:rgba(105,201,139,.45)}
+.lg.full{background:var(--full);border-color:var(--iris-line)}
+.lg.mine{background:var(--iris-strong);border-color:var(--iris)}
+
+/* grid */
+.gridwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:8px;padding-bottom:4px}
+.bgrid{display:grid;grid-template-columns:58px repeat(5,minmax(60px,1fr));gap:6px;min-width:400px}
+.hcell{padding:6px 2px;text-align:center;font-size:.78rem;color:var(--muted);font-weight:700;position:sticky;top:0}
+.hcell b{display:block;color:var(--text);font-size:.92rem}
+.corner{position:sticky;left:0;background:var(--bg);z-index:3}
+.tcell{position:sticky;left:0;background:var(--bg);z-index:2;display:flex;align-items:center;justify-content:flex-end;padding-right:7px;font-size:.72rem;color:var(--muted);font-weight:600;text-align:right;line-height:1.15}
+.cell{border:1px solid var(--line-strong);border-radius:10px;background:var(--panel-2);min-height:50px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;padding:4px;transition:transform .08s,border-color .15s}
+.cell:hover{border-color:var(--iris-line)}
+.cell:active{transform:scale(.95)}
+.cell .c{font-weight:800;font-size:1.02rem;line-height:1}
+.cell .m{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.cell.under{background:var(--warn-soft)}
+.cell.ok{background:var(--ok-soft)}
+.cell.full{background:var(--full)}
+.cell.full:not(.mine){cursor:not-allowed;opacity:.85}
+.cell.mine{border-color:var(--iris);box-shadow:inset 0 0 0 1px var(--iris)}
+.cell.mine .c::after{content:' ✓';color:var(--iris)}
+.cell.closed{cursor:default}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(7,6,11,.72);backdrop-filter:blur(3px);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.overlay.show{display:flex}
+@media(min-width:640px){.overlay{align-items:center}}
+.sheet{background:var(--panel);border:1px solid var(--line-strong);border-radius:18px 18px 0 0;width:100%;max-width:460px;padding:22px 20px 26px;animation:up .2s ease}
+@media(min-width:640px){.sheet{border-radius:18px}}
+@keyframes up{from{transform:translateY(18px);opacity:.5}to{transform:translateY(0);opacity:1}}
+.sheet h3{font-size:1.15rem;font-weight:800}
+.sheet .when{color:var(--iris);font-weight:700;margin-top:2px;font-size:.95rem}
+.people{list-style:none;margin:16px 0;padding:0;display:flex;flex-direction:column;gap:7px;max-height:34vh;overflow:auto}
+.people li{background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-size:.92rem;display:flex;align-items:center;gap:9px}
+.people li.me{border-color:var(--iris-line);background:var(--iris-soft)}
+.people .av{width:24px;height:24px;border-radius:50%;background:var(--iris-strong);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;flex-shrink:0}
+.people .empty{color:var(--muted);font-size:.88rem;padding:6px 2px}
+.sheet .cap{font-size:.82rem;color:var(--muted);margin-bottom:4px}
+.sheet-actions{display:flex;gap:10px;margin-top:8px}
+.sheet-actions button{flex:1;padding:13px}
+.x{background:none;border:0;color:var(--muted);font-size:1.5rem;cursor:pointer;padding:0;line-height:1}
+
+/* admin */
+.admin-toggle{margin-top:26px}
+.adm{margin-top:14px}
+.adm table{width:100%;border-collapse:collapse;font-size:.88rem}
+.adm th,.adm td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+.adm th{color:var(--muted);font-weight:700;font-size:.76rem;text-transform:uppercase;letter-spacing:.5px}
+.adm td.h{font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+.adm tr.under td{color:var(--err)}
+.adm .pill{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--ok-soft);color:var(--ok)}
+.adm .pill.no{background:rgba(224,122,122,.13);color:var(--err)}
+.statline{display:flex;flex-wrap:wrap;gap:18px;margin-bottom:14px}
+.statline .s{font-size:.82rem;color:var(--muted)}.statline .s b{display:block;color:var(--text);font-size:1.35rem;font-weight:800}
+
+.banner{background:var(--warn-soft);border:1px solid rgba(224,176,112,.4);color:var(--warn);border-radius:12px;padding:12px 15px;margin-top:18px;font-size:.9rem;font-weight:600}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--iris-line);color:var(--text);padding:12px 20px;border-radius:12px;font-size:.9rem;font-weight:600;z-index:80;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.show{opacity:1}
+.toast.err{border-color:rgba(224,122,122,.5)}
+footer{margin-top:46px;text-align:center;color:var(--muted);font-size:.83rem}
+.refresh{display:flex;align-items:center;gap:8px;justify-content:flex-end;margin-top:10px;font-size:.78rem;color:var(--muted)}
+.refresh button{padding:5px 10px;font-size:.78rem;font-weight:600}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><img src="../jetop-rec-automation/assets/pittogramma-white.png" alt="JEToP"> Banchetti</div>
+  <div class="who" id="who" style="display:none">
+    <span>Ciao, <b id="whoName"></b></span>
+    <button class="ghost" id="logoutBtn" style="padding:6px 12px;font-size:.82rem">Esci</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ LOGIN ============ -->
+  <div id="login">
+    <h1 class="hd">Prenota i banchetti</h1>
+    <p class="sub">Volantinaggio REC · 21 settembre – 9 ottobre. Accedi con la tua email per scegliere i turni.</p>
+    <div class="card" style="max-width:440px">
+      <div id="stepEmail">
+        <label for="email">La tua email</label>
+        <input type="email" id="email" autocomplete="email" placeholder="nome.cognome@…">
+        <label for="name" style="margin-top:14px">Nome e cognome</label>
+        <input id="name" autocomplete="name" placeholder="Mario Rossi">
+        <button class="primary" id="sendBtn" style="width:100%;margin-top:16px">Inviami il codice</button>
+      </div>
+      <div id="stepCode" style="display:none">
+        <label for="code">Codice ricevuto via email</label>
+        <div class="vrow">
+          <input id="code" class="mono" inputmode="numeric" maxlength="6" placeholder="6 cifre">
+          <button class="primary" id="verifyBtn">Accedi</button>
+        </div>
+        <button class="ghost" id="backBtn" style="margin-top:12px;width:100%">← Cambia email</button>
+      </div>
+      <div class="status" id="loginStatus"></div>
+      <span class="hint">Il codice può metterci fino a un minuto (e può finire nello spam). Vale 15 minuti.</span>
+    </div>
+  </div>
+
+  <!-- ============ APP ============ -->
+  <div id="app" style="display:none">
+    <h1 class="hd">I tuoi turni al banchetto</h1>
+    <p class="sub">Minimo 3 persone per turno, massimo 5. Turni da 1 ora e mezza.</p>
+
+    <div class="card prog-card" style="margin-top:18px">
+      <div class="prog-main">
+        <div class="prog-top">
+          <div class="h"><span id="myHours">0</span><small> / <span id="minHours">6</span>h</small></div>
+          <div class="goal">Ore minime</div>
+        </div>
+        <div class="bar" id="bar"><i style="width:0%"></i></div>
+      </div>
+      <div class="prog-badge" id="progBadge">Continua a prenotare</div>
+    </div>
+
+    <div id="closedBanner" class="banner" style="display:none">🔒 Le prenotazioni sono al momento chiuse. Puoi vedere i turni ma non prenotarne di nuovi.</div>
+
+    <div class="tabs" id="tabs"></div>
+
+    <div class="legend">
+      <span><i class="lg under"></i> meno di 3 (scoperto)</span>
+      <span><i class="lg ok"></i> 3–4 ok</span>
+      <span><i class="lg full"></i> pieno (5)</span>
+      <span><i class="lg mine"></i> tu sei dentro</span>
+    </div>
+
+    <div class="gridwrap"><div class="bgrid" id="grid"></div></div>
+
+    <div class="refresh">
+      <span id="updated"></span>
+      <button class="ghost" id="refreshBtn">Aggiorna</button>
+    </div>
+
+    <!-- admin -->
+    <div id="adminWrap" style="display:none">
+      <hr style="border:0;border-top:1px solid var(--line);margin:30px 0 0">
+      <div class="admin-toggle">
+        <button class="ghost" id="admToggle">📊 Pannello responsabili</button>
+      </div>
+      <div class="adm card" id="admPanel" style="display:none">
+        <div class="statline" id="admStats"></div>
+        <div style="overflow-x:auto"><table>
+          <thead><tr><th>Persona</th><th>Turni</th><th style="text-align:right">Ore</th><th>Obiettivo</th></tr></thead>
+          <tbody id="admBody"></tbody>
+        </table></div>
+        <p class="hint" id="admNote" style="margin-top:12px"></p>
+      </div>
+    </div>
+  </div>
+
+  <footer>JEToP · Junior Enterprise Torino Politecnico</footer>
+</div>
+
+<!-- modal -->
+<div class="overlay" id="overlay">
+  <div class="sheet" id="sheet"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API='https://jetop-n8n-phue.onrender.com/webhook';
+const LS='jetop_banchetti_auth';
+const SLOTS=[['08:30','10:00'],['10:00','11:30'],['11:30','13:00'],['13:00','14:30'],['14:30','16:00'],['16:00','17:30'],['17:30','19:00']];
+const DOW=['Lun','Mar','Mer','Gio','Ven'];
+const WEEKS=[
+  {t:'Settimana 1',s:'21–25 set',days:['2026-09-21','2026-09-22','2026-09-23','2026-09-24','2026-09-25']},
+  {t:'Settimana 2',s:'28 set–2 ott',days:['2026-09-28','2026-09-29','2026-09-30','2026-10-01','2026-10-02']},
+  {t:'Settimana 3',s:'5–9 ott',days:['2026-10-05','2026-10-06','2026-10-07','2026-10-08','2026-10-09']},
+];
+const MINP=3, MAXP=5;
+const $=s=>document.querySelector(s);
+let auth=null, state=null, activeWeek=0, slotMap={}, busy=false, modalOpen=false, refreshTimer=null;
+
+function loadAuth(){ try{auth=JSON.parse(localStorage.getItem(LS))||null}catch(e){auth=null} }
+function saveAuth(a){ auth=a; localStorage.setItem(LS, JSON.stringify(a)); }
+function clearAuth(){ auth=null; localStorage.removeItem(LS); }
+
+async function api(path, body, timeout=90000){
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(), timeout);
+  try{
+    const r=await fetch(API+'/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{}),signal:ctrl.signal});
+    clearTimeout(t);
+    const txt=await r.text(); try{return JSON.parse(txt)}catch(e){return {ok:false,_raw:txt}}
+  }catch(e){ clearTimeout(t); return {ok:false,_err:String(e)}; }
+}
+function toast(msg,err){ const el=$('#toast'); el.textContent=msg; el.className='toast show'+(err?' err':''); setTimeout(()=>el.className='toast',2200); }
+function initials(n){ return (n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?'; }
+function dmShort(iso){ const [y,m,d]=iso.split('-'); return (+d)+'/'+(+m); }
+
+/* ---------- LOGIN ---------- */
+$('#sendBtn').addEventListener('click', async ()=>{
+  const email=$('#email').value.trim().toLowerCase(), name=$('#name').value.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return setLogin('Inserisci un\'email valida.','err');
+  if(name.length<2) return setLogin('Scrivi nome e cognome.','err');
+  $('#sendBtn').disabled=true; setLogin('<span class="spin"></span>Invio il codice…','busy');
+  const r=await api('banchetti-login',{email});
+  $('#sendBtn').disabled=false;
+  if(r&&r.ok){ pendingEmail=email; pendingName=name; $('#stepEmail').style.display='none'; $('#stepCode').style.display='block'; setLogin('Codice inviato a '+email,'ok'); $('#code').focus(); }
+  else setLogin('Non sono riuscito a inviare il codice. Riprova tra poco.','err');
+});
+let pendingEmail='', pendingName='';
+$('#backBtn').addEventListener('click', ()=>{ $('#stepCode').style.display='none'; $('#stepEmail').style.display='block'; setLogin('',''); });
+$('#verifyBtn').addEventListener('click', verify);
+$('#code').addEventListener('keydown', e=>{ if(e.key==='Enter') verify(); });
+async function verify(){
+  const code=$('#code').value.trim();
+  if(!/^\d{6}$/.test(code)) return setLogin('Il codice è di 6 cifre.','err');
+  $('#verifyBtn').disabled=true; setLogin('<span class="spin"></span>Verifico…','busy');
+  const r=await api('banchetti-verify',{email:pendingEmail,code,name:pendingName});
+  $('#verifyBtn').disabled=false;
+  if(r&&r.ok&&r.token){ saveAuth({token:r.token,email:pendingEmail,name:r.name||pendingName}); enterApp(); }
+  else setLogin('Codice errato o scaduto. Controlla e riprova.','err');
+}
+function setLogin(msg,cls){ const el=$('#loginStatus'); el.innerHTML=msg; el.className='status '+(cls||''); }
+
+/* ---------- APP ---------- */
+$('#logoutBtn').addEventListener('click', ()=>{ clearAuth(); location.reload(); });
+$('#refreshBtn').addEventListener('click', ()=>loadState(true));
+$('#admToggle').addEventListener('click', ()=>{ const p=$('#admPanel'); p.style.display=p.style.display==='none'?'block':'none'; });
+$('#overlay').addEventListener('click', e=>{ if(e.target===$('#overlay')) closeModal(); });
+
+function enterApp(){
+  $('#login').style.display='none'; $('#app').style.display='block'; $('#who').style.display='flex';
+  $('#whoName').textContent=(auth.name||auth.email).split(' ')[0];
+  buildTabs();
+  loadState(true);
+  loadAdmin();
+  if(refreshTimer) clearInterval(refreshTimer);
+  refreshTimer=setInterval(()=>{ if(!modalOpen && !document.hidden) loadState(false); }, 50000);
+}
+function buildTabs(){
+  $('#tabs').innerHTML=WEEKS.map((w,i)=>`<button class="tab${i===activeWeek?' active':''}" data-w="${i}"><div class="t">${w.t}</div><div class="s">${w.s}</div></button>`).join('');
+  $('#tabs').querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{ activeWeek=+b.dataset.w; buildTabs(); renderGrid(); }));
+}
+async function loadState(showBusy){
+  if(!auth) return;
+  if(showBusy) $('#updated').innerHTML='<span class="spin"></span>';
+  const r=await api('banchetti-state',{token:auth.token});
+  if(!r||r.ok===false){ if(r&&r.ok===false&&!r._err){ clearAuth(); location.reload(); return; } $('#updated').textContent='errore di rete'; return; }
+  state=r; slotMap={};
+  (r.slots||[]).forEach(s=>{ slotMap[s.d+'|'+s.i]={c:s.c,names:s.names||[]}; });
+  const mine=new Set((r.mine||[]).map(m=>m.d+'|'+m.i));
+  Object.keys(slotMap).forEach(k=>slotMap[k].mine=mine.has(k));
+  mine.forEach(k=>{ if(!slotMap[k]) slotMap[k]={c:0,names:[],mine:true}; });
+  renderProgress(); renderGrid();
+  $('#closedBanner').style.display = r.open===false ? 'block':'none';
+  const now=new Date(); $('#updated').textContent='aggiornato '+now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+}
+function renderProgress(){
+  const min=Number(state.minHours)||6, h=Number(state.myHours)||0;
+  $('#minHours').textContent=min; $('#myHours').textContent=h%1?h.toFixed(1):h;
+  const pct=Math.min(100, min?h/min*100:0);
+  const bar=$('#bar'); bar.querySelector('i').style.width=pct+'%';
+  const done=h>=min; bar.classList.toggle('done',done);
+  const b=$('#progBadge'); b.classList.toggle('done',done);
+  b.textContent= done ? '✓ Obiettivo raggiunto' : (min-h)%1?`Mancano ${(min-h).toFixed(1)}h`:`Mancano ${min-h}h`;
+}
+function cellClass(c,mine){ if(mine) return 'mine '+(c>=MAXP?'full':c>=MINP?'ok':'under'); if(c>=MAXP) return 'full'; if(c>=MINP) return 'ok'; if(c>0) return 'under'; return ''; }
+function renderGrid(){
+  const w=WEEKS[activeWeek];
+  let html='<div class="hcell corner"></div>';
+  w.days.forEach((d,i)=>html+=`<div class="hcell">${DOW[i]}<b>${dmShort(d)}</b></div>`);
+  SLOTS.forEach((sl,si)=>{
+    html+=`<div class="tcell">${sl[0]}<br>${sl[1]}</div>`;
+    w.days.forEach(d=>{
+      const k=d+'|'+si, info=slotMap[k]||{c:0,mine:false};
+      const closed = state && state.open===false;
+      const lockFull = info.c>=MAXP && !info.mine;
+      html+=`<button class="cell ${cellClass(info.c,info.mine)}${closed&&!info.mine?' closed':''}" data-d="${d}" data-i="${si}">
+        <span class="c">${info.c}</span><span class="m">${info.c>=MAXP?'pieno':'/'+MAXP}</span></button>`;
+    });
+  });
+  const g=$('#grid'); g.innerHTML=html;
+  g.querySelectorAll('.cell').forEach(c=>c.addEventListener('click',()=>openModal(c.dataset.d,+c.dataset.i)));
+}
+
+/* ---------- MODAL ---------- */
+function openModal(d,i){
+  const k=d+'|'+i, info=slotMap[k]||{c:0,names:[],mine:false};
+  const dateObj=WEEKS[activeWeek].days.indexOf(d); const dow=DOW[dateObj]||'';
+  const names=info.names||[];
+  const closed = state && state.open===false;
+  const full = info.c>=MAXP && !info.mine;
+  let actions='';
+  if(info.mine) actions=`<button class="danger" id="mDel">Annulla la mia prenotazione</button>`;
+  else if(closed) actions=`<button class="primary" disabled>Prenotazioni chiuse</button>`;
+  else if(full) actions=`<button class="primary" disabled>Turno pieno (${MAXP}/${MAXP})</button>`;
+  else actions=`<button class="primary" id="mBook">Prenota questo turno</button>`;
+  const list = names.length
+    ? names.map(n=>{ const me=(n===(auth.name||'')); return `<li class="${me?'me':''}"><span class="av">${initials(n)}</span>${n}${me?' <span class="hint" style="margin-left:auto">tu</span>':''}</li>`; }).join('')
+    : `<div class="empty">Ancora nessuno. Sii il primo! Servono almeno ${MINP} persone.</div>`;
+  $('#sheet').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+      <div><h3>${dow} ${dmShort(d)}</h3><div class="when">${SLOTS[i][0]} – ${SLOTS[i][1]}</div></div>
+      <button class="x" id="mClose">×</button>
+    </div>
+    <p class="cap" style="margin-top:14px">Iscritti <b style="color:var(--text)">${info.c}/${MAXP}</b>${info.c<MINP?` · ne servono almeno ${MINP}`:''}</p>
+    <ul class="people">${list}</ul>
+    <div class="sheet-actions">${actions}</div>`;
+  $('#mClose').addEventListener('click', closeModal);
+  if($('#mBook')) $('#mBook').addEventListener('click', ()=>act('book',d,i));
+  if($('#mDel')) $('#mDel').addEventListener('click', ()=>act('cancel',d,i));
+  $('#overlay').classList.add('show'); modalOpen=true;
+}
+function closeModal(){ $('#overlay').classList.remove('show'); modalOpen=false; }
+async function act(kind,d,i){
+  if(busy) return; busy=true;
+  const btn=$(kind==='book'?'#mBook':'#mDel'); if(btn){btn.disabled=true; btn.innerHTML='<span class="spin"></span>'+(kind==='book'?'Prenoto…':'Annullo…');}
+  const r=await api('banchetti-'+kind,{token:auth.token,date:d,index:i});
+  busy=false;
+  if(r&&r.ok){ closeModal(); toast(kind==='book'?'Turno prenotato ✓':'Prenotazione annullata'); await loadState(false); loadAdmin(); }
+  else{
+    const map={full:'Turno già pieno.',closed:'Prenotazioni chiuse.',auth:'Sessione scaduta, riaccedi.',invalid:'Turno non valido.'};
+    if(r&&r.reason==='already'){ closeModal(); await loadState(false); }
+    else toast((r&&map[r.reason])||'Operazione non riuscita.',true);
+    if(btn){btn.disabled=false; btn.textContent=kind==='book'?'Prenota questo turno':'Annulla la mia prenotazione';}
+    if(r&&r.reason==='auth'){ clearAuth(); setTimeout(()=>location.reload(),1200); }
+  }
+}
+
+/* ---------- ADMIN ---------- */
+async function loadAdmin(){
+  if(!auth) return;
+  const r=await api('banchetti-admin',{token:auth.token});
+  if(!r||!r.ok){ $('#adminWrap').style.display='none'; return; }
+  $('#adminWrap').style.display='block';
+  const min=Number(r.minHours)||6;
+  const people=r.people||[];
+  const under=people.filter(p=>Number(p.hours)<min).length;
+  const totalSlots=WEEKS.length*5*SLOTS.length;
+  const filled=(r.coverage||[]).filter(c=>c.c>=MINP).length;
+  $('#admStats').innerHTML=`
+    <div class="s"><b>${r.totalBookings||0}</b>prenotazioni</div>
+    <div class="s"><b>${people.length}</b>persone attive</div>
+    <div class="s"><b>${((r.totalBookings||0)*1.5)%1?((r.totalBookings||0)*1.5).toFixed(1):(r.totalBookings||0)*1.5}h</b>ore totali</div>
+    <div class="s"><b>${filled}/${totalSlots}</b>turni con ≥${MINP}</div>
+    <div class="s"><b style="color:${under?'var(--err)':'var(--ok)'}">${under}</b>sotto le ${min}h</div>`;
+  $('#admBody').innerHTML = people.length ? people.map(p=>{
+    const h=Number(p.hours)||0, ok=h>=min;
+    return `<tr class="${ok?'':'under'}"><td>${p.name||p.email}</td><td>${p.slots}</td><td class="h">${h%1?h.toFixed(1):h}</td><td><span class="pill ${ok?'':'no'}">${ok?'ok':'sotto'}</span></td></tr>`;
+  }).join('') : `<tr><td colspan="4" class="hint">Nessuna prenotazione ancora.</td></tr>`;
+  $('#admNote').textContent=`Soglia minima: ${min}h a persona. Le righe in rosso sono sotto soglia.`;
+}
+
+/* ---------- BOOT ---------- */
+loadAuth();
+if(auth&&auth.token) enterApp();
+</script>
+</body>
+</html>
