@@ -156,8 +156,14 @@ footer{margin-top:46px;text-align:center;color:var(--muted);font-size:.83rem}
       <div id="stepEmail">
         <label for="email">La tua email</label>
         <input type="email" id="email" autocomplete="email" placeholder="nome.cognome@…">
-        <label for="name" style="margin-top:14px">Nome e cognome</label>
-        <input id="name" autocomplete="name" placeholder="Mario Rossi">
+        <div id="nameWrap">
+          <label for="name" style="margin-top:14px">Nome e cognome</label>
+          <input id="name" autocomplete="name" placeholder="Mario Rossi">
+        </div>
+        <div id="passWrap" style="display:none">
+          <label for="pass" style="margin-top:14px">Password</label>
+          <input type="password" id="pass" autocomplete="current-password">
+        </div>
         <button class="primary" id="sendBtn" style="width:100%;margin-top:16px">Inviami il codice</button>
       </div>
       <div id="stepCode" style="display:none">
@@ -264,8 +270,29 @@ function initials(n){ return (n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]
 function dmShort(iso){ const [y,m,d]=iso.split('-'); return (+d)+'/'+(+m); }
 
 /* ---------- LOGIN ---------- */
+const ADMIN_EMAIL='hr@jetop.com';
+function isAdminEmail(){ return $('#email').value.trim().toLowerCase()===ADMIN_EMAIL; }
+$('#email').addEventListener('input',()=>{
+  const adm=isAdminEmail();
+  $('#nameWrap').style.display=adm?'none':'block';
+  $('#passWrap').style.display=adm?'block':'none';
+  $('#sendBtn').textContent=adm?'Accedi':'Inviami il codice';
+});
+$('#pass').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#sendBtn').click(); });
+
 $('#sendBtn').addEventListener('click', async ()=>{
-  const email=$('#email').value.trim().toLowerCase(), name=$('#name').value.trim();
+  const email=$('#email').value.trim().toLowerCase();
+  if(isAdminEmail()){
+    const pass=$('#pass').value;
+    if(!pass) return setLogin('Inserisci la password.','err');
+    $('#sendBtn').disabled=true; setLogin('<span class="spin"></span>Accesso…','busy');
+    const r=await api('banchetti-admin-login',{email,password:pass});
+    $('#sendBtn').disabled=false;
+    if(r&&r.ok&&r.token){ saveAuth({token:r.token,email,name:r.name||'Admin'}); enterApp(); }
+    else setLogin('Password errata.','err');
+    return;
+  }
+  const name=$('#name').value.trim();
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return setLogin('Inserisci un\'email valida.','err');
   if(name.length<2) return setLogin('Scrivi nome e cognome.','err');
   $('#sendBtn').disabled=true; setLogin('<span class="spin"></span>Invio il codice…','busy');
