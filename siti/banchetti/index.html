@@ -95,6 +95,13 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .cell.mine{border-color:var(--iris);box-shadow:inset 0 0 0 1px var(--iris)}
 .cell.mine .c::after{content:' ✓';color:var(--iris)}
 .cell.closed{cursor:default}
+.cell.off{background:transparent;border-style:dashed;opacity:.3;cursor:default;pointer-events:none}
+
+/* luoghi */
+.loctabs{display:flex;gap:8px;margin:22px 0 0;flex-wrap:wrap}
+.locpill{background:var(--panel);border:1px solid var(--line-strong);border-radius:99px;padding:8px 16px;cursor:pointer;color:var(--text);font-weight:700;font-size:.9rem}
+.locpill.active{border-color:var(--iris);background:var(--iris-soft);color:var(--iris)}
+.locaddr{font-size:.82rem;color:var(--muted);margin:8px 2px 0;min-height:1em}
 
 /* modal */
 .overlay{position:fixed;inset:0;background:rgba(7,6,11,.72);backdrop-filter:blur(3px);display:none;align-items:flex-end;justify-content:center;z-index:50}
@@ -127,6 +134,29 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .adm .pill.no{background:rgba(224,122,122,.13);color:var(--err)}
 .statline{display:flex;flex-wrap:wrap;gap:18px;margin-bottom:14px}
 .statline .s{font-size:.82rem;color:var(--muted)}.statline .s b{display:block;color:var(--text);font-size:1.35rem;font-weight:800}
+.adm .sec{border-top:1px solid var(--line);margin-top:22px;padding-top:6px}
+.adm h4{font-size:1rem;font-weight:800;margin:14px 0 10px}
+button.rm{background:none;border:0;color:var(--err);cursor:pointer;font-size:1rem;padding:2px 6px;line-height:1}
+.people li .rm{margin-left:auto}
+.formrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.formrow{grid-template-columns:1fr}}
+.daysgrid{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.daychk{display:inline-flex;align-items:center;gap:5px;background:var(--panel-2);border:1px solid var(--line-strong);border-radius:8px;padding:5px 9px;font-size:.78rem;cursor:pointer;user-select:none;color:var(--muted)}
+.daychk input{width:auto;margin:0;accent-color:var(--iris)}
+.daychk.on{border-color:var(--iris);background:var(--iris-soft);color:var(--text)}
+.wksep{flex-basis:100%;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:6px;font-weight:700}
+.locrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.locrow .nm{font-weight:700}
+.locrow .meta{font-size:.8rem;color:var(--muted)}
+.locrow .sp{flex:1}
+.locrow.inactive .nm{color:var(--muted)}
+.badge-off{font-size:.7rem;font-weight:700;color:var(--warn);border:1px solid rgba(224,176,112,.4);border-radius:99px;padding:2px 8px;vertical-align:middle}
+.switch{position:relative;width:44px;height:24px;flex-shrink:0;display:inline-block}
+.switch input{opacity:0;width:0;height:0;position:absolute}
+.switch i{position:absolute;inset:0;background:var(--panel-2);border:1px solid var(--line-strong);border-radius:99px;cursor:pointer;transition:.2s;font-style:normal}
+.switch i::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:var(--muted);top:2px;left:2px;transition:.2s}
+.switch input:checked+i{background:var(--iris-soft);border-color:var(--iris)}
+.switch input:checked+i::after{background:var(--iris);transform:translateX(20px)}
 
 .banner{background:var(--warn-soft);border:1px solid rgba(224,176,112,.4);color:var(--warn);border-radius:12px;padding:12px 15px;margin-top:18px;font-size:.9rem;font-weight:600}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--iris-line);color:var(--text);padding:12px 20px;border-radius:12px;font-size:.9rem;font-weight:600;z-index:80;opacity:0;pointer-events:none;transition:opacity .25s}
@@ -182,7 +212,7 @@ footer{margin-top:46px;text-align:center;color:var(--muted);font-size:.83rem}
   <!-- ============ APP ============ -->
   <div id="app" style="display:none">
     <h1 class="hd">I tuoi turni al banchetto</h1>
-    <p class="sub">Minimo 3 persone per turno, massimo 5. Turni da 1 ora e mezza.</p>
+    <p class="sub">Scegli il luogo e prenota i tuoi turni. Minimo 3 persone per turno, massimo 5. Turni da 1 ora e mezza.</p>
 
     <div class="card prog-card" style="margin-top:18px">
       <div class="prog-main">
@@ -196,7 +226,13 @@ footer{margin-top:46px;text-align:center;color:var(--muted);font-size:.83rem}
     </div>
 
     <div id="closedBanner" class="banner" style="display:none">🔒 Le prenotazioni sono al momento chiuse. Puoi vedere i turni ma non prenotarne di nuovi.</div>
+    <div id="notMemberBanner" class="banner" style="display:none">👤 Il tuo account non è nella lista soci: puoi consultare il calendario ma non prenotare. Se pensi sia un errore scrivi a hr@jetop.com.</div>
+    <div id="noLocBanner" class="banner" style="display:none">📍 Nessun luogo disponibile al momento: i banchetti sono in fase di organizzazione, riprova più avanti.</div>
 
+    <div class="loctabs" id="locTabs"></div>
+    <div class="locaddr" id="locAddr"></div>
+
+    <div id="calStuff">
     <div class="tabs" id="tabs"></div>
 
     <div class="legend">
@@ -212,6 +248,7 @@ footer{margin-top:46px;text-align:center;color:var(--muted);font-size:.83rem}
       <span id="updated"></span>
       <button class="ghost" id="refreshBtn">Aggiorna</button>
     </div>
+    </div>
 
     <!-- admin -->
     <div id="adminWrap" style="display:none">
@@ -219,14 +256,7 @@ footer{margin-top:46px;text-align:center;color:var(--muted);font-size:.83rem}
       <div class="admin-toggle">
         <button class="ghost" id="admToggle">📊 Pannello responsabili</button>
       </div>
-      <div class="adm card" id="admPanel" style="display:none">
-        <div class="statline" id="admStats"></div>
-        <div style="overflow-x:auto"><table>
-          <thead><tr><th>Persona</th><th>Turni</th><th style="text-align:right">Ore</th><th>Obiettivo</th></tr></thead>
-          <tbody id="admBody"></tbody>
-        </table></div>
-        <p class="hint" id="admNote" style="margin-top:12px"></p>
-      </div>
+      <div class="adm card" id="admPanel" style="display:none"></div>
     </div>
   </div>
 
@@ -251,7 +281,8 @@ const WEEKS=[
 ];
 const MINP=3, MAXP=5;
 const $=s=>document.querySelector(s);
-let auth=null, state=null, activeWeek=0, slotMap={}, busy=false, modalOpen=false, refreshTimer=null;
+let auth=null, state=null, activeWeek=0, activeLoc=null, slotMap={}, busy=false, modalOpen=false, refreshTimer=null;
+let admin=null, isAdmin=false;
 
 function loadAuth(){ try{auth=JSON.parse(localStorage.getItem(LS))||null}catch(e){auth=null} }
 function saveAuth(a){ auth=a; localStorage.setItem(LS, JSON.stringify(a)); }
@@ -268,6 +299,7 @@ async function api(path, body, timeout=90000){
 function toast(msg,err){ const el=$('#toast'); el.textContent=msg; el.className='toast show'+(err?' err':''); setTimeout(()=>el.className='toast',2200); }
 function initials(n){ return (n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?'; }
 function dmShort(iso){ const [y,m,d]=iso.split('-'); return (+d)+'/'+(+m); }
+function esch(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ---------- LOGIN ---------- */
 const ADMIN_EMAIL='hr@jetop.com';
@@ -318,7 +350,7 @@ function setLogin(msg,cls){ const el=$('#loginStatus'); el.innerHTML=msg; el.cla
 
 /* ---------- APP ---------- */
 $('#logoutBtn').addEventListener('click', ()=>{ clearAuth(); location.reload(); });
-$('#refreshBtn').addEventListener('click', ()=>loadState(true));
+$('#refreshBtn').addEventListener('click', ()=>{ loadState(true); if(isAdmin) loadAdmin(); });
 $('#admToggle').addEventListener('click', ()=>{ const p=$('#admPanel'); p.style.display=p.style.display==='none'?'block':'none'; });
 $('#overlay').addEventListener('click', e=>{ if(e.target===$('#overlay')) closeModal(); });
 
@@ -335,18 +367,30 @@ function buildTabs(){
   $('#tabs').innerHTML=WEEKS.map((w,i)=>`<button class="tab${i===activeWeek?' active':''}" data-w="${i}"><div class="t">${w.t}</div><div class="s">${w.s}</div></button>`).join('');
   $('#tabs').querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{ activeWeek=+b.dataset.w; buildTabs(); renderGrid(); }));
 }
+function renderLocTabs(){
+  const locs=(state&&state.locations)||[];
+  $('#locTabs').innerHTML=locs.map(l=>`<button class="locpill${l.id===activeLoc?' active':''}" data-l="${l.id}">📍 ${esch(l.name)}</button>`).join('');
+  $('#locTabs').querySelectorAll('.locpill').forEach(b=>b.addEventListener('click',()=>{ activeLoc=+b.dataset.l; renderLocTabs(); renderGrid(); }));
+  const cur=locs.find(l=>l.id===activeLoc);
+  $('#locAddr').textContent=cur&&cur.address ? '📌 '+cur.address : '';
+}
 async function loadState(showBusy){
   if(!auth) return;
   if(showBusy) $('#updated').innerHTML='<span class="spin"></span>';
   const r=await api('banchetti-state',{token:auth.token});
   if(!r||r.ok===false){ if(r&&r.ok===false&&!r._err){ clearAuth(); location.reload(); return; } $('#updated').textContent='errore di rete'; return; }
   state=r; slotMap={};
-  (r.slots||[]).forEach(s=>{ slotMap[s.d+'|'+s.i]={c:s.c,names:s.names||[]}; });
-  const mine=new Set((r.mine||[]).map(m=>m.d+'|'+m.i));
+  (r.slots||[]).forEach(s=>{ slotMap[s.l+'|'+s.d+'|'+s.i]={c:s.c,names:s.names||[]}; });
+  const mine=new Set((r.mine||[]).map(m=>m.l+'|'+m.d+'|'+m.i));
   Object.keys(slotMap).forEach(k=>slotMap[k].mine=mine.has(k));
   mine.forEach(k=>{ if(!slotMap[k]) slotMap[k]={c:0,names:[],mine:true}; });
-  renderProgress(); renderGrid();
+  const locs=r.locations||[];
+  if(activeLoc===null || !locs.some(l=>l.id===activeLoc)) activeLoc=locs.length?locs[0].id:null;
+  renderLocTabs(); renderProgress(); renderGrid();
   $('#closedBanner').style.display = r.open===false ? 'block':'none';
+  $('#noLocBanner').style.display = locs.length ? 'none':'block';
+  $('#notMemberBanner').style.display = (r.isMember===false && !isAdmin) ? 'block':'none';
+  $('#calStuff').style.display = locs.length ? 'block':'none';
   const now=new Date(); $('#updated').textContent='aggiornato '+now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
 }
 function renderProgress(){
@@ -361,40 +405,53 @@ function renderProgress(){
 function cellClass(c,mine){ if(mine) return 'mine '+(c>=MAXP?'full':c>=MINP?'ok':'under'); if(c>=MAXP) return 'full'; if(c>=MINP) return 'ok'; if(c>0) return 'under'; return ''; }
 function renderGrid(){
   const w=WEEKS[activeWeek];
+  const loc=((state&&state.locations)||[]).find(l=>l.id===activeLoc);
+  const daySet=new Set(loc?loc.days:[]);
   let html='<div class="hcell corner"></div>';
   w.days.forEach((d,i)=>html+=`<div class="hcell">${DOW[i]}<b>${dmShort(d)}</b></div>`);
   SLOTS.forEach((sl,si)=>{
     html+=`<div class="tcell">${sl[0]}<br>${sl[1]}</div>`;
     w.days.forEach(d=>{
-      const k=d+'|'+si, info=slotMap[k]||{c:0,mine:false};
+      if(!daySet.has(d)){ html+=`<div class="cell off"><span class="m">—</span></div>`; return; }
+      const k=activeLoc+'|'+d+'|'+si, info=slotMap[k]||{c:0,mine:false};
       const closed = state && state.open===false;
-      const lockFull = info.c>=MAXP && !info.mine;
       html+=`<button class="cell ${cellClass(info.c,info.mine)}${closed&&!info.mine?' closed':''}" data-d="${d}" data-i="${si}">
         <span class="c">${info.c}</span><span class="m">${info.c>=MAXP?'pieno':'/'+MAXP}</span></button>`;
     });
   });
   const g=$('#grid'); g.innerHTML=html;
-  g.querySelectorAll('.cell').forEach(c=>c.addEventListener('click',()=>openModal(c.dataset.d,+c.dataset.i)));
+  g.querySelectorAll('button.cell').forEach(c=>c.addEventListener('click',()=>openModal(c.dataset.d,+c.dataset.i)));
 }
 
 /* ---------- MODAL ---------- */
 function openModal(d,i){
-  const k=d+'|'+i, info=slotMap[k]||{c:0,names:[],mine:false};
+  if(activeLoc===null) return;
+  const k=activeLoc+'|'+d+'|'+i, info=slotMap[k]||{c:0,names:[],mine:false};
+  const loc=((state&&state.locations)||[]).find(l=>l.id===activeLoc);
   const dateObj=WEEKS[activeWeek].days.indexOf(d); const dow=DOW[dateObj]||'';
-  const names=info.names||[];
   const closed = state && state.open===false;
   const full = info.c>=MAXP && !info.mine;
   let actions='';
   if(info.mine) actions=`<button class="danger" id="mDel">Annulla la mia prenotazione</button>`;
   else if(closed) actions=`<button class="primary" disabled>Prenotazioni chiuse</button>`;
+  else if(state&&state.isMember===false) actions=`<button class="primary" disabled>Solo i soci possono prenotare</button>`;
   else if(full) actions=`<button class="primary" disabled>Turno pieno (${MAXP}/${MAXP})</button>`;
   else actions=`<button class="primary" id="mBook">Prenota questo turno</button>`;
-  const list = names.length
-    ? names.map(n=>{ const me=(n===(auth.name||'')); return `<li class="${me?'me':''}"><span class="av">${initials(n)}</span>${n}${me?' <span class="hint" style="margin-left:auto">tu</span>':''}</li>`; }).join('')
-    : `<div class="empty">Ancora nessuno. Sii il primo! Servono almeno ${MINP} persone.</div>`;
+  let list;
+  if(isAdmin && admin && Array.isArray(admin.details)){
+    const rows=admin.details.filter(x=>x.l===activeLoc && x.d===d && x.i===i);
+    list = rows.length
+      ? rows.map(p=>`<li><span class="av">${initials(p.n)}</span>${esch(p.n)}<button class="rm" data-e="${esch(p.e)}" title="Rimuovi dal turno">✕</button></li>`).join('')
+      : `<div class="empty">Ancora nessuno in questo turno.</div>`;
+  }else{
+    const names=info.names||[];
+    list = names.length
+      ? names.map(n=>{ const me=(n===(auth.name||'')); return `<li class="${me?'me':''}"><span class="av">${initials(n)}</span>${esch(n)}${me?' <span class="hint" style="margin-left:auto">tu</span>':''}</li>`; }).join('')
+      : `<div class="empty">Ancora nessuno. Sii il primo! Servono almeno ${MINP} persone.</div>`;
+  }
   $('#sheet').innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-      <div><h3>${dow} ${dmShort(d)}</h3><div class="when">${SLOTS[i][0]} – ${SLOTS[i][1]}</div></div>
+      <div><h3>${dow} ${dmShort(d)}</h3><div class="when">${SLOTS[i][0]} – ${SLOTS[i][1]} · 📍 ${esch(loc?loc.name:'')}</div></div>
       <button class="x" id="mClose">×</button>
     </div>
     <p class="cap" style="margin-top:14px">Iscritti <b style="color:var(--text)">${info.c}/${MAXP}</b>${info.c<MINP?` · ne servono almeno ${MINP}`:''}</p>
@@ -403,17 +460,24 @@ function openModal(d,i){
   $('#mClose').addEventListener('click', closeModal);
   if($('#mBook')) $('#mBook').addEventListener('click', ()=>act('book',d,i));
   if($('#mDel')) $('#mDel').addEventListener('click', ()=>act('cancel',d,i));
+  $('#sheet').querySelectorAll('button.rm').forEach(b=>b.addEventListener('click', async ()=>{
+    const email=b.dataset.e;
+    if(!confirm('Rimuovere '+email+' da questo turno?')) return;
+    const r=await adminAct('unbook',{email,location:activeLoc,date:d,index:i});
+    if(r){ toast('Prenotazione rimossa'); closeModal(); await loadState(false); loadAdmin(); }
+  }));
   $('#overlay').classList.add('show'); modalOpen=true;
 }
 function closeModal(){ $('#overlay').classList.remove('show'); modalOpen=false; }
 async function act(kind,d,i){
   if(busy) return; busy=true;
   const btn=$(kind==='book'?'#mBook':'#mDel'); if(btn){btn.disabled=true; btn.innerHTML='<span class="spin"></span>'+(kind==='book'?'Prenoto…':'Annullo…');}
-  const r=await api('banchetti-'+kind,{token:auth.token,date:d,index:i});
+  const r=await api('banchetti-'+kind,{token:auth.token,location:activeLoc,date:d,index:i});
   busy=false;
   if(r&&r.ok){ closeModal(); toast(kind==='book'?'Turno prenotato ✓':'Prenotazione annullata'); await loadState(false); loadAdmin(); }
   else{
-    const map={full:'Turno già pieno.',closed:'Prenotazioni chiuse.',auth:'Sessione scaduta, riaccedi.',invalid:'Turno non valido.'};
+    const map={full:'Turno già pieno.',closed:'Prenotazioni chiuse.',auth:'Sessione scaduta, riaccedi.',invalid:'Turno non valido.',
+      overlap:'Sei già prenotato in un altro luogo a quest\'ora.',noloc:'Questo luogo non è più disponibile.',notmember:'Solo i soci in lista possono prenotare.'};
     if(r&&r.reason==='already'){ closeModal(); await loadState(false); }
     else toast((r&&map[r.reason])||'Operazione non riuscita.',true);
     if(btn){btn.disabled=false; btn.textContent=kind==='book'?'Prenota questo turno':'Annulla la mia prenotazione';}
@@ -422,63 +486,183 @@ async function act(kind,d,i){
 }
 
 /* ---------- ADMIN ---------- */
+async function adminAct(action,payload){
+  const r=await api('banchetti-admin-edit',Object.assign({token:auth.token,action},payload||{}));
+  if(r&&r.ok) return r;
+  const map={auth:'Sessione admin scaduta: riaccedi.',invalid:'Dati non validi.',
+    has_bookings:'Il luogo ha prenotazioni: disattivalo invece di eliminarlo.',notfound:'Elemento non trovato (forse già rimosso).'};
+  toast((r&&map[r.reason])||'Operazione non riuscita.',true);
+  return null;
+}
 async function loadAdmin(){
   if(!auth) return;
   const r=await api('banchetti-admin',{token:auth.token});
-  if(!r||!r.ok){ $('#adminWrap').style.display='none'; return; }
+  if(!r||!r.ok){ isAdmin=false; admin=null; $('#adminWrap').style.display='none'; return; }
+  isAdmin=true; admin=r;
   $('#adminWrap').style.display='block';
+  $('#notMemberBanner').style.display='none';
+  renderAdmin();
+}
+function renderAdmin(){
+  const r=admin; if(!r) return;
   const min=Number(r.minHours)||6;
   const people=r.people||[];
+  const locs=r.locations||[];
   const totalM=Number(r.totalMembers)||people.length;
-  const ok_count=Number(r.membersOk)||people.filter(p=>Number(p.hours)>=min).length;
-  const under=Number(r.membersUnder)||people.filter(p=>Number(p.hours)<min).length;
-  const totalSlots=WEEKS.length*5*SLOTS.length;
+  const ok_count=people.filter(p=>Number(p.hours)>=min).length;
+  const under=totalM-ok_count;
+  const totH=(Number(r.totalBookings)||0)*1.5;
+  const totalSlots=locs.filter(l=>l.active).reduce((a,l)=>a+(l.days||[]).length*SLOTS.length,0);
   const filled=(r.coverage||[]).filter(c=>c.c>=MINP).length;
-  const totH=(r.totalBookings||0)*1.5;
-  $('#admStats').innerHTML=`
-    <div class="s"><b>${r.totalBookings||0}</b>prenotazioni totali</div>
+
+  const stats=`<div class="statline">
+    <div class="s"><b>${r.totalBookings||0}</b>prenotazioni</div>
     <div class="s"><b>${totH%1?totH.toFixed(1):totH}h</b>ore totali</div>
     <div class="s"><b>${filled}/${totalSlots}</b>turni con ≥${MINP} persone</div>
     <div class="s"><b style="color:var(--ok)">${ok_count}/${totalM}</b>hanno raggiunto le ${min}h</div>
-    <div class="s"><b style="color:${under?'var(--err)':'var(--ok)'}">${under}</b>ancora sotto soglia</div>`;
-  // Filtro rapido: mostra tutti o solo chi è sotto
-  const filterBtns=`<div style="display:flex;gap:8px;margin-bottom:10px">
-    <button class="ghost" id="admAll" style="padding:5px 12px;font-size:.8rem">Tutti (${totalM})</button>
-    <button class="ghost" id="admUnder" style="padding:5px 12px;font-size:.8rem;color:var(--err);border-color:rgba(224,122,122,.4)">Sotto soglia (${under})</button>
-  </div>`;
+    <div class="s"><b style="color:${under?'var(--err)':'var(--ok)'}">${under}</b>ancora sotto soglia</div>`+
+    (locs.length?`<div class="s"><b>${locs.filter(l=>l.active).length}</b>luoghi attivi</div>`:'')+`</div>`;
+
+  const settings=`<div class="sec"><h4>⚙️ Impostazioni</h4>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <label class="switch"><input type="checkbox" id="setOpen"${r.open?' checked':''}><i></i></label>
+      <span>Prenotazioni <b id="setOpenLbl">${r.open?'aperte':'chiuse'}</b></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px">
+      <label for="setMin" style="margin:0">Ore minime a socio</label>
+      <input id="setMin" type="number" min="0" max="40" step="0.5" value="${min}" style="width:90px">
+      <button class="ghost" id="setMinSave" style="padding:8px 14px">Salva</button>
+    </div></div>`;
+
+  const locRows=locs.map(l=>`
+    <div class="locrow${l.active?'':' inactive'}">
+      <div><div class="nm">📍 ${esch(l.name)}${l.active?'':' <span class="badge-off">disattivato</span>'}</div>
+      <div class="meta">${l.address?esch(l.address)+' · ':''}${(l.days||[]).length} giorni · ${l.bookings||0} prenotazioni</div></div>
+      <div class="sp"></div>
+      <button class="ghost" data-editloc="${l.id}" style="padding:6px 12px;font-size:.8rem">Modifica</button>
+    </div>`).join('');
+
+  const daysCbs=WEEKS.map(w=>`<span class="wksep">${w.t} · ${w.s}</span>`+w.days.map((d,di)=>
+    `<label class="daychk on"><input type="checkbox" checked data-day="${d}">${DOW[di]} ${dmShort(d)}</label>`).join('')).join('');
+
+  const locForm=`<div id="locForm" style="display:none;margin-top:14px;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:14px">
+    <input type="hidden" id="lfId">
+    <div class="formrow">
+      <div><label for="lfName">Nome del luogo</label><input id="lfName" placeholder="Es. Corso Duca"></div>
+      <div><label for="lfAddr">Indirizzo (facoltativo)</label><input id="lfAddr" placeholder="Es. Corso Duca degli Abruzzi 24"></div>
+    </div>
+    <label style="margin-top:12px">Giorni attivi del luogo</label>
+    <div class="daysgrid" id="lfDays">${daysCbs}</div>
+    <div id="lfActiveWrap" style="display:none;align-items:center;gap:10px;margin:10px 0">
+      <label class="switch"><input type="checkbox" id="lfActive" checked><i></i></label><span>Luogo visibile e prenotabile</span>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+      <button class="primary" id="lfSave">Salva luogo</button>
+      <button class="ghost" id="lfCancel">Annulla</button>
+      <span style="flex:1"></span>
+      <button class="danger" id="lfDelete" style="display:none">Elimina</button>
+    </div></div>`;
+
+  const locSec=`<div class="sec"><h4>📍 Luoghi (${locs.length})</h4>
+    ${locs.length?locRows:'<p class="hint">Nessun luogo ancora: aggiungine almeno uno per aprire il calendario ai soci.</p>'}
+    <button class="ghost" id="locAdd" style="margin-top:12px">➕ Aggiungi luogo</button>
+    ${locForm}</div>`;
+
   const rows=people.map(p=>{
     const h=Number(p.hours)||0, isOk=h>=min;
     return `<tr class="${isOk?'':'under'}" data-ok="${isOk}">
-      <td>${p.name||p.email}<div style="font-size:.75rem;color:var(--muted)">${p.email}</div></td>
+      <td>${esch(p.name||p.email)}<div style="font-size:.75rem;color:var(--muted)">${esch(p.email)}</div></td>
       <td>${p.slots||0}</td>
       <td class="h">${h===0?'—':h%1?h.toFixed(1):h}</td>
-      <td><span class="pill ${isOk?'':'no'}">${isOk?'✓ ok':'sotto'}</span></td></tr>`;
+      <td><span class="pill ${isOk?'':'no'}">${isOk?'✓ ok':'sotto'}</span></td>
+      <td><button class="rm" data-delmem="${esch(p.email)}" title="Rimuovi socio">🗑</button></td></tr>`;
   }).join('');
-  document.querySelector('.adm').innerHTML=`
-    <div class="statline" id="admStats"></div>
-    ${filterBtns}
+
+  const socSec=`<div class="sec"><h4>👥 Soci (${totalM})</h4>
+    <div class="formrow">
+      <input id="mfEmail" type="email" placeholder="email@…">
+      <input id="mfName" placeholder="Nome e cognome">
+    </div>
+    <button class="ghost" id="mfAdd" style="margin-top:10px">➕ Aggiungi socio</button>
+    <div style="display:flex;gap:8px;margin:16px 0 10px">
+      <button class="ghost" id="admAll" style="padding:5px 12px;font-size:.8rem">Tutti (${totalM})</button>
+      <button class="ghost" id="admUnder" style="padding:5px 12px;font-size:.8rem;color:var(--err);border-color:rgba(224,122,122,.4)">Sotto soglia (${under})</button>
+    </div>
     <div style="overflow-x:auto"><table>
-      <thead><tr><th>Persona</th><th>Turni</th><th style="text-align:right">Ore</th><th>Obiettivo</th></tr></thead>
+      <thead><tr><th>Persona</th><th>Turni</th><th style="text-align:right">Ore</th><th>Obiettivo</th><th></th></tr></thead>
       <tbody id="admBody">${rows}</tbody>
     </table></div>
-    <p class="hint" id="admNote" style="margin-top:12px">Soglia minima: ${min}h a persona · ${totalM} soci totali · le righe in rosso sono sotto soglia.</p>`;
-  // Re-inject stats
-  document.querySelector('#admStats').innerHTML=`
-    <div class="s"><b>${r.totalBookings||0}</b>prenotazioni totali</div>
-    <div class="s"><b>${totH%1?totH.toFixed(1):totH}h</b>ore totali</div>
-    <div class="s"><b>${filled}/${totalSlots}</b>turni con ≥${MINP} persone</div>
-    <div class="s"><b style="color:var(--ok)">${ok_count}/${totalM}</b>hanno raggiunto le ${min}h</div>
-    <div class="s"><b style="color:${under?'var(--err)':'var(--ok)'}">${under}</b>ancora sotto soglia</div>`;
-  // Filter buttons
-  document.querySelector('#admAll').addEventListener('click',()=>{
-    document.querySelectorAll('#admBody tr').forEach(r=>r.style.display='');
-    document.querySelector('#admAll').style.color='var(--iris)';
-    document.querySelector('#admUnder').style.color='';
+    <p class="hint" style="margin-top:12px">Soglia minima: ${min}h a persona · le righe in rosso sono sotto soglia. Rimuovere un socio cancella anche le sue prenotazioni. Nel dettaglio di un turno puoi rimuovere singole prenotazioni con la ✕.</p></div>`;
+
+  $('#admPanel').innerHTML=stats+settings+locSec+socSec;
+
+  $('#setOpen').addEventListener('change', async e=>{
+    const v=e.target.checked;
+    const ok=await adminAct('config-set',{key:'open',value:String(v)});
+    if(ok){ toast(v?'Prenotazioni aperte':'Prenotazioni chiuse'); admin.open=v; $('#setOpenLbl').textContent=v?'aperte':'chiuse'; loadState(false); }
+    else e.target.checked=!v;
   });
-  document.querySelector('#admUnder').addEventListener('click',()=>{
-    document.querySelectorAll('#admBody tr').forEach(r=>r.style.display=r.dataset.ok==='true'?'none':'');
-    document.querySelector('#admUnder').style.color='var(--err)';
-    document.querySelector('#admAll').style.color='';
+  $('#setMinSave').addEventListener('click', async ()=>{
+    const ok=await adminAct('config-set',{key:'min_hours',value:$('#setMin').value});
+    if(ok){ toast('Ore minime aggiornate'); await loadState(false); loadAdmin(); }
+  });
+
+  const showLocForm=l=>{
+    $('#locForm').style.display='block';
+    $('#lfId').value=l?l.id:'';
+    $('#lfName').value=l?l.name:'';
+    $('#lfAddr').value=l?l.address:'';
+    $('#lfActiveWrap').style.display=l?'flex':'none';
+    $('#lfActive').checked=l?!!l.active:true;
+    const del=$('#lfDelete');
+    del.style.display=l?'inline-block':'none';
+    if(l){ del.disabled=(l.bookings||0)>0; del.title=del.disabled?'Ha prenotazioni: disattivalo invece di eliminarlo':''; }
+    const set=new Set(l?l.days:[]);
+    $('#lfDays').querySelectorAll('input[data-day]').forEach(c=>{ c.checked=l?set.has(c.dataset.day):true; c.parentElement.classList.toggle('on',c.checked); });
+    $('#lfName').focus();
+  };
+  $('#lfDays').querySelectorAll('input[data-day]').forEach(c=>c.addEventListener('change',()=>c.parentElement.classList.toggle('on',c.checked)));
+  $('#locAdd').addEventListener('click',()=>showLocForm(null));
+  $('#admPanel').querySelectorAll('[data-editloc]').forEach(b=>b.addEventListener('click',()=>{
+    const l=locs.find(x=>x.id===+b.dataset.editloc); if(l) showLocForm(l);
+  }));
+  $('#lfCancel').addEventListener('click',()=>{ $('#locForm').style.display='none'; });
+  $('#lfSave').addEventListener('click', async ()=>{
+    const id=$('#lfId').value, name=$('#lfName').value.trim(), address=$('#lfAddr').value.trim();
+    const days=[...$('#lfDays').querySelectorAll('input[data-day]:checked')].map(c=>c.dataset.day);
+    if(name.length<2) return toast('Scrivi il nome del luogo.',true);
+    if(!days.length) return toast('Seleziona almeno un giorno.',true);
+    const ok= id ? await adminAct('loc-edit',{id:+id,name,address,days,active:$('#lfActive').checked})
+                 : await adminAct('loc-add',{name,address,days});
+    if(ok){ toast(id?'Luogo aggiornato':'Luogo aggiunto ✓'); await loadState(false); loadAdmin(); }
+  });
+  $('#lfDelete').addEventListener('click', async ()=>{
+    const id=+$('#lfId').value; if(!id) return;
+    if(!confirm('Eliminare definitivamente questo luogo?')) return;
+    const ok=await adminAct('loc-del',{id});
+    if(ok){ toast('Luogo eliminato'); await loadState(false); loadAdmin(); }
+  });
+
+  $('#mfAdd').addEventListener('click', async ()=>{
+    const email=$('#mfEmail').value.trim().toLowerCase(), name=$('#mfName').value.trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast('Email non valida.',true);
+    if(name.length<2) return toast('Scrivi nome e cognome.',true);
+    const ok=await adminAct('member-add',{email,name});
+    if(ok){ toast('Socio aggiunto ✓'); loadAdmin(); }
+  });
+  $('#admPanel').querySelectorAll('[data-delmem]').forEach(b=>b.addEventListener('click', async ()=>{
+    const email=b.dataset.delmem;
+    if(!confirm('Rimuovere '+email+' dai soci? Verranno cancellate anche le sue prenotazioni.')) return;
+    const ok=await adminAct('member-del',{email});
+    if(ok){ toast('Socio rimosso'); await loadState(false); loadAdmin(); }
+  }));
+  $('#admAll').addEventListener('click',()=>{
+    document.querySelectorAll('#admBody tr').forEach(tr=>tr.style.display='');
+    $('#admAll').style.color='var(--iris)'; $('#admUnder').style.color='';
+  });
+  $('#admUnder').addEventListener('click',()=>{
+    document.querySelectorAll('#admBody tr').forEach(tr=>tr.style.display=tr.dataset.ok==='true'?'none':'');
+    $('#admUnder').style.color='var(--err)'; $('#admAll').style.color='';
   });
 }
 
