@@ -103,6 +103,27 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .locpill.active{border-color:var(--iris);background:var(--iris-soft);color:var(--iris)}
 .locaddr{font-size:.82rem;color:var(--muted);margin:8px 2px 0;min-height:1em}
 
+/* editor turni (pannello admin) */
+.sched{margin-top:8px}
+.sched .swk{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.sched .swk button{padding:7px 13px;font-size:.82rem;background:var(--panel);border:1px solid var(--line-strong);color:var(--muted);border-radius:99px}
+.sched .swk button.on{border-color:var(--iris);background:var(--iris-soft);color:var(--iris)}
+.sgridwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.sgrid{display:grid;grid-template-columns:66px repeat(5,minmax(52px,1fr));gap:5px;min-width:380px}
+.sgrid .sh{padding:4px 2px;text-align:center;font-size:.72rem;color:var(--muted);font-weight:700;background:none;border:0;cursor:pointer;border-radius:8px}
+.sgrid .sh:hover{background:var(--iris-soft);color:var(--iris)}
+.sgrid .sh b{display:block;color:var(--text);font-size:.86rem}
+.sgrid .st{display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:.68rem;color:var(--muted);font-weight:600;text-align:right;line-height:1.15;background:none;border:0;cursor:pointer;border-radius:8px}
+.sgrid .st:hover{color:var(--iris)}
+.sgrid .sc{min-height:38px;border:1px solid var(--line-strong);border-radius:9px;background:var(--panel);cursor:pointer;padding:0;transition:background .12s,border-color .12s}
+.sgrid .sc:hover{border-color:var(--iris-line)}
+.sgrid .sc.on{background:var(--iris-strong);border-color:var(--iris)}
+.sgrid .sc.on::after{content:'✓';color:#fff;font-size:.82rem;font-weight:800}
+.sched .sfoot{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
+.sched .sfoot .cnt{font-size:.82rem;color:var(--muted);margin-right:auto}
+.sched .sfoot .cnt b{color:var(--text)}
+.sched .sfoot button{padding:6px 11px;font-size:.78rem}
+
 /* modal */
 .overlay{position:fixed;inset:0;background:rgba(7,6,11,.72);backdrop-filter:blur(3px);display:none;align-items:flex-end;justify-content:center;z-index:50}
 .overlay.show{display:flex}
@@ -140,11 +161,6 @@ button.rm{background:none;border:0;color:var(--err);cursor:pointer;font-size:1re
 .people li .rm{margin-left:auto}
 .formrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:560px){.formrow{grid-template-columns:1fr}}
-.daysgrid{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
-.daychk{display:inline-flex;align-items:center;gap:5px;background:var(--panel-2);border:1px solid var(--line-strong);border-radius:8px;padding:5px 9px;font-size:.78rem;cursor:pointer;user-select:none;color:var(--muted)}
-.daychk input{width:auto;margin:0;accent-color:var(--iris)}
-.daychk.on{border-color:var(--iris);background:var(--iris-soft);color:var(--text)}
-.wksep{flex-basis:100%;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:6px;font-weight:700}
 .locrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .locrow .nm{font-weight:700}
 .locrow .meta{font-size:.8rem;color:var(--muted)}
@@ -402,23 +418,29 @@ function renderProgress(){
   const b=$('#progBadge'); b.classList.toggle('done',done);
   b.textContent= done ? '✓ Obiettivo raggiunto' : (min-h)%1?`Mancano ${(min-h).toFixed(1)}h`:`Mancano ${min-h}h`;
 }
-function locSlots(loc){
-  const a=loc&&Array.isArray(loc.slots)?loc.slots.map(Number).filter(n=>n>=0&&n<SLOTS.length):[];
-  return new Set(a.length?a:SLOTS.map((_,i)=>i));
+function daySlots(loc){ return (loc&&loc.daySlots&&typeof loc.daySlots==='object')?loc.daySlots:{}; }
+function slotsOn(loc,d){
+  const a=daySlots(loc)[d];
+  return new Set(Array.isArray(a)?a.map(Number).filter(n=>n>=0&&n<SLOTS.length):[]);
 }
+function locDays(loc){ return Object.keys(daySlots(loc)).sort(); }
+function locRows(loc){            // fasce orarie da mostrare: unione sui giorni del luogo
+  const u=new Set(); Object.values(daySlots(loc)).forEach(a=>(a||[]).forEach(n=>u.add(+n)));
+  return u;
+}
+function locCount(loc){ return Object.values(daySlots(loc)).reduce((a,b)=>a+(b||[]).length,0); }
 function cellClass(c,mine){ if(mine) return 'mine '+(c>=MAXP?'full':c>=MINP?'ok':'under'); if(c>=MAXP) return 'full'; if(c>=MINP) return 'ok'; if(c>0) return 'under'; return ''; }
 function renderGrid(){
   const w=WEEKS[activeWeek];
   const loc=((state&&state.locations)||[]).find(l=>l.id===activeLoc);
-  const daySet=new Set(loc?loc.days:[]);
-  const slotSet=locSlots(loc);
+  const rows=locRows(loc);
   let html='<div class="hcell corner"></div>';
   w.days.forEach((d,i)=>html+=`<div class="hcell">${DOW[i]}<b>${dmShort(d)}</b></div>`);
   SLOTS.forEach((sl,si)=>{
-    if(!slotSet.has(si)) return;
+    if(!rows.has(si)) return;
     html+=`<div class="tcell">${sl[0]}<br>${sl[1]}</div>`;
     w.days.forEach(d=>{
-      if(!daySet.has(d)){ html+=`<div class="cell off"><span class="m">—</span></div>`; return; }
+      if(!slotsOn(loc,d).has(si)){ html+=`<div class="cell off"><span class="m">—</span></div>`; return; }
       const k=activeLoc+'|'+d+'|'+si, info=slotMap[k]||{c:0,mine:false};
       const closed = state && state.open===false;
       html+=`<button class="cell ${cellClass(info.c,info.mine)}${closed&&!info.mine?' closed':''}" data-d="${d}" data-i="${si}">
@@ -518,7 +540,7 @@ function renderAdmin(){
   const ok_count=people.filter(p=>Number(p.hours)>=min).length;
   const under=totalM-ok_count;
   const totH=(Number(r.totalBookings)||0)*1.5;
-  const totalSlots=locs.filter(l=>l.active).reduce((a,l)=>a+(l.days||[]).length*locSlots(l).size,0);
+  const totalSlots=locs.filter(l=>l.active).reduce((a,l)=>a+locCount(l),0);
   const filled=(r.coverage||[]).filter(c=>c.c>=MINP).length;
 
   const stats=`<div class="statline">
@@ -543,16 +565,10 @@ function renderAdmin(){
   const locRows=locs.map(l=>`
     <div class="locrow${l.active?'':' inactive'}">
       <div><div class="nm">📍 ${esch(l.name)}${l.active?'':' <span class="badge-off">disattivato</span>'}</div>
-      <div class="meta">${l.address?esch(l.address)+' · ':''}${(l.days||[]).length} giorni · ${locSlots(l).size}/${SLOTS.length} turni · ${l.bookings||0} prenotazioni</div></div>
+      <div class="meta">${l.address?esch(l.address)+' · ':''}${locDays(l).length} giorni · ${locCount(l)} turni · ${l.bookings||0} prenotazioni</div></div>
       <div class="sp"></div>
       <button class="ghost" data-editloc="${l.id}" style="padding:6px 12px;font-size:.8rem">Modifica</button>
     </div>`).join('');
-
-  const daysCbs=WEEKS.map(w=>`<span class="wksep">${w.t} · ${w.s}</span>`+w.days.map((d,di)=>
-    `<label class="daychk on"><input type="checkbox" checked data-day="${d}">${DOW[di]} ${dmShort(d)}</label>`).join('')).join('');
-
-  const slotsCbs=SLOTS.map((sl,si)=>
-    `<label class="daychk on"><input type="checkbox" checked data-slot="${si}">${sl[0]}–${sl[1]}</label>`).join('');
 
   const locForm=`<div id="locForm" style="display:none;margin-top:14px;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:14px">
     <input type="hidden" id="lfId">
@@ -560,10 +576,18 @@ function renderAdmin(){
       <div><label for="lfName">Nome del luogo</label><input id="lfName" placeholder="Es. Corso Duca"></div>
       <div><label for="lfAddr">Indirizzo (facoltativo)</label><input id="lfAddr" placeholder="Es. Corso Duca degli Abruzzi 24"></div>
     </div>
-    <label style="margin-top:12px">Giorni attivi del luogo</label>
-    <div class="daysgrid" id="lfDays">${daysCbs}</div>
-    <label style="margin-top:12px">Turni prenotabili in questo luogo</label>
-    <div class="daysgrid" id="lfSlots">${slotsCbs}</div>
+    <label style="margin-top:12px">Quando si fa il banchetto qui</label>
+    <p class="hint" style="margin:-2px 0 8px">Tocca le caselle per attivare i turni. Clicca un giorno o un orario per selezionare l'intera riga o colonna.</p>
+    <div class="sched">
+      <div class="swk" id="lfWeeks"></div>
+      <div class="sgridwrap"><div class="sgrid" id="lfGrid"></div></div>
+      <div class="sfoot">
+        <span class="cnt" id="lfCount"></span>
+        <button type="button" class="ghost" id="lfAll">Tutto</button>
+        <button type="button" class="ghost" id="lfNone">Niente</button>
+        <button type="button" class="ghost" id="lfCopy">Copia settimana su tutte</button>
+      </div>
+    </div>
     <div id="lfActiveWrap" style="display:none;align-items:center;gap:10px;margin:10px 0">
       <label class="switch"><input type="checkbox" id="lfActive" checked><i></i></label><span>Luogo visibile e prenotabile</span>
     </div>
@@ -618,6 +642,51 @@ function renderAdmin(){
     if(ok){ toast('Ore minime aggiornate'); await loadState(false); loadAdmin(); }
   });
 
+  // mappa in lavorazione: {data: Set(turni)}
+  let lfMap={}, lfWeek=0;
+  const lfKey=d=>lfMap[d]||(lfMap[d]=new Set());
+  const lfTotal=()=>Object.values(lfMap).reduce((a,s)=>a+s.size,0);
+  function lfRender(){
+    $('#lfWeeks').innerHTML=WEEKS.map((w,i)=>
+      `<button type="button" class="${i===lfWeek?'on':''}" data-w="${i}">${w.t}</button>`).join('');
+    $('#lfWeeks').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ lfWeek=+b.dataset.w; lfRender(); }));
+    const w=WEEKS[lfWeek];
+    let h='<div class="sh"></div>';
+    w.days.forEach((d,i)=>h+=`<button type="button" class="sh" data-col="${d}" title="Attiva o disattiva tutto il giorno">${DOW[i]}<b>${dmShort(d)}</b></button>`);
+    SLOTS.forEach((sl,si)=>{
+      h+=`<button type="button" class="st" data-row="${si}" title="Attiva o disattiva questo orario nella settimana">${sl[0]}<br>${sl[1]}</button>`;
+      w.days.forEach(d=>{
+        const on=lfKey(d).has(si);
+        h+=`<button type="button" class="sc${on?' on':''}" data-d="${d}" data-i="${si}" aria-pressed="${on}" aria-label="${DOW[w.days.indexOf(d)]} ${dmShort(d)} ${sl[0]}"></button>`;
+      });
+    });
+    const g=$('#lfGrid'); g.innerHTML=h;
+    g.querySelectorAll('.sc').forEach(c=>c.addEventListener('click',()=>{
+      const d=c.dataset.d, i=+c.dataset.i, set=lfKey(d);
+      set.has(i)?set.delete(i):set.add(i); lfRender();
+    }));
+    g.querySelectorAll('.sh[data-col]').forEach(b=>b.addEventListener('click',()=>{
+      const d=b.dataset.col, set=lfKey(d);
+      if(set.size===SLOTS.length) set.clear(); else SLOTS.forEach((_,i)=>set.add(i));
+      lfRender();
+    }));
+    g.querySelectorAll('.st[data-row]').forEach(b=>b.addEventListener('click',()=>{
+      const i=+b.dataset.row, days=WEEKS[lfWeek].days;
+      const allOn=days.every(d=>lfKey(d).has(i));
+      days.forEach(d=>{ const set=lfKey(d); allOn?set.delete(i):set.add(i); });
+      lfRender();
+    }));
+    const tot=lfTotal(), gg=Object.values(lfMap).filter(s=>s.size).length;
+    $('#lfCount').innerHTML=`<b>${tot}</b> turni attivi su <b>${gg}</b> giorn${gg===1?'o':'i'}`;
+  }
+  $('#lfAll').addEventListener('click',()=>{ WEEKS.forEach(w=>w.days.forEach(d=>SLOTS.forEach((_,i)=>lfKey(d).add(i)))); lfRender(); });
+  $('#lfNone').addEventListener('click',()=>{ lfMap={}; lfRender(); });
+  $('#lfCopy').addEventListener('click',()=>{
+    const src=WEEKS[lfWeek].days.map(d=>[...lfKey(d)]);
+    WEEKS.forEach(w=>w.days.forEach((d,i)=>{ lfMap[d]=new Set(src[i]); }));
+    lfRender(); toast('Settimana copiata sulle altre');
+  });
+
   const showLocForm=l=>{
     $('#locForm').style.display='block';
     $('#lfId').value=l?l.id:'';
@@ -628,14 +697,12 @@ function renderAdmin(){
     const del=$('#lfDelete');
     del.style.display=l?'inline-block':'none';
     if(l){ del.disabled=(l.bookings||0)>0; del.title=del.disabled?'Ha prenotazioni: disattivalo invece di eliminarlo':''; }
-    const set=new Set(l?l.days:[]);
-    $('#lfDays').querySelectorAll('input[data-day]').forEach(c=>{ c.checked=l?set.has(c.dataset.day):true; c.parentElement.classList.toggle('on',c.checked); });
-    const sset=l?locSlots(l):null;
-    $('#lfSlots').querySelectorAll('input[data-slot]').forEach(c=>{ c.checked=sset?sset.has(+c.dataset.slot):true; c.parentElement.classList.toggle('on',c.checked); });
+    lfMap={}; lfWeek=0;
+    if(l){ const m=daySlots(l); Object.keys(m).forEach(d=>{ lfMap[d]=new Set((m[d]||[]).map(Number)); }); }
+    else { WEEKS.forEach(w=>w.days.forEach(d=>{ lfMap[d]=new Set(SLOTS.map((_,i)=>i)); })); }
+    lfRender();
     $('#lfName').focus();
   };
-  $('#lfDays').querySelectorAll('input[data-day]').forEach(c=>c.addEventListener('change',()=>c.parentElement.classList.toggle('on',c.checked)));
-  $('#lfSlots').querySelectorAll('input[data-slot]').forEach(c=>c.addEventListener('change',()=>c.parentElement.classList.toggle('on',c.checked)));
   $('#locAdd').addEventListener('click',()=>showLocForm(null));
   $('#admPanel').querySelectorAll('[data-editloc]').forEach(b=>b.addEventListener('click',()=>{
     const l=locs.find(x=>x.id===+b.dataset.editloc); if(l) showLocForm(l);
@@ -643,13 +710,12 @@ function renderAdmin(){
   $('#lfCancel').addEventListener('click',()=>{ $('#locForm').style.display='none'; });
   $('#lfSave').addEventListener('click', async ()=>{
     const id=$('#lfId').value, name=$('#lfName').value.trim(), address=$('#lfAddr').value.trim();
-    const days=[...$('#lfDays').querySelectorAll('input[data-day]:checked')].map(c=>c.dataset.day);
-    const slots=[...$('#lfSlots').querySelectorAll('input[data-slot]:checked')].map(c=>+c.dataset.slot);
+    const daySlots={};
+    Object.keys(lfMap).forEach(d=>{ if(lfMap[d].size) daySlots[d]=[...lfMap[d]].sort((a,b)=>a-b); });
     if(name.length<2) return toast('Scrivi il nome del luogo.',true);
-    if(!days.length) return toast('Seleziona almeno un giorno.',true);
-    if(!slots.length) return toast('Seleziona almeno un turno.',true);
-    const ok= id ? await adminAct('loc-edit',{id:+id,name,address,days,slots,active:$('#lfActive').checked})
-                 : await adminAct('loc-add',{name,address,days,slots});
+    if(!Object.keys(daySlots).length) return toast('Attiva almeno un turno.',true);
+    const ok= id ? await adminAct('loc-edit',{id:+id,name,address,daySlots,active:$('#lfActive').checked})
+                 : await adminAct('loc-add',{name,address,daySlots});
     if(ok){ toast(id?'Luogo aggiornato':'Luogo aggiunto ✓'); await loadState(false); loadAdmin(); }
   });
   $('#lfDelete').addEventListener('click', async ()=>{
