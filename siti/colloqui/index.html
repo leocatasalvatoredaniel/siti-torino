@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Disponibilità colloqui — JEToP</title>
+<link rel="icon" href="../jetop-rec-automation/assets/favicon.png">
+<style>
+@font-face{font-family:'Red Hat Display';src:url('../jetop-rec-automation/fonts/RedHatDisplay-var.woff2') format('woff2');font-weight:300 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Red Hat Mono';src:url('../jetop-rec-automation/fonts/RedHatMono-var.woff2') format('woff2');font-weight:300 700;font-style:normal;font-display:swap}
+:root{
+  --bg:#0B0A10;--panel:#13111B;--panel-2:#1A1726;--text:#ECEAF4;--muted:#A6A1B6;
+  --iris:#9379C2;--iris-strong:#684DC2;--iris-soft:rgba(147,121,194,.13);--iris-line:rgba(147,121,194,.34);
+  --line:rgba(236,234,244,.09);--line-strong:rgba(236,234,244,.16);
+  --ok:#69c98b;--ok-soft:rgba(105,201,139,.14);--warn:#e0b070;--warn-soft:rgba(224,176,112,.13);
+  --err:#e07a7a;--radius:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Red Hat Display',system-ui,-apple-system,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:var(--iris)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px clamp(14px,4vw,36px);border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(11,10,16,.88);backdrop-filter:blur(10px);z-index:20}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700}
+.brand img{height:28px}
+.who{display:flex;align-items:center;gap:12px;font-size:.86rem;color:var(--muted)}
+.who b{color:var(--text);font-weight:700}
+.wrap{max-width:980px;margin:0 auto;padding:clamp(18px,4vw,34px) clamp(13px,3vw,28px) 120px}
+h1.hd{font-size:clamp(1.5rem,4vw,2.2rem);font-weight:800;letter-spacing:-.5px}
+p.sub{color:var(--muted);font-size:.95rem;margin-top:5px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(16px,3.5vw,26px);margin-top:22px}
+label{font-size:.88rem;color:var(--muted);font-weight:600;display:block;margin-bottom:6px}
+input{background:var(--panel-2);border:1px solid var(--line-strong);border-radius:10px;color:var(--text);padding:11px 13px;font:inherit;font-size:.97rem;width:100%}
+input:focus{outline:none;border-color:var(--iris);box-shadow:0 0 0 3px var(--iris-soft)}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;cursor:pointer;padding:11px 18px}
+button.primary{background:var(--iris-strong);color:#fff}
+button.primary:hover{background:var(--iris)}
+button.ghost{background:transparent;color:var(--iris);border:1px solid var(--iris-line);white-space:nowrap}
+button.ghost:hover{background:var(--iris-soft)}
+button:disabled{opacity:.4;cursor:not-allowed}
+.vrow{display:flex;gap:10px;align-items:stretch}.vrow input{flex:1}
+.status{font-size:.86rem;margin-top:10px;min-height:1.1em}
+.status.ok{color:var(--ok)}.status.err{color:var(--err)}.status.busy{color:var(--muted)}
+.hint{font-size:.82rem;color:var(--muted)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--muted);border-top-color:var(--iris);border-radius:50%;animation:sp 1s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* schede settimana */
+.tabs{display:flex;gap:8px;margin:22px 0 4px;flex-wrap:wrap}
+.tab{flex:1;min-width:132px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 14px;cursor:pointer;text-align:left;color:var(--text)}
+.tab .t{font-weight:700;font-size:.95rem}.tab .s{font-size:.8rem;color:var(--muted);margin-top:2px}
+.tab.active{border-color:var(--iris);background:var(--iris-soft)}
+.tab.active .t{color:var(--iris)}
+
+/* griglia */
+.gridwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:10px;padding-bottom:4px}
+.dgrid{display:grid;gap:5px;min-width:360px}
+.dh{padding:5px 2px;text-align:center;font-size:.72rem;color:var(--muted);font-weight:700;background:none;border:0;cursor:pointer;border-radius:8px}
+.dh:hover{background:var(--iris-soft);color:var(--iris)}
+.dh b{display:block;color:var(--text);font-size:.88rem}
+.dt{display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:.72rem;color:var(--muted);font-weight:600;background:none;border:0;cursor:pointer;border-radius:8px}
+.dt:hover{color:var(--iris)}
+.dc{min-height:40px;border:1px solid var(--line-strong);border-radius:9px;background:var(--panel-2);cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;transition:background .12s,border-color .12s}
+.dc:hover{border-color:var(--iris-line)}
+.dc.on{background:var(--iris-strong);border-color:var(--iris)}
+.dc.on::after{content:'✓';color:#fff;font-size:.86rem;font-weight:800}
+.dc.busy{background:var(--ok-soft);border-color:rgba(105,201,139,.5);cursor:not-allowed}
+.dc.busy::after{content:'📌';font-size:.8rem}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:14px 2px 0;font-size:.8rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.lg{width:13px;height:13px;border-radius:4px;border:1px solid var(--line-strong)}
+.lg.on{background:var(--iris-strong);border-color:var(--iris)}
+.lg.busy{background:var(--ok-soft);border-color:rgba(105,201,139,.5)}
+
+/* barra di salvataggio */
+.savebar{position:fixed;left:0;right:0;bottom:0;background:rgba(19,17,27,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line-strong);padding:12px clamp(13px,3vw,28px);display:none;align-items:center;gap:12px;z-index:30}
+.savebar.show{display:flex}
+.savebar .n{font-size:.88rem;color:var(--muted);margin-right:auto}
+.savebar .n b{color:var(--text)}
+.quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.quick button{padding:6px 12px;font-size:.8rem}
+.banner{background:var(--warn-soft);border:1px solid rgba(224,176,112,.4);color:var(--warn);border-radius:12px;padding:12px 15px;margin-top:18px;font-size:.9rem;font-weight:600}
+.toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--iris-line);color:var(--text);padding:12px 20px;border-radius:12px;font-size:.9rem;font-weight:600;z-index:80;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.show{opacity:1}
+.toast.err{border-color:rgba(224,122,122,.5)}
+footer{margin-top:40px;text-align:center;color:var(--muted);font-size:.83rem}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><img src="../jetop-rec-automation/assets/pittogramma-white.png" alt="JEToP"> Colloqui</div>
+  <div class="who" id="who" style="display:none">
+    <span>Ciao, <b id="whoName"></b></span>
+    <button class="ghost" id="logoutBtn" style="padding:6px 12px;font-size:.82rem">Esci</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- LOGIN -->
+  <div id="login">
+    <h1 class="hd">Le tue disponibilità per i colloqui</h1>
+    <p class="sub">Accedi con la tua email JEToP per segnare quando puoi fare i colloqui del REC.</p>
+    <div class="card" style="max-width:440px">
+      <div id="stepEmail">
+        <label for="email">Email JEToP</label>
+        <input type="email" id="email" autocomplete="email" placeholder="nome.cognome@jetop.com">
+        <button class="primary" id="sendBtn" style="width:100%;margin-top:16px">Inviami il codice</button>
+      </div>
+      <div id="stepCode" style="display:none">
+        <label for="code">Codice ricevuto via email</label>
+        <div class="vrow">
+          <input id="code" inputmode="numeric" maxlength="6" placeholder="6 cifre" style="font-family:'Red Hat Mono',monospace">
+          <button class="primary" id="verifyBtn">Accedi</button>
+        </div>
+        <button class="ghost" id="backBtn" style="margin-top:12px;width:100%">← Cambia email</button>
+      </div>
+      <div class="status" id="loginStatus"></div>
+      <span class="hint">Il codice vale 15 minuti e può metterci un minuto ad arrivare.</span>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" style="display:none">
+    <h1 class="hd">Quando puoi fare i colloqui</h1>
+    <p class="sub">Tocca le caselle per segnare le tue disponibilità. Clicca un giorno o un orario per selezionare l'intera colonna o riga.</p>
+    <div id="emptyBanner" class="banner" style="display:none">Nessun turno disponibile: il calendario dei colloqui non è ancora stato preparato.</div>
+
+    <div class="tabs" id="tabs"></div>
+    <div class="gridwrap"><div class="dgrid" id="grid"></div></div>
+
+    <div class="legend">
+      <span><i class="lg on"></i> disponibile</span>
+      <span><i class="lg busy"></i> colloquio già fissato (non modificabile)</span>
+    </div>
+
+    <div class="quick">
+      <button class="ghost" id="qWeekAll">Tutta la settimana</button>
+      <button class="ghost" id="qWeekNone">Svuota la settimana</button>
+      <button class="ghost" id="qCopy">Copia settimana sulle altre</button>
+    </div>
+
+    <p class="hint" id="meta" style="margin-top:16px"></p>
+  </div>
+
+  <footer>JEToP · Junior Enterprise Torino Politecnico</footer>
+</div>
+
+<div class="savebar" id="savebar">
+  <span class="n" id="saveInfo"></span>
+  <button class="ghost" id="undoBtn">Annulla</button>
+  <button class="primary" id="saveBtn">Salva</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API='https://n8n.jetop.com/webhook';
+const LS='jetop_colloqui_auth';
+const DOW=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+const $=s=>document.querySelector(s);
+let auth=null, celle=[], idx={}, giorni=[], orari=[], settimane=[], attiva=0, originale={}, busy=false;
+
+function loadAuth(){ try{auth=JSON.parse(localStorage.getItem(LS))||null}catch(e){auth=null} }
+function saveAuth(a){ auth=a; localStorage.setItem(LS, JSON.stringify(a)); }
+function clearAuth(){ auth=null; localStorage.removeItem(LS); }
+async function api(path, body, timeout=120000){
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(), timeout);
+  try{
+    const r=await fetch(API+'/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{}),signal:ctrl.signal});
+    clearTimeout(t);
+    const txt=await r.text(); try{return JSON.parse(txt)}catch(e){return {ok:false,_raw:txt}}
+  }catch(e){ clearTimeout(t); return {ok:false,_err:String(e)}; }
+}
+function toast(m,err){ const el=$('#toast'); el.textContent=m; el.className='toast show'+(err?' err':''); setTimeout(()=>el.className='toast',2400); }
+function dm(iso){ const [y,m,d]=iso.split('-'); return (+d)+'/'+(+m); }
+function dowOf(iso){ return DOW[new Date(iso+'T12:00:00').getDay()]; }
+function setLogin(m,c){ const el=$('#loginStatus'); el.innerHTML=m; el.className='status '+(c||''); }
+
+/* ---------- LOGIN ---------- */
+let pendingEmail='';
+$('#sendBtn').addEventListener('click', async ()=>{
+  const email=$('#email').value.trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return setLogin('Inserisci un\'email valida.','err');
+  $('#sendBtn').disabled=true; setLogin('<span class="spin"></span>Invio il codice…','busy');
+  const r=await api('colloqui-login',{email});
+  $('#sendBtn').disabled=false;
+  if(r&&r.ok){ pendingEmail=email; $('#stepEmail').style.display='none'; $('#stepCode').style.display='block'; setLogin('Codice inviato a '+email,'ok'); $('#code').focus(); }
+  else if(r&&(r.reason==='notfound'||r.reason==='notresp')) setLogin('Questa email non risulta fra i responsabili dei colloqui. Scrivi a hr@jetop.com.','err');
+  else setLogin('Non sono riuscito a inviare il codice. Riprova tra poco.','err');
+});
+$('#backBtn').addEventListener('click', ()=>{ $('#stepCode').style.display='none'; $('#stepEmail').style.display='block'; setLogin('',''); });
+$('#verifyBtn').addEventListener('click', verify);
+$('#code').addEventListener('keydown', e=>{ if(e.key==='Enter') verify(); });
+async function verify(){
+  const code=$('#code').value.trim();
+  if(!/^\d{6}$/.test(code)) return setLogin('Il codice è di 6 cifre.','err');
+  $('#verifyBtn').disabled=true; setLogin('<span class="spin"></span>Verifico…','busy');
+  const r=await api('colloqui-verify',{email:pendingEmail,code});
+  $('#verifyBtn').disabled=false;
+  if(r&&r.ok&&r.token){ saveAuth({token:r.token,nome:r.nome}); enter(); }
+  else setLogin('Codice errato o scaduto.','err');
+}
+$('#logoutBtn').addEventListener('click', ()=>{ clearAuth(); location.reload(); });
+
+/* ---------- APP ---------- */
+async function enter(){
+  $('#login').style.display='none'; $('#app').style.display='block'; $('#who').style.display='flex';
+  $('#whoName').textContent=(auth.nome||'').split(' ')[0];
+  await carica();
+}
+async function carica(){
+  const r=await api('colloqui-state',{token:auth.token});
+  if(!r||!r.ok){ clearAuth(); location.reload(); return; }
+  celle=r.griglia||[];
+  idx={}; originale={};
+  celle.forEach(c=>{ idx[c.data+'|'+c.ora]=c; originale[c.riga]=c.attivo; });
+  giorni=[...new Set(celle.map(c=>c.data))].sort();
+  orari=[...new Set(celle.map(c=>c.ora))].sort();
+  settimane=[];
+  giorni.forEach(g=>{
+    const lun=new Date(g+'T12:00:00'); lun.setDate(lun.getDate()-((lun.getDay()+6)%7));
+    const k=lun.toISOString().slice(0,10);
+    let s=settimane.find(x=>x.k===k);
+    if(!s){ s={k,days:[]}; settimane.push(s); }
+    s.days.push(g);
+  });
+  settimane.sort((a,b)=>a.k<b.k?-1:1);
+  if(attiva>=settimane.length) attiva=0;
+  $('#emptyBanner').style.display = celle.length ? 'none':'block';
+  $('#meta').textContent = r.foglio ? `Foglio area: ${r.foglio} · ${giorni.length} giorni, ${orari.length} fasce orarie` : '';
+  render();
+}
+function render(){
+  $('#tabs').innerHTML=settimane.map((s,i)=>{
+    const a=s.days[0], b=s.days[s.days.length-1];
+    return `<button class="tab${i===attiva?' active':''}" data-w="${i}"><div class="t">Settimana ${i+1}</div><div class="s">${dm(a)} – ${dm(b)}</div></button>`;
+  }).join('');
+  $('#tabs').querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{ attiva=+b.dataset.w; render(); }));
+  const s=settimane[attiva]; if(!s){ $('#grid').innerHTML=''; return; }
+  const g=$('#grid');
+  g.style.gridTemplateColumns=`56px repeat(${s.days.length},minmax(46px,1fr))`;
+  let h='<div></div>';
+  s.days.forEach(d=>h+=`<button type="button" class="dh" data-col="${d}">${dowOf(d)}<b>${dm(d)}</b></button>`);
+  orari.forEach(o=>{
+    h+=`<button type="button" class="dt" data-row="${o}">${o}</button>`;
+    s.days.forEach(d=>{
+      const c=idx[d+'|'+o];
+      if(!c){ h+='<div class="dc" style="opacity:.25;pointer-events:none"></div>'; return; }
+      const cls=c.occupato?'busy':(c.attivo?'on':'');
+      h+=`<button type="button" class="dc ${cls}" data-d="${d}" data-o="${o}" aria-pressed="${!!c.attivo}"${c.occupato?' disabled title="Colloquio già fissato"':''}></button>`;
+    });
+  });
+  g.innerHTML=h;
+  g.querySelectorAll('.dc[data-d]').forEach(b=>b.addEventListener('click',()=>{
+    const c=idx[b.dataset.d+'|'+b.dataset.o]; if(!c||c.occupato) return;
+    c.attivo=!c.attivo; render();
+  }));
+  g.querySelectorAll('.dh[data-col]').forEach(b=>b.addEventListener('click',()=>{
+    const d=b.dataset.col, libere=orari.map(o=>idx[d+'|'+o]).filter(c=>c&&!c.occupato);
+    const tutte=libere.every(c=>c.attivo); libere.forEach(c=>c.attivo=!tutte); render();
+  }));
+  g.querySelectorAll('.dt[data-row]').forEach(b=>b.addEventListener('click',()=>{
+    const o=b.dataset.row, libere=s.days.map(d=>idx[d+'|'+o]).filter(c=>c&&!c.occupato);
+    const tutte=libere.every(c=>c.attivo); libere.forEach(c=>c.attivo=!tutte); render();
+  }));
+  aggiornaBarra();
+}
+function modifiche(){ return celle.filter(c=>!c.occupato && c.attivo!==originale[c.riga]); }
+function aggiornaBarra(){
+  const n=modifiche().length, tot=celle.filter(c=>c.attivo).length;
+  $('#saveInfo').innerHTML=`<b>${n}</b> modific${n===1?'a':'he'} da salvare · <b>${tot}</b> turni disponibili in tutto`;
+  $('#savebar').className='savebar'+(n?' show':'');
+}
+$('#qWeekAll').addEventListener('click',()=>{ const s=settimane[attiva]; if(!s) return;
+  s.days.forEach(d=>orari.forEach(o=>{ const c=idx[d+'|'+o]; if(c&&!c.occupato) c.attivo=true; })); render(); });
+$('#qWeekNone').addEventListener('click',()=>{ const s=settimane[attiva]; if(!s) return;
+  s.days.forEach(d=>orari.forEach(o=>{ const c=idx[d+'|'+o]; if(c&&!c.occupato) c.attivo=false; })); render(); });
+$('#qCopy').addEventListener('click',()=>{ const s=settimane[attiva]; if(!s) return;
+  const modello=orari.map(o=>s.days.some(d=>{ const c=idx[d+'|'+o]; return c&&c.attivo; }));
+  settimane.forEach(w=>w.days.forEach(d=>orari.forEach((o,i)=>{ const c=idx[d+'|'+o]; if(c&&!c.occupato) c.attivo=modello[i]; })));
+  render(); toast('Settimana copiata sulle altre');
+});
+$('#undoBtn').addEventListener('click',()=>{ celle.forEach(c=>c.attivo=originale[c.riga]); render(); });
+$('#saveBtn').addEventListener('click', async ()=>{
+  if(busy) return;
+  const cambi=modifiche(); if(!cambi.length) return;
+  busy=true; $('#saveBtn').disabled=true; $('#saveBtn').innerHTML='<span class="spin"></span>Salvo…';
+  const r=await api('colloqui-save',{token:auth.token,celle:cambi.map(c=>({riga:c.riga,attivo:c.attivo}))});
+  busy=false; $('#saveBtn').disabled=false; $('#saveBtn').textContent='Salva';
+  if(r&&r.ok){
+    if((r.bloccate||[]).length) toast(`Salvato. ${r.bloccate.length} turni non modificati: hanno già un colloquio.`);
+    else toast('Disponibilità salvate ✓');
+    await carica();
+  } else if(r&&r.reason==='auth'){ toast('Sessione scaduta, riaccedi.',true); clearAuth(); setTimeout(()=>location.reload(),1400); }
+  else toast('Salvataggio non riuscito. Riprova.',true);
+});
+
+loadAuth();
+if(auth&&auth.token) enter();
+</script>
+</body>
+</html>
