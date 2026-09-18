@@ -402,14 +402,20 @@ function renderProgress(){
   const b=$('#progBadge'); b.classList.toggle('done',done);
   b.textContent= done ? '✓ Obiettivo raggiunto' : (min-h)%1?`Mancano ${(min-h).toFixed(1)}h`:`Mancano ${min-h}h`;
 }
+function locSlots(loc){
+  const a=loc&&Array.isArray(loc.slots)?loc.slots.map(Number).filter(n=>n>=0&&n<SLOTS.length):[];
+  return new Set(a.length?a:SLOTS.map((_,i)=>i));
+}
 function cellClass(c,mine){ if(mine) return 'mine '+(c>=MAXP?'full':c>=MINP?'ok':'under'); if(c>=MAXP) return 'full'; if(c>=MINP) return 'ok'; if(c>0) return 'under'; return ''; }
 function renderGrid(){
   const w=WEEKS[activeWeek];
   const loc=((state&&state.locations)||[]).find(l=>l.id===activeLoc);
   const daySet=new Set(loc?loc.days:[]);
+  const slotSet=locSlots(loc);
   let html='<div class="hcell corner"></div>';
   w.days.forEach((d,i)=>html+=`<div class="hcell">${DOW[i]}<b>${dmShort(d)}</b></div>`);
   SLOTS.forEach((sl,si)=>{
+    if(!slotSet.has(si)) return;
     html+=`<div class="tcell">${sl[0]}<br>${sl[1]}</div>`;
     w.days.forEach(d=>{
       if(!daySet.has(d)){ html+=`<div class="cell off"><span class="m">—</span></div>`; return; }
@@ -477,7 +483,7 @@ async function act(kind,d,i){
   if(r&&r.ok){ closeModal(); toast(kind==='book'?'Turno prenotato ✓':'Prenotazione annullata'); await loadState(false); loadAdmin(); }
   else{
     const map={full:'Turno già pieno.',closed:'Prenotazioni chiuse.',auth:'Sessione scaduta, riaccedi.',invalid:'Turno non valido.',
-      overlap:'Sei già prenotato in un altro luogo a quest\'ora.',noloc:'Questo luogo non è più disponibile.',notmember:'Solo i soci in lista possono prenotare.'};
+      overlap:'Sei già prenotato in un altro luogo a quest\'ora.',noloc:'Questo luogo non è più disponibile.',noslot:'Questo turno non è previsto in questo luogo.',notmember:'Solo i soci in lista possono prenotare.'};
     if(r&&r.reason==='already'){ closeModal(); await loadState(false); }
     else toast((r&&map[r.reason])||'Operazione non riuscita.',true);
     if(btn){btn.disabled=false; btn.textContent=kind==='book'?'Prenota questo turno':'Annulla la mia prenotazione';}
@@ -512,7 +518,7 @@ function renderAdmin(){
   const ok_count=people.filter(p=>Number(p.hours)>=min).length;
   const under=totalM-ok_count;
   const totH=(Number(r.totalBookings)||0)*1.5;
-  const totalSlots=locs.filter(l=>l.active).reduce((a,l)=>a+(l.days||[]).length*SLOTS.length,0);
+  const totalSlots=locs.filter(l=>l.active).reduce((a,l)=>a+(l.days||[]).length*locSlots(l).size,0);
   const filled=(r.coverage||[]).filter(c=>c.c>=MINP).length;
 
   const stats=`<div class="statline">
@@ -537,13 +543,16 @@ function renderAdmin(){
   const locRows=locs.map(l=>`
     <div class="locrow${l.active?'':' inactive'}">
       <div><div class="nm">📍 ${esch(l.name)}${l.active?'':' <span class="badge-off">disattivato</span>'}</div>
-      <div class="meta">${l.address?esch(l.address)+' · ':''}${(l.days||[]).length} giorni · ${l.bookings||0} prenotazioni</div></div>
+      <div class="meta">${l.address?esch(l.address)+' · ':''}${(l.days||[]).length} giorni · ${locSlots(l).size}/${SLOTS.length} turni · ${l.bookings||0} prenotazioni</div></div>
       <div class="sp"></div>
       <button class="ghost" data-editloc="${l.id}" style="padding:6px 12px;font-size:.8rem">Modifica</button>
     </div>`).join('');
 
   const daysCbs=WEEKS.map(w=>`<span class="wksep">${w.t} · ${w.s}</span>`+w.days.map((d,di)=>
     `<label class="daychk on"><input type="checkbox" checked data-day="${d}">${DOW[di]} ${dmShort(d)}</label>`).join('')).join('');
+
+  const slotsCbs=SLOTS.map((sl,si)=>
+    `<label class="daychk on"><input type="checkbox" checked data-slot="${si}">${sl[0]}–${sl[1]}</label>`).join('');
 
   const locForm=`<div id="locForm" style="display:none;margin-top:14px;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:14px">
     <input type="hidden" id="lfId">
@@ -553,6 +562,8 @@ function renderAdmin(){
     </div>
     <label style="margin-top:12px">Giorni attivi del luogo</label>
     <div class="daysgrid" id="lfDays">${daysCbs}</div>
+    <label style="margin-top:12px">Turni prenotabili in questo luogo</label>
+    <div class="daysgrid" id="lfSlots">${slotsCbs}</div>
     <div id="lfActiveWrap" style="display:none;align-items:center;gap:10px;margin:10px 0">
       <label class="switch"><input type="checkbox" id="lfActive" checked><i></i></label><span>Luogo visibile e prenotabile</span>
     </div>
@@ -619,9 +630,12 @@ function renderAdmin(){
     if(l){ del.disabled=(l.bookings||0)>0; del.title=del.disabled?'Ha prenotazioni: disattivalo invece di eliminarlo':''; }
     const set=new Set(l?l.days:[]);
     $('#lfDays').querySelectorAll('input[data-day]').forEach(c=>{ c.checked=l?set.has(c.dataset.day):true; c.parentElement.classList.toggle('on',c.checked); });
+    const sset=l?locSlots(l):null;
+    $('#lfSlots').querySelectorAll('input[data-slot]').forEach(c=>{ c.checked=sset?sset.has(+c.dataset.slot):true; c.parentElement.classList.toggle('on',c.checked); });
     $('#lfName').focus();
   };
   $('#lfDays').querySelectorAll('input[data-day]').forEach(c=>c.addEventListener('change',()=>c.parentElement.classList.toggle('on',c.checked)));
+  $('#lfSlots').querySelectorAll('input[data-slot]').forEach(c=>c.addEventListener('change',()=>c.parentElement.classList.toggle('on',c.checked)));
   $('#locAdd').addEventListener('click',()=>showLocForm(null));
   $('#admPanel').querySelectorAll('[data-editloc]').forEach(b=>b.addEventListener('click',()=>{
     const l=locs.find(x=>x.id===+b.dataset.editloc); if(l) showLocForm(l);
@@ -630,10 +644,12 @@ function renderAdmin(){
   $('#lfSave').addEventListener('click', async ()=>{
     const id=$('#lfId').value, name=$('#lfName').value.trim(), address=$('#lfAddr').value.trim();
     const days=[...$('#lfDays').querySelectorAll('input[data-day]:checked')].map(c=>c.dataset.day);
+    const slots=[...$('#lfSlots').querySelectorAll('input[data-slot]:checked')].map(c=>+c.dataset.slot);
     if(name.length<2) return toast('Scrivi il nome del luogo.',true);
     if(!days.length) return toast('Seleziona almeno un giorno.',true);
-    const ok= id ? await adminAct('loc-edit',{id:+id,name,address,days,active:$('#lfActive').checked})
-                 : await adminAct('loc-add',{name,address,days});
+    if(!slots.length) return toast('Seleziona almeno un turno.',true);
+    const ok= id ? await adminAct('loc-edit',{id:+id,name,address,days,slots,active:$('#lfActive').checked})
+                 : await adminAct('loc-add',{name,address,days,slots});
     if(ok){ toast(id?'Luogo aggiornato':'Luogo aggiunto ✓'); await loadState(false); loadAdmin(); }
   });
   $('#lfDelete').addEventListener('click', async ()=>{
