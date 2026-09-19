@@ -295,7 +295,8 @@ const WEEKS=[
   {t:'Settimana 2',s:'28 set–2 ott',days:['2026-09-28','2026-09-29','2026-09-30','2026-10-01','2026-10-02']},
   {t:'Settimana 3',s:'5–9 ott',days:['2026-10-05','2026-10-06','2026-10-07','2026-10-08','2026-10-09']},
 ];
-const MINP=3, MAXP=5;
+const MINP=3;
+let MAXP=5;   // capienza per turno: arriva dalla configurazione
 const $=s=>document.querySelector(s);
 let auth=null, state=null, activeWeek=0, activeLoc=null, slotMap={}, busy=false, modalOpen=false, refreshTimer=null;
 let admin=null, isAdmin=false;
@@ -396,6 +397,7 @@ async function loadState(showBusy){
   const r=await api('banchetti-state',{token:auth.token});
   if(!r||r.ok===false){ if(r&&r.ok===false&&!r._err){ clearAuth(); location.reload(); return; } $('#updated').textContent='errore di rete'; return; }
   state=r; slotMap={};
+  if(Number(r.maxPeople)>=1) MAXP=Number(r.maxPeople);
   (r.slots||[]).forEach(s=>{ slotMap[s.l+'|'+s.d+'|'+s.i]={c:s.c,names:s.names||[]}; });
   const mine=new Set((r.mine||[]).map(m=>m.l+'|'+m.d+'|'+m.i));
   Object.keys(slotMap).forEach(k=>slotMap[k].mine=mine.has(k));
@@ -534,6 +536,7 @@ async function loadAdmin(){
 function renderAdmin(){
   const r=admin; if(!r) return;
   const min=Number(r.minHours)||6;
+  const maxp=Number(r.maxPeople)||MAXP;
   const people=r.people||[];
   const locs=r.locations||[];
   const totalM=Number(r.totalMembers)||people.length;
@@ -560,7 +563,14 @@ function renderAdmin(){
       <label for="setMin" style="margin:0">Ore minime a socio</label>
       <input id="setMin" type="number" min="0" max="40" step="0.5" value="${min}" style="width:90px">
       <button class="ghost" id="setMinSave" style="padding:8px 14px">Salva</button>
-    </div></div>`;
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px">
+      <label for="setMax" style="margin:0">Massimo persone per turno</label>
+      <input id="setMax" type="number" min="1" max="50" step="1" value="${maxp}" style="width:90px">
+      <button class="ghost" id="setMaxSave" style="padding:8px 14px">Salva</button>
+    </div>
+    ${maxp<MINP?`<p class="hint" style="margin-top:8px;color:var(--warn)">Con un massimo di ${maxp} nessun turno potrà mai raggiungere le ${MINP} persone richieste: resteranno tutti segnati come scoperti.</p>`:''}
+    </div>`;
 
   const locRows=locs.map(l=>`
     <div class="locrow${l.active?'':' inactive'}">
@@ -640,6 +650,12 @@ function renderAdmin(){
   $('#setMinSave').addEventListener('click', async ()=>{
     const ok=await adminAct('config-set',{key:'min_hours',value:$('#setMin').value});
     if(ok){ toast('Ore minime aggiornate'); await loadState(false); loadAdmin(); }
+  });
+  $('#setMaxSave').addEventListener('click', async ()=>{
+    const n=parseInt($('#setMax').value,10);
+    if(!(n>=1&&n<=50)) return toast('Scrivi un numero fra 1 e 50.',true);
+    const ok=await adminAct('config-set',{key:'max_people',value:String(n)});
+    if(ok){ toast('Capienza aggiornata'); await loadState(false); loadAdmin(); }
   });
 
   // mappa in lavorazione: {data: Set(turni)}
