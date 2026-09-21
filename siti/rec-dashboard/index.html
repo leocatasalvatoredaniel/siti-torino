@@ -237,7 +237,7 @@ function apply(){
     renderStats(DATA.recap,false,true);
     meta.innerHTML='<b>'+(DATA.editions.length)+'</b> edizioni · <b>'+(DATA.recap.totale||0)+'</b> candidature totali';
   } else {
-    const st=DATA.byEdition[v];
+    const st=DATA.byEdition[v]||DATA.recap;
     renderStats(st, v===DATA.current, false);
     meta.innerHTML='<b>'+(st&&st.totale||0)+'</b> candidature'+(v===DATA.current?' · in corso':'');
   }
@@ -248,6 +248,7 @@ function buildSel(){
   const prev=sel.value;
   let opts=DATA.editions.map(e=>'<option value="'+e+'">'+e+(e===DATA.current?'  ·  in corso':'')+'</option>');
   if(DATA.editions.length>1) opts.push('<option value="'+RECAP+'">Recap — tutte le edizioni</option>');
+  if(!opts.length) opts=['<option value="'+(DATA.current||'')+'">'+(DATA.current||'—')+'  ·  in corso</option>'];
   sel.innerHTML=opts.join('');
   const want=(prev&&[...sel.options].some(o=>o.value===prev))?prev:(DATA.current||DATA.editions[0]);
   sel.value=want;
