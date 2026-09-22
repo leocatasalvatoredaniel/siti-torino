@@ -1,0 +1,9 @@
+{
+  "name": "connect-apps-plugin",
+  "description": "Connect and integrate external applications and services into your Claude Code workflow",
+  "version": "1.0.0",
+  "author": {
+    "name": "siti-torino"
+  },
+  "keywords": ["integration", "apps", "connect", "services"]
+}
