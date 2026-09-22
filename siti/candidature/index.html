@@ -54,6 +54,8 @@ button.ghost{background:transparent;color:var(--iris);border:1px solid var(--iri
 button.ghost:hover{background:var(--iris-soft)}
 button:disabled{opacity:.45;cursor:not-allowed}
 .hint{font-size:.82rem;color:var(--muted)}
+.counter{display:block;text-align:right;margin-top:5px}
+.counter.near{color:var(--err)}
 .status{font-size:.88rem;margin-top:4px;min-height:1.2em}
 .status.ok{color:var(--ok)} .status.err{color:var(--err)} .status.busy{color:var(--muted)}
 .badge-ok{display:inline-flex;align-items:center;gap:7px;color:var(--ok);font-weight:700;font-size:.92rem}
@@ -202,7 +204,8 @@ footer{margin-top:40px;text-align:center;color:var(--muted);font-size:.85rem}
     <fieldset>
       <legend><span class="n">5.</span>Raccontaci di te</legend>
       <div class="field full"><label>Perché vuoi entrare in JEToP? <span class="req">*</span></label>
-        <textarea name="motivazione" required minlength="30" placeholder="Scrivi qualche riga…"></textarea>
+        <textarea name="motivazione" id="motivazione" required minlength="30" maxlength="4000" placeholder="Scrivi qualche riga…"></textarea>
+        <span class="hint counter" id="motivazioneCount">0 / 4000</span>
       </div>
       <div class="field full" style="margin-top:12px"><label>Come hai conosciuto JEToP? <span class="req">*</span></label>
         <div class="choices" id="known">
@@ -358,6 +361,13 @@ function resetVerification(){
   $('#codeRow').style.display='none'; $('#codeInput').value='';
   $('#sendRow').style.display=''; setEmailStatus('','');
 }
+const motivazione=$('#motivazione'), motivazioneCount=$('#motivazioneCount'), motivazioneMax=+motivazione.maxLength;
+motivazione.addEventListener('input',()=>{
+  const n=motivazione.value.length;
+  motivazioneCount.textContent=n+' / '+motivazioneMax;
+  motivazioneCount.classList.toggle('near', n>=motivazioneMax*0.9);
+});
+
 $('#email').addEventListener('input',resetVerification);
 $('#email2').addEventListener('input',resetVerification);
 
