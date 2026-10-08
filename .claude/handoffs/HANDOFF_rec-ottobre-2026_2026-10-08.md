@@ -424,7 +424,7 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 
 ### Repo siti-torino (questo)
 - `.claude/skills/handoff/`, `.claude/skills/handoffplan/`: skill di handoff (MIT, REMvisual/claude-handoff), con LICENSE.
-- `.claude/handoffs/HANDOFF_rec-ottobre-2026_2026-10-08.md`: questo file. Sta in una cartella che inizia con il punto, quindi Jekyll non la pubblica su GitHub Pages; resta comunque visibile su GitHub.
+- `.claude/handoffs/HANDOFF_rec-ottobre-2026_2026-10-08.md`: questo file. Il sito è pubblicato da Vercel: il file `.vercelignore` esclude `.claude/` dal deploy. Il file resta comunque visibile su GitHub, perché il repo è pubblico.
 
 ### Script di lavoro (persi con il container, da ricreare)
 - **Accesso:** `n8n.py` (API n8n), `gch.py` (canale temporaneo verso Google o Notion), `sqlch.py` (canale Postgres).
