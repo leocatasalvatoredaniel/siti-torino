@@ -502,6 +502,15 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
     - `saveDataSuccessExecution: 'none'` (le esecuzioni riuscite non vengono salvate) per Stats, Banchetti, Sotto-aree, Pulizia e Reminder banchetti. Principale, sub, Telegram, form, annullamento e Dashboard Colloqui restano salvati.
   - **Fotografie dei contatori** (`pg_stat_statements`, chiamate e righe per categoria) al 09/10 05:26 e 09:25 UTC. Per confrontarle, ripetere la stessa query raggruppata per categoria.
   - Soluzione strutturale da proporre all'IT: database interno di n8n su un Postgres locale al server di n8n. In alternativa: alzare `DB_POSTGRESDB_IDLE_CONNECTION_TIMEOUT`, abbassare `EXECUTIONS_DATA_PRUNE_MAX_COUNT`, oppure piano Pro di Supabase.
+  - **Inventario del database del 09/10** (Supabase, database `postgres`, PostgreSQL 17.6, circa 900 MB):
+    - **91 tabelle di n8n** in `public`, circa 888 MB, di cui `execution_data` circa 855 MB. Si riconoscono dalle colonne `createdAt`/`updatedAt`, più `migrations`, `settings`, `role_scope`, `scope`, `webhook_entity`, `workflow_statistics`, `execution_*`, `insights_*`, `oauth_*` e altre. L'ultima migrazione di n8n è `CreateAgentObservationTables1784000000000`. Funzione e trigger di n8n: `increment_workflow_version` su `workflow_entity`.
+    - **16 tabelle REC e app**, circa 1,3 MB, da lasciare su Supabase:
+      - `app_settings`, `automation_deliveries`, `blocked_slots`, `pending_reschedule`, `slot_assignments`, `slot_extra`, `telegram_pending`;
+      - `banchetto_auth`, `banchetto_bookings`, `banchetto_config`, `banchetto_locations`, `banchetto_members`;
+      - `colloqui_auth`, `form_email_verifications`, `n8n_error_occurrences`, `n8n_error_throttle`.
+    - **Funzioni e trigger REC:** `update_updated_at` su `slot_assignments`, `banchetto_check_capacity` su `banchetto_bookings`.
+    - **Supabase Auth e Storage non sono usati:** 0 utenti, 0 file.
+    - **Migrazione (proposta da Ivan dell'IT):** PostgreSQL sul server JEToP solo per n8n, dump selettivo senza le 16 tabelle REC, conservando `N8N_ENCRYPTION_KEY`. La credenziale "Postgres account" dei workflow resta su Supabase.
 
 ## Open Questions
 
