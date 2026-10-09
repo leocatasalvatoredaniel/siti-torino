@@ -488,6 +488,14 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 - **Deploy di rec.jetop.com:** a volte ci mette ore, una volta meno di un minuto. È fuori dal nostro controllo.
 - **Classificatore in modalità auto:** nega le azioni distruttive o di modifica dei permessi su sistemi condivisi (cancellare workflow non creati nella sessione, branch remoti, token admin, canali generici). Non aggirare: spiegare all'utente e lasciargli l'azione.
 - **Repo siti-torino pubblico:** mai committare dati dei candidati, email personali, ID di credenziali o segreti.
+- **Quota di traffico Supabase (avviso del 09/10).**
+  - Il Postgres "Postgres account" è un progetto Supabase sul piano gratuito. Contiene **anche il database interno di n8n** (esecuzioni, workflow, utenti, credenziali), per un totale di 845 MB, di cui 819 MB di `execution_data`.
+  - Supabase ha segnalato il superamento della quota di traffico in uscita: il periodo attuale è tollerato; dall'08/11 vale la Fair Use e il limite è sotto i 5,5 GB al mese.
+  - **Ogni richiesta autenticata a n8n** carica l'utente con tutti i permessi del ruolo (147 righe): circa 150 KB per l'editor e circa 430 KB per ogni chiamata API. Stima da `pg_stat_statements` dal 20/05: circa 4 GB per l'editor, circa 3 GB per le API (in gran parte le nostre), più credenziali, ruoli e caricamento dei workflow (Telegram è 511 KB).
+  - **Quindi: ridurre al minimo le chiamate all'API di n8n.** Raggruppare le letture e creare canali temporanei solo quando servono: ogni canale costa 4 o più chiamate.
+  - Le tabelle del REC sono minuscole e non sono il problema.
+  - La dashboard statistiche si aggiorna ogni 60 secondi anche con la scheda nascosta (manca il controllo `document.hidden` in `rec-dashboard/app.js`): circa 450 esecuzioni al giorno, anche di notte.
+  - Soluzione strutturale da proporre all'IT: database interno di n8n su un Postgres locale al server di n8n, oppure piano Pro di Supabase.
 
 ## Open Questions
 
