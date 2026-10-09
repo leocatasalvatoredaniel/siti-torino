@@ -494,8 +494,14 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
   - **Ogni richiesta autenticata a n8n** carica l'utente con tutti i permessi del ruolo (147 righe): circa 150 KB per l'editor e circa 430 KB per ogni chiamata API. Stima da `pg_stat_statements` dal 20/05: circa 4 GB per l'editor, circa 3 GB per le API (in gran parte le nostre), più credenziali, ruoli e caricamento dei workflow (Telegram è 511 KB).
   - **Quindi: ridurre al minimo le chiamate all'API di n8n.** Raggruppare le letture e creare canali temporanei solo quando servono: ogni canale costa 4 o più chiamate.
   - Le tabelle del REC sono minuscole e non sono il problema.
-  - La dashboard statistiche si aggiorna ogni 60 secondi anche con la scheda nascosta (manca il controllo `document.hidden` in `rec-dashboard/app.js`): circa 450 esecuzioni al giorno, anche di notte.
-  - Soluzione strutturale da proporre all'IT: database interno di n8n su un Postgres locale al server di n8n, oppure piano Pro di Supabase.
+  - Ogni esecuzione costa circa 10-15 KB, soprattutto perché le credenziali vengono rilette a ogni nodo (circa 8 letture). Ci sono circa 8.000 nuove connessioni al giorno verso il pooler.
+  - **Interventi del 09/10, approvati dall'utente:**
+    - dashboard statistiche ogni 5 minuti e solo con la scheda visibile (prima ogni 60 secondi anche nascosta: circa 450 chiamate al giorno); commit `30bbd11` su dev, merge `cc8ffad` su main;
+    - principale: `Trigger 2min - Risposte` gira ogni 2 minuti dalle 7 alle 22:59 e ogni 15 minuti di notte; `Trigger 5min - Mod3` gira ogni 5 minuti di giorno e ogni 30 di notte (Schedule Trigger con due regole cron);
+    - Pulizia: `20,50 7-22 * * *`;
+    - `saveDataSuccessExecution: 'none'` (le esecuzioni riuscite non vengono salvate) per Stats, Banchetti, Sotto-aree, Pulizia e Reminder banchetti. Principale, sub, Telegram, form, annullamento e Dashboard Colloqui restano salvati.
+  - **Fotografie dei contatori** (`pg_stat_statements`, chiamate e righe per categoria) al 09/10 05:26 e 09:25 UTC. Per confrontarle, ripetere la stessa query raggruppata per categoria.
+  - Soluzione strutturale da proporre all'IT: database interno di n8n su un Postgres locale al server di n8n. In alternativa: alzare `DB_POSTGRESDB_IDLE_CONNECTION_TIMEOUT`, abbassare `EXECUTIONS_DATA_PRUNE_MAX_COUNT`, oppure piano Pro di Supabase.
 
 ## Open Questions
 
@@ -511,6 +517,10 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 ```bash
 # 0. Contesto: leggi questo file per intero. Rispondi in italiano.
 
+# REGOLA: ogni chiamata all'API di n8n costa circa 430 KB di traffico Supabase (quota gratuita).
+#    Niente GET /workflows (l'elenco completo); una GET e una PUT per workflow; tutte le query SQL
+#    in un solo canale; per leggere l'output di un canale usa responseMode lastNode invece di
+#    interrogare /executions; niente controlli periodici via API.
 # 1. Ambiente: N8N_API_KEY deve essere già impostata nelle variabili d'ambiente.
 #    Mai chiederla in chat. Verifica che esista senza stamparla:
 test -n "$N8N_API_KEY" && echo ok
