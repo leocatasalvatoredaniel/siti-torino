@@ -205,6 +205,7 @@ Sessione lunga, dal 22/09 all'08/10, con 5 compattazioni di contesto. Le voci so
 | Stato | Candidatura Ricevuta, Da Ricontrollare, Da Verificare, Colloquio Schedulato, Colloquio Effettuato, Ritirato, Escluso (e stati post-colloquio: tecnico, fantasocio, accettato o rifiutato) |
 | Stato Approvazione | Da Approvare (non più usato), In Attesa Conferma Team (secondo colloquio nello slot), Slot Confermato, Convocazione Inviata, Da Riprocessare |
 | Conferma Presenza | In Attesa, Sollecitato, Ha Risposto, Confermata |
+| Risposte (dal 10/10) | **Ultima Risposta**: testo delle risposte del candidato, le più recenti in alto, ognuna con «dd/MM HH:mm · …», massimo 1.900 caratteri. **Data Ultima Risposta**: data e ora. Le scrive `Notion - Segna Risposta` nel sub; per chi era già in «Ha Risposto» il 10/10 le ho recuperate dalla casella hr@ |
 | Altre | Data Convocazione, Ultimo Avviso, Solleciti Inviati, Responsabili Aggiuntivi, Luogo, ID Evento, Prima/Seconda Area, Prima/Seconda Sotto-Area, responsabili (formato "Nome (Area)"), Membro Talent |
 
 Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni sono riportati a memoria.
@@ -268,6 +269,7 @@ In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza
 | `commissione`, `cambia`, `aggiungi` | mostra, cambia o aggiunge responsabili (celle, DB, calendario, Notion) |
 | `tecnico`, `escludi_fanta`, `ripesca` | esiti dopo il colloquio |
 | `accetta`, `rifiuta` | email Gmail con lock su `automation_deliveries` |
+| `presenza` (dal 10/10) | segna «Conferma Presenza» = Confermata, dopo aver gestito la risposta di un candidato in «Ha Risposto» |
 | `rimetti` (dal 10/10) | «Annulla e rimetti in attesa», per quando non c'è un altro slot. Libera celle ed extra, cancella l'evento e le righe nel DB, rimette Notion come lo script dell'8/10 (`Da Ricontrollare`, data, ora, commissione, luogo, evento e conferma vuoti). Manda l'email di rinvio con lock `automation_deliveries` di tipo `rinvio` per lo slot. Con `blocca: true` (casella «Tieni occupato questo orario») inserisce anche l'orario in `blocked_slots`: l'orario resta occupato e non riceve altri colloqui. I testi distinguono «commissione liberata» da «orario occupato» o «orario disponibile». Script `fase4_dash.py` (86 nodi), provato a secco e su un candidato finto |
 
 Ogni azione scrive sul gruppo Telegram chi l'ha fatta. Auth: Bearer token del login Google del sito (localStorage `jetop_banchetti_auth`), verificato su `banchetto_auth`; ruolo `rec` o `admin` da `banchetto_members` oppure dagli admin in config. CORS `allowedOrigins`: `https://rec.jetop.com`, staging, `http://localhost:3999`.
