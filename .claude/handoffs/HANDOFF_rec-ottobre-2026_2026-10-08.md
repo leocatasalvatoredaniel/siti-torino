@@ -461,6 +461,8 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 - **Backup JSON dei workflow** prima di ogni PUT, per esempio `dash_backup_prima_fase3.json`, `main_backup_prima_max_solleciti.json`, `errhandler_backup_prima_dns.json`, `sub_backup_prima_taglio.json`. Tutti persi: prima di una modifica rifare sempre un backup con GET.
 
 ## User Feedback & Preferences (REQUIRED — never omit)
+- **Prima di portare modifiche su `main` (rec.jetop.com), mostrarle a Daniel e aspettare il suo ok** (richiesta del 10/10, dopo che il redesign è andato online senza anteprima). Strumenti: schermate prima/dopo (script `pw/confronto.js`) e lo staging su `dev`. Deve sempre essere possibile tornare alla versione precedente.
+- **Come tornare indietro dal redesign del 10/10:** su `main`, `git revert -m 1 1e8d618` e push. Provato in una copia separata: i file tornano identici a `60d7082` (la versione online prima del redesign). Per altre modifiche vale lo stesso schema: ogni pubblicazione è un merge `--no-ff` di `dev` su `main`, quindi si annulla con `git revert -m 1 <merge>`.
 
 - **Rispondere sempre in italiano.** Quando sono passato all'inglese l'utente ha scritto "parla italiano".
 - **Email ai candidati:**
