@@ -245,7 +245,8 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `7b4591a` / `8a0209e` | dev / main | «Cerca candidati» sotto il calendario |
 | `208c3c9` / `6859fc1` | dev / main | filtri della ricerca in una finestra |
 | `6b878d5` | dev | correzione: «Sposta colloquio» restava su «Leggo i fogli disponibilità…» quando non c'erano proposte (variabile `sposta` non definita in `pickerScelta`, introdotta con `d01abb4`) |
-| `0767d8f` / `60d7082` | dev / main | rifinitura delle due dashboard (dev e main attuali) |
+| `0767d8f` / `60d7082` | dev / main | rifinitura delle due dashboard |
+| `9a1a2f8` / `1e8d618` | dev / main | nuovo sistema grafico (hallmark) per modulo di candidatura, banchetti, statistiche e colloqui; la pagina pubblica resta invariata (dev e main attuali) |
 
 In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza, dashboard senza candidature, limite sulla motivazione, menu a tendina immuni alla traduzione).
 
@@ -420,6 +421,7 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
   - funzioni `apriPicker`, `pickerScelta`, `pickerRiepilogo`, `apriGiorno`, `apriCommissione`, `commissioneScelta`, `commissionePersona`, `commissioneConferma`, `dopoButtons`, `apriTecnico`, `apriAccetta`, `renderDopo`;
   - drawer con i pulsanti azione.
 - `rec-dashboard/index.html`: link a Colloqui e Banchetti; il nome del brand è nascosto su mobile.
+- **Redesign del 10/10 sera (`9a1a2f8`):** il sistema grafico è descritto in `.claude/design/DESIGN_rec-jetop.md` (questo repo) e va letto prima di toccare modulo, banchetti, statistiche o colloqui. In sintesi: foglio condiviso `assets/jetop-ui.css` (caricato con `?v=AAAAMMGG`: nginx non manda Cache-Control per i `.css`), token OKLCH indaco e iris, icone Phosphor (non più Lucide), intestazione comune con il selettore Statistiche / Colloqui / Banchetti, modulo a cinque tappe con avanzamento. **La pagina pubblica `/` non si tocca** (design Figma, richiesta di Daniel). Le regole sotto della rifinitura restano valide salvo le icone, ora Phosphor.
 - **Rifinitura del 10/10 (`0767d8f`), regole da mantenere nelle due dashboard:**
   - icone solo SVG: in `colloqui/app.js` l'helper `icon(nome)` / `ib(nome, testo)` con i tracciati Lucide (ISC) in `ICONE`; niente emoji nell'interfaccia (il 🎉 resta solo nel testo dell'email di accettazione);
   - nei menu delle persone niente emoji: `gruppiPersone()` e `aggiungiGruppi()` creano gli `optgroup` «Disponibili», «Senza disponibilità», «Già impegnati in quest'ora»;
@@ -443,6 +445,7 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 
 ### Repo siti-torino (questo)
 - `.claude/skills/handoff/`, `.claude/skills/handoffplan/`: skill di handoff (MIT, REMvisual/claude-handoff), con LICENSE.
+- `.claude/skills/hallmark/` (MIT, nutlope/hallmark): skill usata per il redesign; `.claude/design/` contiene il sistema grafico e il registro di hallmark.
 - `.claude/skills/ui-ux-pro-max/` (MIT), `.claude/skills/design-taste-frontend/` e `.claude/skills/redesign-existing-projects/` (MIT, Leonxlnx/taste-skill), `.claude/skills/impeccable/` (Apache 2.0 con NOTICE): skill di design usate per la rifinitura delle dashboard. Non eseguire `impeccable/scripts/impeccable`: scarica ed esegue un programma esterno; il contesto del progetto si legge a mano.
 - `.claude/handoffs/HANDOFF_rec-ottobre-2026_2026-10-08.md`: questo file. Il sito è pubblicato da Vercel: il file `.vercelignore` esclude `.claude/` dal deploy. Il file resta comunque visibile su GitHub, perché il repo è pubblico.
 
