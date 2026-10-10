@@ -146,6 +146,9 @@ Ogni pagina tiene nel proprio `<style>` solo ciò che è suo, sempre tramite i t
 - Menu a tendina: freccia Phosphor `caret-down` in data URI (unico colore scritto in esadecimale,
   `#B49BEA` = `--color-accent`, perché `var()` non funziona dentro un data URI).
 - Spaziature: padding, margin e gap solo su multipli di 4px.
+- Liste lunghe negli strumenti: ogni sezione ha nel titolo il numero di elementi e un pulsante
+  «Nascondi»/«Mostra» (ricordato nel browser); una lista aperta oltre le prime righe ha
+  «Mostra meno» sia in cima sia in fondo, e richiudendo si torna all'inizio della lista.
 - Il modulo riserva sempre lo spazio dei messaggi (`.status` con `min-height`), cosi' un errore
   che compare non sposta la pagina.
 

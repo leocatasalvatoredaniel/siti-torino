@@ -246,7 +246,8 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `208c3c9` / `6859fc1` | dev / main | filtri della ricerca in una finestra |
 | `6b878d5` | dev | correzione: «Sposta colloquio» restava su «Leggo i fogli disponibilità…» quando non c'erano proposte (variabile `sposta` non definita in `pickerScelta`, introdotta con `d01abb4`) |
 | `0767d8f` / `60d7082` | dev / main | rifinitura delle due dashboard |
-| `9a1a2f8` / `1e8d618` | dev / main | nuovo sistema grafico (hallmark) per modulo di candidatura, banchetti, statistiche e colloqui; la pagina pubblica resta invariata (dev e main attuali) |
+| `9a1a2f8` / `1e8d618` | dev / main | nuovo sistema grafico (hallmark) per modulo di candidatura, banchetti, statistiche e colloqui; la pagina pubblica resta invariata |
+| `c07c196` / `b8e7545` | dev / main | colloqui: liste richiudibili in ogni punto («Nascondi» per sezione, «Mostra meno» in cima e in fondo, anche nella ricerca); mostrato a Daniel prima del merge (dev e main attuali) |
 
 In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza, dashboard senza candidature, limite sulla motivazione, menu a tendina immuni alla traduzione).
 
@@ -430,6 +431,10 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
   - niente `border-left` colorato su schede, risposte, avvisi e toast; resta solo sulle chip del calendario perché codifica l'area;
   - statistiche: griglie a colonne fisse (KPI e operatività 4 per riga, 2 su telefono; `.grid` a 2, `.grid.g3` a 3), date `dd/mm` con `ddmm()` e `titoloData()`, università raggruppate con `gruppoUni()`, `emptyMsg(id, testo)` per gli stati vuoti, `etichetta()` trasforma «(nessuno)» in «Non indicato»;
   - colloqui: «Cerca candidati» mostra 10 risultati senza filtri (50 con filtri), «Dopo il colloquio» e «In attesa» 8 righe con «Mostra tutti» (`riempiRichiudibile`, stato in `APERTI`).
+- **Liste richiudibili (`c07c196`, 10/10):** richiesta di Daniel («quando estendo la scheda non posso nasconderla di nuovo, solo alla fine e solo in parte»).
+  - Ogni sezione (Cerca candidati `#finder`, Dopo il colloquio `#dopo`, In attesa `#waiting`) ha un titolo `.sec-head` con il numero (`#nCerca`, `#nDopo`, `#nAttesa`) e un pulsante `.sec-toggle` («Nascondi»/«Mostra», `aria-controls`, `aria-expanded`). Le sezioni chiuse sono salvate in localStorage (`jetop_rec_sezioni`, `SEZ_CHIUSE`, `applicaSezioni()`), sempre in try/catch.
+  - Liste aperte: «Mostra meno» sia in cima (`.more.top`) sia in fondo; richiudendo, `tornaAllaLista()` riporta all'inizio della lista e mette il focus sul pulsante.
+  - Ricerca: dopo «Mostra altri» c'è «Mostra meno» (in cima e in fondo) che torna ai primi 10 (o 50 con filtri).
 - `banchetti/app.js`: impostazione "Ore massime a socio (0 = nessun limite)" (`#setMaxH`, `#setMaxHSave`, chiave `max_hours`).
 - `Dockerfile` copia nel sito solo `index.html`, `app.js`, `landing.js`, `meta-pixel.js`, `candidati/`, `assets/`, `fonts/`, `banchetti/`, `rec-dashboard/`. `docs/` non viene pubblicata.
 
@@ -462,6 +467,7 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 
 ## User Feedback & Preferences (REQUIRED — never omit)
 - **Prima di portare modifiche su `main` (rec.jetop.com), mostrarle a Daniel e aspettare il suo ok** (richiesta del 10/10, dopo che il redesign è andato online senza anteprima). Strumenti: schermate prima/dopo (script `pw/confronto.js`) e lo staging su `dev`. Deve sempre essere possibile tornare alla versione precedente.
+- **Ultimo merge su main: `b8e7545`** (liste richiudibili); si annulla con `git revert -m 1 b8e7545` e torna a `1e8d618`.
 - **Come tornare indietro dal redesign del 10/10:** su `main`, `git revert -m 1 1e8d618` e push. Provato in una copia separata: i file tornano identici a `60d7082` (la versione online prima del redesign). Per altre modifiche vale lo stesso schema: ogni pubblicazione è un merge `--no-ff` di `dev` su `main`, quindi si annulla con `git revert -m 1 <merge>`.
 
 - **Rispondere sempre in italiano.** Quando sono passato all'inglese l'utente ha scritto "parla italiano".
