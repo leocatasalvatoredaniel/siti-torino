@@ -236,8 +236,16 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `550d00f` | main | merge fase 1 |
 | `4ba2972` | dev | dashboard colloqui fase 2 |
 | `391de83` | main | merge fase 2 |
-| `7e7bc24` | dev | dashboard colloqui fase 3 (dev attuale) |
-| `39e3449` | main | merge fase 3 (main attuale) |
+| `7e7bc24` | dev | dashboard colloqui fase 3 |
+| `39e3449` | main | merge fase 3 |
+| `30bbd11` / `cc8ffad` | dev / main | statistiche ogni 5 minuti, solo con la scheda visibile |
+| `d01abb4` / `575f8c9` | dev / main | «Annulla e rimetti in attesa» |
+| `c45890a` / `70edeb7` | dev / main | testi di «Tieni occupato» |
+| `bb310c7` / `8a50e2f` | dev / main | risposte dei candidati in «Da gestire» |
+| `7b4591a` / `8a0209e` | dev / main | «Cerca candidati» sotto il calendario |
+| `208c3c9` / `6859fc1` | dev / main | filtri della ricerca in una finestra |
+| `6b878d5` | dev | correzione: «Sposta colloquio» restava su «Leggo i fogli disponibilità…» quando non c'erano proposte (variabile `sposta` non definita in `pickerScelta`, introdotta con `d01abb4`) |
+| `0767d8f` / `60d7082` | dev / main | rifinitura delle due dashboard (dev e main attuali) |
 
 In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza, dashboard senza candidature, limite sulla motivazione, menu a tendina immuni alla traduzione).
 
@@ -411,7 +419,15 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
   - `finestra()` crea le finestre modali;
   - funzioni `apriPicker`, `pickerScelta`, `pickerRiepilogo`, `apriGiorno`, `apriCommissione`, `commissioneScelta`, `commissionePersona`, `commissioneConferma`, `dopoButtons`, `apriTecnico`, `apriAccetta`, `renderDopo`;
   - drawer con i pulsanti azione.
-- `rec-dashboard/index.html`: link "📅 Colloqui" e "← Banchetti"; il nome del brand è nascosto su mobile.
+- `rec-dashboard/index.html`: link a Colloqui e Banchetti; il nome del brand è nascosto su mobile.
+- **Rifinitura del 10/10 (`0767d8f`), regole da mantenere nelle due dashboard:**
+  - icone solo SVG: in `colloqui/app.js` l'helper `icon(nome)` / `ib(nome, testo)` con i tracciati Lucide (ISC) in `ICONE`; niente emoji nell'interfaccia (il 🎉 resta solo nel testo dell'email di accettazione);
+  - nei menu delle persone niente emoji: `gruppiPersone()` e `aggiungiGruppi()` creano gli `optgroup` «Disponibili», «Senza disponibilità», «Già impegnati in quest'ora»;
+  - `:focus-visible` iris, `--ring` per i campi, `header`/`main`/`nav`, titoli di sezione `h2.section-t` (niente maiuscoletto), schede `h3`;
+  - su telefono e touch tutti i comandi alti almeno 44 px, testi minimi 12 px, `tabular-nums`, `prefers-reduced-motion` rispettato (anche nei grafici);
+  - niente `border-left` colorato su schede, risposte, avvisi e toast; resta solo sulle chip del calendario perché codifica l'area;
+  - statistiche: griglie a colonne fisse (KPI e operatività 4 per riga, 2 su telefono; `.grid` a 2, `.grid.g3` a 3), date `dd/mm` con `ddmm()` e `titoloData()`, università raggruppate con `gruppoUni()`, `emptyMsg(id, testo)` per gli stati vuoti, `etichetta()` trasforma «(nessuno)» in «Non indicato»;
+  - colloqui: «Cerca candidati» mostra 10 risultati senza filtri (50 con filtri), «Dopo il colloquio» e «In attesa» 8 righe con «Mostra tutti» (`riempiRichiudibile`, stato in `APERTI`).
 - `banchetti/app.js`: impostazione "Ore massime a socio (0 = nessun limite)" (`#setMaxH`, `#setMaxHSave`, chiave `max_hours`).
 - `Dockerfile` copia nel sito solo `index.html`, `app.js`, `landing.js`, `meta-pixel.js`, `candidati/`, `assets/`, `fonts/`, `banchetti/`, `rec-dashboard/`. `docs/` non viene pubblicata.
 
@@ -427,6 +443,7 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 
 ### Repo siti-torino (questo)
 - `.claude/skills/handoff/`, `.claude/skills/handoffplan/`: skill di handoff (MIT, REMvisual/claude-handoff), con LICENSE.
+- `.claude/skills/ui-ux-pro-max/` (MIT), `.claude/skills/design-taste-frontend/` e `.claude/skills/redesign-existing-projects/` (MIT, Leonxlnx/taste-skill), `.claude/skills/impeccable/` (Apache 2.0 con NOTICE): skill di design usate per la rifinitura delle dashboard. Non eseguire `impeccable/scripts/impeccable`: scarica ed esegue un programma esterno; il contesto del progetto si legge a mano.
 - `.claude/handoffs/HANDOFF_rec-ottobre-2026_2026-10-08.md`: questo file. Il sito è pubblicato da Vercel: il file `.vercelignore` esclude `.claude/` dal deploy. Il file resta comunque visibile su GitHub, perché il repo è pubblico.
 
 ### Script di lavoro (persi con il container, da ricreare)
