@@ -39,7 +39,11 @@ Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono sol
 
 ## Where We Are
 
-- **REC attivo.** La finestra di scheduling parte dal 28/09/2026 e dura 4 settimane: righe 4..295 dei fogli disponibilità, fino a circa il 24/10. Scheduling automatico alle 9:00, lunedì-sabato.
+- **REC attivo.** La finestra di scheduling parte dal 28/09/2026: righe 4..295 dei fogli disponibilità (settimane 1-4). Scheduling automatico alle 9:00, lunedì-sabato, con preavviso di 2 giorni.
+- **Calendario finale deciso da Daniel il 10/10:** conoscitivi fino a giovedì 22/10 (ultimo slot alle 17:00, la sera c'è il fantasocio); venerdì 23/10 invio delle email; 26-29/10 colloqui tecnici, organizzati a parte (niente settimana 5 nei fogli, il bot non fissa i tecnici).
+  - `app_settings.rec_scheduling_windows`: finestra «ottobre» con `end` portato dal 18/10 al **22/10** (solo `Trigger Schedulato` delle 9:00 dipende dalla finestra). Per tornare indietro si rimette `"end":"2026-10-18"`.
+  - `blocked_slots`: 22/10 18:00 e 19:00 («Fantasocio»), 23/10 tutto il giorno («Invio email, niente colloqui»), 24/10 tutto il giorno («Fine conoscitivi, niente colloqui»). 26 righe, si tolgono dalla dashboard (Sblocca) o con un `delete` su quelle date.
+  - Fogli disponibilità (M&C, D&V, IT, S&P, T&DA): **tutte** le colonne «Colonna di …» ora vanno da riga 5 a riga 269 (22/10 17:00), anche per i responsabili uscenti che prima si fermavano alla riga 222. Celle 224-269 bianche, 270-295 grigie (0.88) e protette solo da «Struttura» (hr@). Nota sulla cella A223 con il calendario. Prima della modifica: uscenti fino a 222, nuovi e T&DA fino a 295.
 - **Tutti i 14 workflow REC sono attivi.** La tabella completa con i trigger è in Evidence & Data. C'è un backup spento (`vhL5QItyosHVLwH6`) da non riattivare.
 - **Dashboard calendario colloqui:** fasi 1, 2 e 3 completate e in produzione su `rec.jetop.com/rec-dashboard/colloqui/`. Ultimo merge su main: `39e3449`, che include la fase 3 (`7e7bc24` su dev).
 - **Backend dashboard:** workflow n8n `REC — Dashboard Colloqui API` (`iD9mAViOGLgKM2M9`, 72 nodi), con i webhook `rec-colloqui-lista` (GET) e `rec-colloqui-azione` (POST).
@@ -401,7 +405,7 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 - **Controllare che n8n risponda:** `https://n8n.jetop.com/healthz`. Non chiamare i webhook di produzione con payload di prova.
 
 **Altre regole del foglio disponibilità**
-- La settimana 4 può essere spuntata solo dalla nuova lista di responsabili. Le protezioni per colonna si chiamano "Colonna di <Nome>".
+- Dal 10/10 la settimana 4 la spuntano tutti i responsabili, ma solo fino al 22/10 alle 17:00 (prima solo la nuova lista). Le protezioni per colonna si chiamano "Colonna di <Nome>".
 - Ogni responsabile ha la protezione della sua colonna (editor: la persona più hr@).
 - La pagina web delle disponibilità (`VlgUU8NTZLZeCrNW`) è pronta ma si userà dal prossimo REC: oggi si usa ancora il foglio.
 
