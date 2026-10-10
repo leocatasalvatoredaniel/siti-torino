@@ -268,6 +268,7 @@ In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza
 | `commissione`, `cambia`, `aggiungi` | mostra, cambia o aggiunge responsabili (celle, DB, calendario, Notion) |
 | `tecnico`, `escludi_fanta`, `ripesca` | esiti dopo il colloquio |
 | `accetta`, `rifiuta` | email Gmail con lock su `automation_deliveries` |
+| `rimetti` (dal 10/10) | «Annulla e rimetti in attesa», per quando non c'è un altro slot. Libera celle ed extra, cancella l'evento e le righe nel DB, rimette Notion come lo script dell'8/10 (`Da Ricontrollare`, data, ora, commissione, luogo, evento e conferma vuoti). Manda l'email di rinvio con lock `automation_deliveries` di tipo `rinvio` per lo slot. Con `blocca: true` inserisce anche l'orario in `blocked_slots`. Script `fase4_dash.py` (86 nodi), provato a secco e su un candidato finto |
 
 Ogni azione scrive sul gruppo Telegram chi l'ha fatta. Auth: Bearer token del login Google del sito (localStorage `jetop_banchetti_auth`), verificato su `banchetto_auth`; ruolo `rec` o `admin` da `banchetto_members` oppure dagli admin in config. CORS `allowedOrigins`: `https://rec.jetop.com`, staging, `http://localhost:3999`.
 
