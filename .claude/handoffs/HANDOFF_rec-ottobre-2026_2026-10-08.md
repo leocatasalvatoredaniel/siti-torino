@@ -406,6 +406,15 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 
 **Altre regole del foglio disponibilità**
 - Dal 10/10 la settimana 4 la spuntano tutti i responsabili, ma solo fino al 22/10 compreso (prima solo la nuova lista). Le protezioni per colonna si chiamano "Colonna di <Nome>".
+- **Nuove persone (10/10 sera):** «Daniele Munafo» in IT (colonna G, scritto come nel foglio soci perché l'invito del calendario trova l'email confrontando le parole del nome) e «Caterina Mana» in T&DA (Talent, colonna K, poi spostata dalla sincronizzazione delle sotto-aree nel gruppo Talent). Protezioni `Colonna di …` fino alla riga 271, con editor la persona e hr@. Gabriele Corazzari era nella richiesta iniziale ma Daniel l'ha tolto del tutto.
+- **Config, colonna E «Dirige colloqui come Talent»:** con «Sì» una persona di un'altra area può essere Membro Talent usando la sua colonna di area (una sola colonna, quindi mai due colloqui alla stessa ora; la cella bloccata è nel suo foglio). Oggi «Sì» per Lorenzo Amadi e Vincenzo Gulotta (S&P), Christian Lo Vetere e Diego Campanale (IT; righe aggiunte in Config con sotto-area vuota). Regola scelta da Daniel: **prima i Talent**. Lo scheduling cerca prima uno slot con un Talent del foglio T&DA in tutte le combinazioni di sotto-area, e usa gli extra solo se non ne trova; le proposte di spostamento (email, Telegram, dashboard) mettono prima le opzioni con un Talent e completano con gli extra. **Per spegnere la funzione basta svuotare la colonna E**: il codice torna a comportarsi come prima.
+- **Workflow toccati il 10/10 sera** (backup in scratchpad come `bk_talent_*.json`, perso a fine sessione):
+  - letture della Config portate da `B13:D120` a `B13:E120` in 10 nodi HTTP;
+  - `HirNCuA0RjYvVPp1`: `Algoritmo Scheduling` (`cerca(listaP, listaS, conExtra)`), `Prepara Riepilogo` (`talentBase` e `talent`);
+  - `i0ZbyVmKy5ae7XuM`: `Code - Trova Slot Alternativi` (`raccogli(..., conExtra)`);
+  - `m7WJCsjBYyPYRmUT`: `Trova 3 Slot Sposta` (e ora valorizza anche `shT`, prima `undefined`), `Prepara Resp Assegna` e `Show Talent`, `Scelte Cambio` e `Prepara Cambio` (callback `col.indiceFoglio` quando il Talent viene da un altro foglio);
+  - `iD9mAViOGLgKM2M9`: `Code - Calcola Slot` (foglio Talent virtuale: persone T&DA più extra, ognuno con il suo foglio `f`). La forma della risposta non cambia, quindi `app.js` non è stato toccato.
+- **Simulazione sui dati del 10/10 sera:** chi aveva già uno slot con un Talent lo tiene identico, e gli slot trovati passano da 15 a 33. Quasi tutti i colloqui in più hanno Diego Campanale come Talent (18), perché è l'unico degli extra con molte ore spuntate nelle settimane 3 e 4.
 - Ogni responsabile ha la protezione della sua colonna (editor: la persona più hr@).
 - La pagina web delle disponibilità (`VlgUU8NTZLZeCrNW`) è pronta ma si userà dal prossimo REC: oggi si usa ancora il foglio.
 
