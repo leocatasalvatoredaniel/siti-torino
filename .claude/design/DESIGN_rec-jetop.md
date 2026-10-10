@@ -149,6 +149,9 @@ Ogni pagina tiene nel proprio `<style>` solo ciò che è suo, sempre tramite i t
 - Liste lunghe negli strumenti: ogni sezione ha nel titolo il numero di elementi e un pulsante
   «Nascondi»/«Mostra» (ricordato nel browser); una lista aperta oltre le prime righe ha
   «Mostra meno» sia in cima sia in fondo, e richiudendo si torna all'inizio della lista.
+- Niente liste doppie: un sottoinsieme della lista principale (per esempio «in attesa di slot»)
+  è una vista rapida sopra la lista, a pillola con il numero (`aria-pressed`), non una sezione
+  separata. Le viste vanno a capo su telefono, così sono tutte visibili.
 - Il modulo riserva sempre lo spazio dei messaggi (`.status` con `min-height`), cosi' un errore
   che compare non sposta la pagina.
 
