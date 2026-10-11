@@ -48,6 +48,11 @@ Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono sol
 - **Dashboard calendario colloqui:** fasi 1, 2 e 3 completate e in produzione su `rec.jetop.com/rec-dashboard/colloqui/`. Ultimo merge su main: `39e3449`, che include la fase 3 (`7e7bc24` su dev).
 - **Backend dashboard:** workflow n8n `REC — Dashboard Colloqui API` (`iD9mAViOGLgKM2M9`, 72 nodi), con i webhook `rec-colloqui-lista` (GET) e `rec-colloqui-azione` (POST).
 - **Annullamento automatico dei colloqui non confermati: attivo.** Workflow `AsjcIF8Sab5ZpXFH`, cron `*/10 8-21 * * *`.
+  - Dall'11/10 (richiesta di Beatrice, HR) chi è stato convocato meno di 48 ore prima del colloquio (prenotazioni dell'ultimo momento) non viene mai annullato in automatico: decide il team. Riga `if (inizio - convMs < 48 * H) continue;` in `Code - Primo Da Annullare`. Restano la regola delle 24 ore dalla convocazione e il divieto nelle ultime 3 ore.
+- **Conferme riferite a un colloquio vecchio (11/10):**
+  - Il caso: Chiara R. aveva risposto «sarò presente» alle 12:59 del 05/10 al promemoria del colloquio del 05/10. Il bot ha letto l'email dopo lo spostamento al 16/10 13:00 (convocazione delle 13:10) e l'ha presa come conferma del colloquio nuovo.
+  - La correzione: in `i0ZbyVmKy5ae7XuM` › `Code - Parse Intent` una «conferma» diventa «altro» (resta «Ha Risposto» e l'email torna da leggere) se l'email è arrivata prima della Data Convocazione o se l'oggetto cita una data diversa da quella del colloquio.
+  - Chiara è tornata «In Attesa»: il bot le manda i solleciti e, senza risposta, annulla il 15/10 alle 13:00.
   - Primo giro reale il 08/10 alle 19:30 e alle 19:40: due candidati annullati (J.E.V. e C.A.), email inviate, esecuzioni 63575 e 63583, ultimo nodo `HTTP - Avviso Gruppo`.
 - **Solleciti limitati a 3** (`MAX_SOLLECITI = 3` in `Code - Chi Sollecitare`). Nessun sollecito se il colloquio è a meno di 24h, perché in quel caso subentra l'annullamento. Il testo del sollecito ora avvisa dell'annullamento.
 - **Mod3 (convocazioni ogni 5 minuti):** corretto il dedupe. Prima, riportare un candidato a uno slot già convocato in passato bloccava la nuova convocazione (caso L.). La correzione è nel lock `Postgres - Lock Convocazione`.
