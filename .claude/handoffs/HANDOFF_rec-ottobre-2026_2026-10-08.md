@@ -39,6 +39,12 @@ Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono sol
 
 ## Where We Are
 
+- **Apertura e chiusura delle candidature (11/10):** prima dipendevano solo dalla casella «Candidature Aperte» della riga «Candidature aperte (form sito)» nel database Notion Config (`056f3c16…`).
+  - Ora la riga ha anche «Apertura Candidature» e «Chiusura Candidature» (data con ora). Regola: aperte = casella spuntata e adesso tra apertura e chiusura (una data vuota non limita).
+  - La applicano `Code - Stato Candidature` (workflow REC, risponde a `form-cand-status`, che ora restituisce anche `apre` e `chiude`) e `Code - Stato Submit` (workflow Form `FLAIlj9UWzZjOYbx`, rifiuta gli invii). Il testo di chiusura non è cambiato, per scelta di Daniel.
+  - Nella pagina Statistiche c'è il modulo «Candidature» (`#candCtl`), con stato, date, «Chiudi adesso» (chiusura = adesso) e «Riapri adesso» (spunta la casella e toglie apertura e chiusure passate).
+  - Usa le azioni `candidature`, `candidature_date` e `candidature_adesso` della Dashboard API (`iD9mAViOGLgKM2M9`, nodi `HTTP - Config Candidature` … `Respond - Candidature OK`), che avvisano il gruppo Telegram.
+  - Merge `2bdde67` su main (dev `d788bea`). La chiusura del REC di ottobre è impostata alle 23:59 dell'11/10.
 - **REC attivo.** La finestra di scheduling parte dal 28/09/2026: righe 4..295 dei fogli disponibilità (settimane 1-4). Scheduling automatico alle 9:00, lunedì-sabato, con preavviso di 2 giorni.
 - **Calendario finale deciso da Daniel il 10/10:** conoscitivi fino a giovedì 22/10 compreso, tutto il giorno (la sera c'è il fantasocio, ma Daniel ha chiesto di lasciare il giorno intero disponibile); venerdì 23/10 invio delle email; 26-29/10 colloqui tecnici, organizzati a parte (niente settimana 5 nei fogli, il bot non fissa i tecnici).
   - `app_settings.rec_scheduling_windows`: finestra «ottobre» con `end` portato dal 18/10 al **22/10** (solo `Trigger Schedulato` delle 9:00 dipende dalla finestra). Per tornare indietro si rimette `"end":"2026-10-18"`.

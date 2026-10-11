@@ -149,6 +149,7 @@ Ogni pagina tiene nel proprio `<style>` solo ciò che è suo, sempre tramite i t
 - Liste lunghe negli strumenti: ogni sezione ha nel titolo il numero di elementi e un pulsante
   «Nascondi»/«Mostra» (ricordato nel browser); una lista aperta oltre le prime righe ha
   «Mostra meno» sia in cima sia in fondo, e richiudendo si torna all'inizio della lista.
+- Statistiche: sotto la testata, il modulo «Candidature» è una riga di stato (pallino verde o rosso, titolo, dettaglio con le date in Red Hat Mono) con i comandi a destra. Le azioni immediate chiedono conferma in linea (domanda + «Sì, …» + «Annulla»), non con una finestra. Le date si modificano in un modulo che si apre sotto, con due campi `datetime-local` a `color-scheme: dark`.
 - Niente liste doppie: un sottoinsieme della lista principale (per esempio «in attesa di slot»)
   è una vista rapida sopra la lista, a pillola con il numero (`aria-pressed`), non una sezione
   separata. Le viste vanno a capo su telefono, così sono tutte visibili.
