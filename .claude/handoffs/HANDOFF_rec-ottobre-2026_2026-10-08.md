@@ -39,13 +39,55 @@ Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono sol
 
 ## Where We Are
 
-- **REC attivo.** La finestra di scheduling parte dal 28/09/2026 e dura 4 settimane: righe 4..295 dei fogli disponibilità, fino a circa il 24/10. Scheduling automatico alle 9:00, lunedì-sabato.
+- **Apertura e chiusura delle candidature (11/10):** prima dipendevano solo dalla casella «Candidature Aperte» della riga «Candidature aperte (form sito)» nel database Notion Config (`056f3c16…`).
+  - Ora la riga ha anche «Apertura Candidature» e «Chiusura Candidature» (data con ora). Regola: aperte = casella spuntata e adesso tra apertura e chiusura (una data vuota non limita).
+  - La applicano `Code - Stato Candidature` (workflow REC, risponde a `form-cand-status`, che ora restituisce anche `apre` e `chiude`) e `Code - Stato Submit` (workflow Form `FLAIlj9UWzZjOYbx`, rifiuta gli invii). Il testo di chiusura non è cambiato, per scelta di Daniel.
+  - Nella pagina Statistiche c'è il modulo «Candidature» (`#candCtl`), con stato, date, «Chiudi adesso» (chiusura = adesso) e «Riapri adesso» (spunta la casella e toglie apertura e chiusure passate).
+  - Usa le azioni `candidature`, `candidature_date` e `candidature_adesso` della Dashboard API (`iD9mAViOGLgKM2M9`, nodi `HTTP - Config Candidature` … `Respond - Candidature OK`), che avvisano il gruppo Telegram.
+  - Merge `2bdde67` su main (dev `d788bea`). La chiusura del REC di ottobre è impostata alle 23:59 dell'11/10.
+  - Verificato alle 00:06 del 12/10: `form-cand-status` risponde `open: false` e /candidati/ mostra il riquadro di chiusura.
+- **Calendario della dashboard Colloqui (12/10):** selettore «Elenco / Settimana» nella barra della settimana, ricordato nel browser (`jetop_rec_vista_cal`); senza scelta, telefono = Elenco e computer = Settimana. Su telefono la Settimana sta tutta nello schermo, come l'agenda del PoliTO: solo i nomi, e gli orari bloccati sono indicati dalla sola icona. Gli orari bloccati sono leggibili (testo chiaro, a capo; email mostrata come nome); il giorno intero bloccato compare solo nell'intestazione. Merge `4d09f8b` su main (dev `a1660f9`, `aff7f9e`). Su telefono la barra della settimana sta in 3 righe (settimana e Oggi, vista e area, ricerca e «Ritirati»): merge `c207cdd` (dev `a27fac4`).
+- **Annullamento ripristinato a mano (12/10, E. S., colloquio del 13/10 alle 14:00):** l'annullamento automatico delle 14:00 era corretto (nessuna risposta né al sollecito). Poi qualcuno ha rimesso a mano «Colloquio Schedulato» su Notion e Beatrice ha segnato la presenza dalla dashboard, ma evento, celle e slot restavano tolti. Ripristinati con l'OK di Daniel: celle grigie e protette nei fogli D&V, M&C e T&DA (riga 169), riga in `slot_assignments`, evento del calendario hr@ di nuovo attivo (invito rimandato alla commissione), su Notion «Convocazione Inviata», luogo e ID evento. Email di conferma inviata da hr@ nel thread dell'annullamento. 
+- **«Riprendi colloquio» nella dashboard (12/10):** azione `riprendi` della Dashboard API (`iD9mAViOGLgKM2M9`, backup `bk_riprendi_dash.json`, script `talent/patch_riprendi.py`). Vale per i candidati con un annullamento automatico (`automation_deliveries` tipo `annullamento`, stessa data e ora di Notion), senza riga in `slot_assignments`, stato «Ritirato» o «Colloquio Schedulato», colloquio non ancora passato. Prende la commissione da Notion, ricontrolla i fogli (`Code - Calcola Slot`, ramo `riprendi`), riattiva l'evento annullato del calendario hr@ (lo cerca per orario e nome) e rimette celle, slot e Notion (convocazione inviata, presenza confermata, aggiunti svuotati e da rimettere dalla Commissione). Se spuntato, manda al candidato un'email di conferma. Blocco contro il doppio clic: tipo `ripresa`. Nella lista c'è il campo `annullato`; nella dashboard il pulsante sta in «Da gestire» e nella scheda. Merge `96349c7` (dev `1624df0`). Nello stesso merge: niente riquadro azzurro al tocco (`-webkit-tap-highlight-color` in `jetop-ui.css`).
+- **«Assegna slot» per gli annullati (12/10):** `Code - Controlla Azione` ammette `disponibilita`/`prenota` anche per chi è «Ritirato» solo per l'annullamento automatico (stessa data e ora, nessuna riga nello slot); nella dashboard il pulsante sta accanto a «Riprendi colloquio». Caso reale: A. M. (13/10 alle 15:00), la cui ora liberata era già stata data a un altro candidato con due membri della stessa commissione. Merge `9527b97` (dev `1db3433`), backup `bk_assegna_dash.json`. Nota: l'annullamento automatico salta chi è già stato annullato una volta (`Postgres - Annullamenti Fatti` guarda solo `page_id`), quindi chi riceve un nuovo orario non viene annullato una seconda volta.
+- **Doppia email ad A. M. (12/10):** alle 16:46 lei ha risposto all'annullamento («È possibile rifissarlo?»). Il bot legge solo i candidati con un colloquio fissato, quindi il messaggio è rimasto fermo finché alle 17:05 le hanno dato un nuovo orario con «Assegna slot» (13/10 alle 9:00). Allora il sub l'ha letto come «modifica» e alle 17:06 le ha proposto 3 orari alternativi. Sistemato: tolta la riga in `pending_reschedule`, email di chiarimento da hr@ nel thread delle opzioni. Regola corretta nel sub (`Code - Parse Intent`, backup `bk_prima_conv_sub.json`): un'email arrivata prima dell'ultima `Data Convocazione` diventa «altro» per qualunque intento, non solo per le conferme, quindi resta da leggere per il team.
+- **Gemini che non risponde (13/10):** alle 9:32 il sub ha fallito su Gemini (5 tentativi). L'email di F. R. (una conferma) era già etichettata «REC/Gestita» dal principale, che poi aggiunge anche «REC/Errore»: quindi non veniva più riletta. Presenza segnata a mano. Correzione nel sub (backup `bk_gemini_sub.json`, script `talent/patch_gemini_riprova.py`): i due nodi Gemini hanno l'uscita di errore → `IF - Gemini Riprovabile`. Se l'email è arrivata da meno di 2 ore si toglie `Label_9` (REC/Gestita, nodo `Gmail - Riprova Più Tardi`) e il giro dopo la riprova; altrimenti `Code - Gemini Non Disponibile` → `Gmail - Rimetti Da Leggere` → avviso «da gestire» con il motivo. `Notion - Segna Risposta` non duplica più il testo quando riprova. Provato su un workflow temporaneo. Nell'Error Handler (`PhG1qNhFlOhzhMME`, backup `bk_error_handler.json`) l'avviso non dice più «si riprova da solo».
+- **Scelta di un orario proposto rifiutata in silenzio (R. P., 12-13/10):** il bot gli aveva proposto il 13/10 alle 9:00 (`Code - Trova Slot Alternativi` accetta orari con almeno 3 ore di preavviso). Lui l'ha scelto, ma `Code - Esito Verifica` chiedeva 24 ore: scelta rifiutata, avviso solo al team, nessuna email a lui, e si è presentato. Il 13/10 alle 10:07 B. C. lo ha spostato dalla dashboard al 21/10 alle 10:00. Correzioni nel sub (backup `bk_scelta_sub.json`, script `talent/patch_scelte.py`):
+  1) `Esito Verifica` usa 3 ore;
+  2) se la scelta non si può applicare, `Gmail - Scelta Non Disponibile` scrive al candidato «non presentarti, ti scriviamo noi» prima dell'avviso al team;
+  3) `Code - Parse Intent` passa `fascia` (mattina/pomeriggio) e `giorni_no`, e `Trova Slot Alternativi` scarta gli orari che non vanno bene.
+  Il prompt di Gemini che estrae fascia e giorni è pubblicato il 13/10 alle 13:10 (backup prima della modifica: `bk_prompt_sub.json`). Provato su 4 testi su 6, tutti corretti: R. P. → pomeriggio, [mercoledi]; conferma; «la mattina ho lezione» → pomeriggio; «giovedì e venerdì» → [giovedi, venerdi]. Gli altri 2 non si sono potuti provare perché gemma-4-26b quel giorno rispondeva spesso con errore 500. Da valutare: passare a gemini-2.5-flash.
+- **Gabriele Corazzari aggiunto (13/10, richiesta di Daniel):** foglio M&C colonna J (prima nascosta, ora visibile a 130 px), righe 5-271 spuntabili con protezione «Colonna di Gabriele Corazzari» (lui e hr@), righe 272-295 grigie. In Config riga 45: M&C, sotto-area vuota (tutta l'area), «Sì» in colonna E (può dirigere come Talent). Script `corazzari_mc.py`, snapshot `snap_prima_corazzari.json`.
+- **Luoghi doppi nello stesso orario (13/10):** per il secondo colloquio di un'ora, bot e dashboard fanno scegliere solo tra Sala riunioni e Ufficio, senza guardare il luogo dell'altro. Se il primo viene spostato, chi resta si tiene «Sala riunioni» e il nuovo arrivato può prendere di nuovo «Sala riunioni». Casi trovati: 14/10 e 21/10 alle 16:00 (li sistema il team a mano). Inoltre email di convocazione ed evento dicevano sempre Sala Ex Allievi; per scelta di Daniel l'email resta così: tutti arrivano alla saletta e la commissione li accompagna. Correzione nel principale (backup `bk_luogo_main.json`, script `talent/patch_luoghi.py`): `HTTP - Luoghi Colloqui` (query Notion dei colloqui fissati da oggi) prima di `Notion - Candidati Approvati`. `Formatta Data` assegna il luogo libero (tiene quello scelto se libero, altrimenti il primo tra Sala Ex Allievi, Sala riunioni e Ufficio). `Notion - Segna Convocato` scrive `Luogo`, `Google Calendar - Crea Colloquio` mette il luogo vero, e `Code - Avviso Luoghi` → `HTTP - Avvisa Luoghi` avvisa su Telegram quando il luogo cambia. Gli spostamenti del bot vanno solo in orari liberi, quindi non sono toccati. Eventi del 19/10 alle 17:00 e alle 18:00 aggiornati con il luogo vero.
+- **Proposte di spostamento del bot (13/10, caso P. D. L.):** aveva chiesto «la prossima settimana» e il bot gli ha riproposto il 14/10 (stesso giorno) e il 15/10. Correzione richiesta da Daniel nel sub (backup `bk_spost_sub.json`, script `talent/patch_spostamenti.py`) in `Code - Trova Slot Alternativi`:
+  - le proposte partono da dopodomani (prima bastavano 3 ore);
+  - mai lo stesso giorno del colloquio da spostare;
+  - «prossima settimana», «settimana prossima» e «dopo il weekend» vengono riconosciuti da regole fisse → dal lunedì dopo;
+  - Gemini ora riceve la data di oggi ed estrae `da_quando` e `date_no`, che `Code - Parse Intent` controlla.
+  Provato in locale: P. D. L. → 19/10 e 22/10. `Code - Esito Verifica` resta a 3 ore.
+- **Modello del bot (13/10, richiesta di Daniel):** i due nodi Gemini del sub (Classifica Intent, Identifica Scelta) passano da `gemma-4-26b-a4b-it` a `gemini-flash-latest`, come `Gemini - Genera Email Combinata` del principale. Backup `bk_flash_sub.json`. Nelle prove le risposte arrivate erano corrette (es. R. P. → pomeriggio, [mercoledi], date_no 21/10; P. D. L. → da_quando 19/10, date_no 14/10), ma quel giorno Google rispondeva spesso con 503 «high demand»: la riprova automatica copre questi errori.
+- **Modello di riserva (13/10):** nel sub, se `Gemini - Classifica Intent` o `Gemini - Identifica Scelta` (gemini-flash-latest, 3 tentativi ogni 5 secondi) falliscono, l'uscita di errore va a `… Riserva` (gemini-flash-lite-latest, stessi parametri). Solo se fallisce anche la riserva si arriva a `IF - Gemini Riprovabile`. Flash-lite nelle prove del 13/10 ha risposto a 8 testi su 8 con l'intenzione giusta. Backup `bk_riserva_sub.json`, script `talent/patch_riserva.py`.
+- **Ricerca nel calendario (12/10):** con una ricerca, la vista Elenco o Settimana filtrata resta subito sotto la barra; i risultati di tutte le settimane (`#results`) stanno sotto la legenda, con il numero dei risultati. Nell'elenco la ricerca porta al primo giorno con risultati. Merge `1ed0169` (dev `e35819e`).
+- **REC attivo.** La finestra di scheduling parte dal 28/09/2026: righe 4..295 dei fogli disponibilità (settimane 1-4). Scheduling automatico alle 9:00, lunedì-sabato, con preavviso di 2 giorni.
+- **Calendario finale deciso da Daniel il 10/10:** conoscitivi fino a giovedì 22/10 compreso, tutto il giorno (la sera c'è il fantasocio, ma Daniel ha chiesto di lasciare il giorno intero disponibile); venerdì 23/10 invio delle email; 26-29/10 colloqui tecnici, organizzati a parte (niente settimana 5 nei fogli, il bot non fissa i tecnici).
+  - `app_settings.rec_scheduling_windows`: finestra «ottobre» con `end` portato dal 18/10 al **22/10** (solo `Trigger Schedulato` delle 9:00 dipende dalla finestra). Per tornare indietro si rimette `"end":"2026-10-18"`.
+  - `blocked_slots`: 23/10 tutto il giorno («Invio email, niente colloqui») e 24/10 tutto il giorno («Fine conoscitivi, niente colloqui»), 24 righe (i blocchi del 22 sera sono stati tolti), si tolgono dalla dashboard (Sblocca) o con un `delete` su quelle date.
+  - Fogli disponibilità (M&C, D&V, IT, S&P, T&DA): **tutte** le colonne «Colonna di …» ora vanno da riga 5 a riga 271 (22/10 19:00), anche per i responsabili uscenti che prima si fermavano alla riga 222. Celle 224-271 bianche, 272-295 (23 e 24/10) grigie (0.88) e protette solo da «Struttura» (hr@). Nota sulla cella A223 con il calendario. Prima della modifica: uscenti fino a 222, nuovi e T&DA fino a 295.
 - **Tutti i 14 workflow REC sono attivi.** La tabella completa con i trigger è in Evidence & Data. C'è un backup spento (`vhL5QItyosHVLwH6`) da non riattivare.
 - **Dashboard calendario colloqui:** fasi 1, 2 e 3 completate e in produzione su `rec.jetop.com/rec-dashboard/colloqui/`. Ultimo merge su main: `39e3449`, che include la fase 3 (`7e7bc24` su dev).
 - **Backend dashboard:** workflow n8n `REC — Dashboard Colloqui API` (`iD9mAViOGLgKM2M9`, 72 nodi), con i webhook `rec-colloqui-lista` (GET) e `rec-colloqui-azione` (POST).
 - **Annullamento automatico dei colloqui non confermati: attivo.** Workflow `AsjcIF8Sab5ZpXFH`, cron `*/10 8-21 * * *`.
+  - Dall'11/10 al 16/10 chi era stato convocato meno di 48 ore prima del colloquio non veniva annullato in automatico (richiesta di Beatrice, HR).
+  - **Dal 16/10 (scelta di Daniel, caso M. R.) l'eccezione è tolta: si annulla anche chi è stato convocato tra 24 e 48 ore prima.** Restano la regola delle 24 ore dalla convocazione e il divieto nelle ultime 3 ore. Versione `bd0a160d`, backup `bk_breve_annulla.json`.
+- **Conferme riferite a un colloquio vecchio (11/10):**
+  - Il caso: Chiara R. aveva risposto «sarò presente» alle 12:59 del 05/10 al promemoria del colloquio del 05/10. Il bot ha letto l'email dopo lo spostamento al 16/10 13:00 (convocazione delle 13:10) e l'ha presa come conferma del colloquio nuovo.
+  - La correzione: in `i0ZbyVmKy5ae7XuM` › `Code - Parse Intent` una «conferma» diventa «altro» (resta «Ha Risposto» e l'email torna da leggere) se l'email è arrivata prima della Data Convocazione o se l'oggetto cita una data diversa da quella del colloquio.
+  - Chiara è tornata «In Attesa»: il bot le manda i solleciti e, senza risposta, annulla il 15/10 alle 13:00.
   - Primo giro reale il 08/10 alle 19:30 e alle 19:40: due candidati annullati (J.E.V. e C.A.), email inviate, esecuzioni 63575 e 63583, ultimo nodo `HTTP - Avviso Gruppo`.
 - **Solleciti limitati a 3** (`MAX_SOLLECITI = 3` in `Code - Chi Sollecitare`). Nessun sollecito se il colloquio è a meno di 24h, perché in quel caso subentra l'annullamento. Il testo del sollecito ora avvisa dell'annullamento.
+  - Dal 16/10, se la convocazione è partita meno di 48 ore prima del colloquio, il sollecito arriva già 12 ore dopo, fino a 6 ore prima del colloquio.
+  - Il testo ora dà la scadenza precisa («entro giovedì 15/10 alle 17:55»): la più tarda tra convocazione + 24h e colloquio − 24h. Se la scadenza cade a meno di 3 ore dal colloquio, la frase sull'annullamento non compare, perché l'annullamento non scatterebbe.
+  - Main versione `565a5f98`, backup `bk_breve_main.json`.
 - **Mod3 (convocazioni ogni 5 minuti):** corretto il dedupe. Prima, riportare un candidato a uno slot già convocato in passato bloccava la nuova convocazione (caso L.). La correzione è nel lock `Postgres - Lock Convocazione`.
 - **Error handler `PhG1qNhFlOhzhMME`:** gli errori DNS (`ENOTFOUND`, `getaddrinfo`, `DNS server`, `server is offline`) contano come transitori e si segnalano solo dopo 3 ripetizioni. Prima arrivava spam di avvisi su Telegram.
 - **Sub risposte candidati (`i0ZbyVmKy5ae7XuM`):** corretta la regex che taglia la parte citata delle email. Prima "on" dentro "non" troncava il messaggio (casi Gr., Ca., Ro.).
@@ -205,6 +247,7 @@ Sessione lunga, dal 22/09 all'08/10, con 5 compattazioni di contesto. Le voci so
 | Stato | Candidatura Ricevuta, Da Ricontrollare, Da Verificare, Colloquio Schedulato, Colloquio Effettuato, Ritirato, Escluso (e stati post-colloquio: tecnico, fantasocio, accettato o rifiutato) |
 | Stato Approvazione | Da Approvare (non più usato), In Attesa Conferma Team (secondo colloquio nello slot), Slot Confermato, Convocazione Inviata, Da Riprocessare |
 | Conferma Presenza | In Attesa, Sollecitato, Ha Risposto, Confermata |
+| Risposte (dal 10/10) | **Ultima Risposta**: testo delle risposte del candidato, le più recenti in alto, ognuna con «dd/MM HH:mm · …», massimo 1.900 caratteri. **Data Ultima Risposta**: data e ora. Le scrive `Notion - Segna Risposta` nel sub; per chi era già in «Ha Risposto» il 10/10 le ho recuperate dalla casella hr@ |
 | Altre | Data Convocazione, Ultimo Avviso, Solleciti Inviati, Responsabili Aggiuntivi, Luogo, ID Evento, Prima/Seconda Area, Prima/Seconda Sotto-Area, responsabili (formato "Nome (Area)"), Membro Talent |
 
 Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni sono riportati a memoria.
@@ -235,8 +278,19 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `550d00f` | main | merge fase 1 |
 | `4ba2972` | dev | dashboard colloqui fase 2 |
 | `391de83` | main | merge fase 2 |
-| `7e7bc24` | dev | dashboard colloqui fase 3 (dev attuale) |
-| `39e3449` | main | merge fase 3 (main attuale) |
+| `7e7bc24` | dev | dashboard colloqui fase 3 |
+| `39e3449` | main | merge fase 3 |
+| `30bbd11` / `cc8ffad` | dev / main | statistiche ogni 5 minuti, solo con la scheda visibile |
+| `d01abb4` / `575f8c9` | dev / main | «Annulla e rimetti in attesa» |
+| `c45890a` / `70edeb7` | dev / main | testi di «Tieni occupato» |
+| `bb310c7` / `8a50e2f` | dev / main | risposte dei candidati in «Da gestire» |
+| `7b4591a` / `8a0209e` | dev / main | «Cerca candidati» sotto il calendario |
+| `208c3c9` / `6859fc1` | dev / main | filtri della ricerca in una finestra |
+| `6b878d5` | dev | correzione: «Sposta colloquio» restava su «Leggo i fogli disponibilità…» quando non c'erano proposte (variabile `sposta` non definita in `pickerScelta`, introdotta con `d01abb4`) |
+| `0767d8f` / `60d7082` | dev / main | rifinitura delle due dashboard |
+| `9a1a2f8` / `1e8d618` | dev / main | nuovo sistema grafico (hallmark) per modulo di candidatura, banchetti, statistiche e colloqui; la pagina pubblica resta invariata |
+| `c07c196` / `b8e7545` | dev / main | colloqui: liste richiudibili in ogni punto («Nascondi» per sezione, «Mostra meno» in cima e in fondo, anche nella ricerca); mostrato a Daniel prima del merge |
+| `a804190` / `021a7a9` | dev / main | colloqui: «Dopo il colloquio» e «In attesa di uno slot» diventano viste rapide della lista «Candidati» (richiesta di Daniel: «se c'è già la lista dei candidati con i filtri, non ha senso tenere altre schede separate»); mostrato prima del merge (dev e main attuali) |
 
 In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza, dashboard senza candidature, limite sulla motivazione, menu a tendina immuni alla traduzione).
 
@@ -268,6 +322,8 @@ In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza
 | `commissione`, `cambia`, `aggiungi` | mostra, cambia o aggiunge responsabili (celle, DB, calendario, Notion) |
 | `tecnico`, `escludi_fanta`, `ripesca` | esiti dopo il colloquio |
 | `accetta`, `rifiuta` | email Gmail con lock su `automation_deliveries` |
+| `presenza` (dal 10/10) | segna «Conferma Presenza» = Confermata, dopo aver gestito la risposta di un candidato in «Ha Risposto» |
+| `rimetti` (dal 10/10) | «Annulla e rimetti in attesa», per quando non c'è un altro slot. Libera celle ed extra, cancella l'evento e le righe nel DB, rimette Notion come lo script dell'8/10 (`Da Ricontrollare`, data, ora, commissione, luogo, evento e conferma vuoti). Manda l'email di rinvio con lock `automation_deliveries` di tipo `rinvio` per lo slot. Con `blocca: true` (casella «Tieni occupato questo orario») inserisce anche l'orario in `blocked_slots`: l'orario resta occupato e non riceve altri colloqui. I testi distinguono «commissione liberata» da «orario occupato» o «orario disponibile». Script `fase4_dash.py` (86 nodi), provato a secco e su un candidato finto |
 
 Ogni azione scrive sul gruppo Telegram chi l'ha fatta. Auth: Bearer token del login Google del sito (localStorage `jetop_banchetti_auth`), verificato su `banchetto_auth`; ruolo `rec` o `admin` da `banchetto_members` oppure dagli admin in config. CORS `allowedOrigins`: `https://rec.jetop.com`, staging, `http://localhost:3999`.
 
@@ -319,9 +375,9 @@ Serve a riconvocare quando lo slot è uguale a uno già convocato in passato ma 
    - Scelta valida: controllo che lo slot sia ancora libero, libera le celle vecchie, prenota le nuove, aggiorna Notion, calendario (PATCH dei partecipanti) e DB, poi email di conferma.
 6. **Solleciti alle :15, dalle 9 alle 20.** `Code - Chi Sollecitare`:
    - stato `In Attesa`/`Sollecitato`;
-   - 24h dall'Ultimo Avviso;
+   - 24h dall'Ultimo Avviso (12h se convocato meno di 48h prima del colloquio);
    - `Solleciti Inviati < 3`;
-   - inizio del colloquio meno ora ≥ 24h.
+   - inizio del colloquio meno ora ≥ 24h (≥ 6h se convocato meno di 48h prima).
 7. **Annullamento ogni 10 minuti, dalle 8 alle 21** (`AsjcIF8Sab5ZpXFH`). Un candidato per giro. Condizioni:
    - Stato `Colloquio Schedulato` e Approvazione `Convocazione Inviata`;
    - Conferma `In Attesa`/`Sollecitato`;
@@ -387,7 +443,16 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 - **Controllare che n8n risponda:** `https://n8n.jetop.com/healthz`. Non chiamare i webhook di produzione con payload di prova.
 
 **Altre regole del foglio disponibilità**
-- La settimana 4 può essere spuntata solo dalla nuova lista di responsabili. Le protezioni per colonna si chiamano "Colonna di <Nome>".
+- Dal 10/10 la settimana 4 la spuntano tutti i responsabili, ma solo fino al 22/10 compreso (prima solo la nuova lista). Le protezioni per colonna si chiamano "Colonna di <Nome>".
+- **Nuove persone (10/10 sera):** «Daniele Munafo» in IT (colonna G, scritto come nel foglio soci perché l'invito del calendario trova l'email confrontando le parole del nome) e «Caterina Mana» in T&DA (Talent, colonna K, poi spostata dalla sincronizzazione delle sotto-aree nel gruppo Talent). Protezioni `Colonna di …` fino alla riga 271, con editor la persona e hr@. Gabriele Corazzari era nella richiesta iniziale ma Daniel l'ha tolto del tutto. **Attenzione:** nei fogli le colonne libere dopo l'ultima persona sono nascoste (`hiddenByUser`). Quando si aggiunge qualcuno va resa visibile con larghezza 130, come le altre: l'11/10 le colonne di Munafo e Mana erano rimaste nascoste e sono state mostrate.
+- **Config, colonna E «Dirige colloqui come Talent»:** con «Sì» una persona di un'altra area può essere Membro Talent usando la sua colonna di area (una sola colonna, quindi mai due colloqui alla stessa ora; la cella bloccata è nel suo foglio). Oggi «Sì» per Lorenzo Amadi e Vincenzo Gulotta (S&P), Christian Lo Vetere e Diego Campanale (IT; righe aggiunte in Config con sotto-area vuota). Regola scelta da Daniel: **prima i Talent**. Lo scheduling cerca prima uno slot con un Talent del foglio T&DA in tutte le combinazioni di sotto-area, e usa gli extra solo se non ne trova; le proposte di spostamento (email, Telegram, dashboard) mettono prima le opzioni con un Talent e completano con gli extra. **Per spegnere la funzione basta svuotare la colonna E**: il codice torna a comportarsi come prima.
+- **Workflow toccati il 10/10 sera** (backup in scratchpad come `bk_talent_*.json`, perso a fine sessione):
+  - letture della Config portate da `B13:D120` a `B13:E120` in 10 nodi HTTP;
+  - `HirNCuA0RjYvVPp1`: `Algoritmo Scheduling` (`cerca(listaP, listaS, conExtra)`), `Prepara Riepilogo` (`talentBase` e `talent`);
+  - `i0ZbyVmKy5ae7XuM`: `Code - Trova Slot Alternativi` (`raccogli(..., conExtra)`);
+  - `m7WJCsjBYyPYRmUT`: `Trova 3 Slot Sposta` (e ora valorizza anche `shT`, prima `undefined`), `Prepara Resp Assegna` e `Show Talent`, `Scelte Cambio` e `Prepara Cambio` (callback `col.indiceFoglio` quando il Talent viene da un altro foglio);
+  - `iD9mAViOGLgKM2M9`: `Code - Calcola Slot` (foglio Talent virtuale: persone T&DA più extra, ognuno con il suo foglio `f`). La forma della risposta non cambia, quindi `app.js` non è stato toccato.
+- **Simulazione sui dati del 10/10 sera:** chi aveva già uno slot con un Talent lo tiene identico, e gli slot trovati passano da 15 a 33. Quasi tutti i colloqui in più hanno Diego Campanale come Talent (18), perché è l'unico degli extra con molte ore spuntate nelle settimane 3 e 4.
 - Ogni responsabile ha la protezione della sua colonna (editor: la persona più hr@).
 - La pagina web delle disponibilità (`VlgUU8NTZLZeCrNW`) è pronta ma si userà dal prossimo REC: oggi si usa ancora il foglio.
 
@@ -408,7 +473,25 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
   - `finestra()` crea le finestre modali;
   - funzioni `apriPicker`, `pickerScelta`, `pickerRiepilogo`, `apriGiorno`, `apriCommissione`, `commissioneScelta`, `commissionePersona`, `commissioneConferma`, `dopoButtons`, `apriTecnico`, `apriAccetta`, `renderDopo`;
   - drawer con i pulsanti azione.
-- `rec-dashboard/index.html`: link "📅 Colloqui" e "← Banchetti"; il nome del brand è nascosto su mobile.
+- `rec-dashboard/index.html`: link a Colloqui e Banchetti; il nome del brand è nascosto su mobile.
+- **Redesign del 10/10 sera (`9a1a2f8`):** il sistema grafico è descritto in `.claude/design/DESIGN_rec-jetop.md` (questo repo) e va letto prima di toccare modulo, banchetti, statistiche o colloqui. In sintesi: foglio condiviso `assets/jetop-ui.css` (caricato con `?v=AAAAMMGG`: nginx non manda Cache-Control per i `.css`), token OKLCH indaco e iris, icone Phosphor (non più Lucide), intestazione comune con il selettore Statistiche / Colloqui / Banchetti, modulo a cinque tappe con avanzamento. **La pagina pubblica `/` non si tocca** (design Figma, richiesta di Daniel). Le regole sotto della rifinitura restano valide salvo le icone, ora Phosphor.
+- **Rifinitura del 10/10 (`0767d8f`), regole da mantenere nelle due dashboard:**
+  - icone solo SVG: in `colloqui/app.js` l'helper `icon(nome)` / `ib(nome, testo)` con i tracciati Lucide (ISC) in `ICONE`; niente emoji nell'interfaccia (il 🎉 resta solo nel testo dell'email di accettazione);
+  - nei menu delle persone niente emoji: `gruppiPersone()` e `aggiungiGruppi()` creano gli `optgroup` «Disponibili», «Senza disponibilità», «Già impegnati in quest'ora»;
+  - `:focus-visible` iris, `--ring` per i campi, `header`/`main`/`nav`, titoli di sezione `h2.section-t` (niente maiuscoletto), schede `h3`;
+  - su telefono e touch tutti i comandi alti almeno 44 px, testi minimi 12 px, `tabular-nums`, `prefers-reduced-motion` rispettato (anche nei grafici);
+  - niente `border-left` colorato su schede, risposte, avvisi e toast; resta solo sulle chip del calendario perché codifica l'area;
+  - statistiche: griglie a colonne fisse (KPI e operatività 4 per riga, 2 su telefono; `.grid` a 2, `.grid.g3` a 3), date `dd/mm` con `ddmm()` e `titoloData()`, università raggruppate con `gruppoUni()`, `emptyMsg(id, testo)` per gli stati vuoti, `etichetta()` trasforma «(nessuno)» in «Non indicato»;
+  - colloqui: «Cerca candidati» mostra 10 risultati senza filtri (50 con filtri), «Dopo il colloquio» e «In attesa» 8 righe con «Mostra tutti» (`riempiRichiudibile`, stato in `APERTI`).
+- **Liste richiudibili (`c07c196`, 10/10):** richiesta di Daniel («quando estendo la scheda non posso nasconderla di nuovo, solo alla fine e solo in parte»).
+  - Ogni sezione (Cerca candidati `#finder`, Dopo il colloquio `#dopo`, In attesa `#waiting`) ha un titolo `.sec-head` con il numero (`#nCerca`, `#nDopo`, `#nAttesa`) e un pulsante `.sec-toggle` («Nascondi»/«Mostra», `aria-controls`, `aria-expanded`). Le sezioni chiuse sono salvate in localStorage (`jetop_rec_sezioni`, `SEZ_CHIUSE`, `applicaSezioni()`), sempre in try/catch.
+  - Liste aperte: «Mostra meno» sia in cima (`.more.top`) sia in fondo; richiudendo, `tornaAllaLista()` riporta all'inizio della lista e mette il focus sul pulsante.
+  - Ricerca: dopo «Mostra altri» c'è «Mostra meno» (in cima e in fondo) che torna ai primi 10 (o 50 con filtri).
+- **Una sola lista «Candidati» (`a804190`, 10/10):** le sezioni «Dopo il colloquio» (`#dopo`, `renderDopo`) e «In attesa di uno slot» (`#waiting`, `renderWaiting`) non esistono più, e con loro `riempiRichiudibile`/`APERTI`.
+  - Sopra la ricerca ci sono le viste rapide `VISTE` (`.f-view`, `aria-pressed`): Tutti, In attesa di slot (`__attesa`), Da decidere (`__decidere`: Colloquio Effettuato con esito diverso da Escluso), Al tecnico (`Colloquio Tecnico`), Ripescabili (`__ripescabili`: Effettuato ed esito Escluso), Accettati (`Accettato`). Ogni vista imposta solo `FSTATE.fStato`, mostra il numero calcolato con gli altri filtri e una riga di aiuto (`#fHint`).
+  - I gruppi stanno in `GRUPPI_STATO` e valgono anche nel filtro «Stato» della finestra (in più `__dopo` e `__fuori`). Lo stato scelto da una vista non compare tra le etichette dei filtri; uno stato scelto dalla finestra sì.
+  - Ordine «data colloquio»: chi non ha colloquio va in fondo, in ordine di data di candidatura (così «In attesa» parte da chi aspetta da più tempo).
+  - Le righe (`rigaCerca`) mostrano anche data di candidatura (se manca il colloquio), aree del tecnico, area di ingresso ed esito conoscitivo. Le azioni (tecnico, escludi, ripesca, accetta, rifiuta) restano nella scheda (`dopoButtons` in `openDrawer`).
 - `banchetti/app.js`: impostazione "Ore massime a socio (0 = nessun limite)" (`#setMaxH`, `#setMaxHSave`, chiave `max_hours`).
 - `Dockerfile` copia nel sito solo `index.html`, `app.js`, `landing.js`, `meta-pixel.js`, `candidati/`, `assets/`, `fonts/`, `banchetti/`, `rec-dashboard/`. `docs/` non viene pubblicata.
 
@@ -424,6 +507,8 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 
 ### Repo siti-torino (questo)
 - `.claude/skills/handoff/`, `.claude/skills/handoffplan/`: skill di handoff (MIT, REMvisual/claude-handoff), con LICENSE.
+- `.claude/skills/hallmark/` (MIT, nutlope/hallmark): skill usata per il redesign; `.claude/design/` contiene il sistema grafico e il registro di hallmark.
+- `.claude/skills/ui-ux-pro-max/` (MIT), `.claude/skills/design-taste-frontend/` e `.claude/skills/redesign-existing-projects/` (MIT, Leonxlnx/taste-skill), `.claude/skills/impeccable/` (Apache 2.0 con NOTICE): skill di design usate per la rifinitura delle dashboard. Non eseguire `impeccable/scripts/impeccable`: scarica ed esegue un programma esterno; il contesto del progetto si legge a mano.
 - `.claude/handoffs/HANDOFF_rec-ottobre-2026_2026-10-08.md`: questo file. Il sito è pubblicato da Vercel: il file `.vercelignore` esclude `.claude/` dal deploy. Il file resta comunque visibile su GitHub, perché il repo è pubblico.
 
 ### Script di lavoro (persi con il container, da ricreare)
@@ -438,6 +523,9 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 - **Backup JSON dei workflow** prima di ogni PUT, per esempio `dash_backup_prima_fase3.json`, `main_backup_prima_max_solleciti.json`, `errhandler_backup_prima_dns.json`, `sub_backup_prima_taglio.json`. Tutti persi: prima di una modifica rifare sempre un backup con GET.
 
 ## User Feedback & Preferences (REQUIRED — never omit)
+- **Prima di portare modifiche su `main` (rec.jetop.com), mostrarle a Daniel e aspettare il suo ok** (richiesta del 10/10, dopo che il redesign è andato online senza anteprima). Strumenti: schermate prima/dopo (script `pw/confronto.js`) e lo staging su `dev`. Deve sempre essere possibile tornare alla versione precedente.
+- **Ultimo merge su main: `021a7a9`** (viste rapide nella lista Candidati); si annulla con `git revert -m 1 021a7a9` e torna a `b8e7545`.
+- **Come tornare indietro dal redesign del 10/10:** su `main`, `git revert -m 1 1e8d618` e push. Provato in una copia separata: i file tornano identici a `60d7082` (la versione online prima del redesign). Per altre modifiche vale lo stesso schema: ogni pubblicazione è un merge `--no-ff` di `dev` su `main`, quindi si annulla con `git revert -m 1 <merge>`.
 
 - **Rispondere sempre in italiano.** Quando sono passato all'inglese l'utente ha scritto "parla italiano".
 - **Email ai candidati:**
