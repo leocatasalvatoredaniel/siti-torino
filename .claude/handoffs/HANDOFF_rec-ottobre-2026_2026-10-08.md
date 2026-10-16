@@ -77,13 +77,17 @@ Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono sol
 - **Dashboard calendario colloqui:** fasi 1, 2 e 3 completate e in produzione su `rec.jetop.com/rec-dashboard/colloqui/`. Ultimo merge su main: `39e3449`, che include la fase 3 (`7e7bc24` su dev).
 - **Backend dashboard:** workflow n8n `REC — Dashboard Colloqui API` (`iD9mAViOGLgKM2M9`, 72 nodi), con i webhook `rec-colloqui-lista` (GET) e `rec-colloqui-azione` (POST).
 - **Annullamento automatico dei colloqui non confermati: attivo.** Workflow `AsjcIF8Sab5ZpXFH`, cron `*/10 8-21 * * *`.
-  - Dall'11/10 (richiesta di Beatrice, HR) chi è stato convocato meno di 48 ore prima del colloquio (prenotazioni dell'ultimo momento) non viene mai annullato in automatico: decide il team. Riga `if (inizio - convMs < 48 * H) continue;` in `Code - Primo Da Annullare`. Restano la regola delle 24 ore dalla convocazione e il divieto nelle ultime 3 ore.
+  - Dall'11/10 al 16/10 chi era stato convocato meno di 48 ore prima del colloquio non veniva annullato in automatico (richiesta di Beatrice, HR).
+  - **Dal 16/10 (scelta di Daniel, caso M. R.) l'eccezione è tolta: si annulla anche chi è stato convocato tra 24 e 48 ore prima.** Restano la regola delle 24 ore dalla convocazione e il divieto nelle ultime 3 ore. Versione `bd0a160d`, backup `bk_breve_annulla.json`.
 - **Conferme riferite a un colloquio vecchio (11/10):**
   - Il caso: Chiara R. aveva risposto «sarò presente» alle 12:59 del 05/10 al promemoria del colloquio del 05/10. Il bot ha letto l'email dopo lo spostamento al 16/10 13:00 (convocazione delle 13:10) e l'ha presa come conferma del colloquio nuovo.
   - La correzione: in `i0ZbyVmKy5ae7XuM` › `Code - Parse Intent` una «conferma» diventa «altro» (resta «Ha Risposto» e l'email torna da leggere) se l'email è arrivata prima della Data Convocazione o se l'oggetto cita una data diversa da quella del colloquio.
   - Chiara è tornata «In Attesa»: il bot le manda i solleciti e, senza risposta, annulla il 15/10 alle 13:00.
   - Primo giro reale il 08/10 alle 19:30 e alle 19:40: due candidati annullati (J.E.V. e C.A.), email inviate, esecuzioni 63575 e 63583, ultimo nodo `HTTP - Avviso Gruppo`.
 - **Solleciti limitati a 3** (`MAX_SOLLECITI = 3` in `Code - Chi Sollecitare`). Nessun sollecito se il colloquio è a meno di 24h, perché in quel caso subentra l'annullamento. Il testo del sollecito ora avvisa dell'annullamento.
+  - Dal 16/10, se la convocazione è partita meno di 48 ore prima del colloquio, il sollecito arriva già 12 ore dopo, fino a 6 ore prima del colloquio.
+  - Il testo ora dà la scadenza precisa («entro giovedì 15/10 alle 17:55»): la più tarda tra convocazione + 24h e colloquio − 24h. Se la scadenza cade a meno di 3 ore dal colloquio, la frase sull'annullamento non compare, perché l'annullamento non scatterebbe.
+  - Main versione `565a5f98`, backup `bk_breve_main.json`.
 - **Mod3 (convocazioni ogni 5 minuti):** corretto il dedupe. Prima, riportare un candidato a uno slot già convocato in passato bloccava la nuova convocazione (caso L.). La correzione è nel lock `Postgres - Lock Convocazione`.
 - **Error handler `PhG1qNhFlOhzhMME`:** gli errori DNS (`ENOTFOUND`, `getaddrinfo`, `DNS server`, `server is offline`) contano come transitori e si segnalano solo dopo 3 ripetizioni. Prima arrivava spam di avvisi su Telegram.
 - **Sub risposte candidati (`i0ZbyVmKy5ae7XuM`):** corretta la regex che taglia la parte citata delle email. Prima "on" dentro "non" troncava il messaggio (casi Gr., Ca., Ro.).
@@ -371,9 +375,9 @@ Serve a riconvocare quando lo slot è uguale a uno già convocato in passato ma 
    - Scelta valida: controllo che lo slot sia ancora libero, libera le celle vecchie, prenota le nuove, aggiorna Notion, calendario (PATCH dei partecipanti) e DB, poi email di conferma.
 6. **Solleciti alle :15, dalle 9 alle 20.** `Code - Chi Sollecitare`:
    - stato `In Attesa`/`Sollecitato`;
-   - 24h dall'Ultimo Avviso;
+   - 24h dall'Ultimo Avviso (12h se convocato meno di 48h prima del colloquio);
    - `Solleciti Inviati < 3`;
-   - inizio del colloquio meno ora ≥ 24h.
+   - inizio del colloquio meno ora ≥ 24h (≥ 6h se convocato meno di 48h prima).
 7. **Annullamento ogni 10 minuti, dalle 8 alle 21** (`AsjcIF8Sab5ZpXFH`). Un candidato per giro. Condizioni:
    - Stato `Colloquio Schedulato` e Approvazione `Convocazione Inviata`;
    - Conferma `In Attesa`/`Sollecitato`;
