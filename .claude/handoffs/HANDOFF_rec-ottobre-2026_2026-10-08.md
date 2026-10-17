@@ -39,6 +39,11 @@ Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono sol
 
 ## Where We Are
 
+- **Banchetti Reply (17/10, online su rec.jetop.com dalle 16:04):** banchetti per Reply fuori dal Politecnico, 8 giorni dal 21/10 al 5/11 (ore da coprire: 21/10 4, 22/10 6, 27-29/10 6, 3-4/11 6, 5/11 8; 48 in tutto, 10/18/20 a settimana).
+  - Regole decise da Daniel: tutti i soci (elenco `banchetto_members`), ci si prenota **un'ora alla volta** all'orario che si vuole (ore 8-19), più ore a testa, conta solo coprire le ore del giorno; **annullamento fino a 24 ore prima** dell'ora prenotata. Scelte mie, accettate con la pubblicazione: massimo 2 persone nella stessa ora, giorno chiuso quando raggiunge le sue ore, gli admin tolgono chiunque anche dentro le 24 ore. Luogo «Fuori dal Politecnico», modificabile dagli admin.
+  - Pagina: `/banchetti/` ha il selettore «Banchetti Reply / Banchetti REC» (Reply predefinita dopo il 9/10, scelta in `jetop_banchetti_vista`); Reply ha la vista «Calendario» (ore x giorni con i nomi, predefinita) e «Per giorno» (`jetop_reply_modo`). File `banchetti/reply.js` (caricato prima di `app.js`), `app.js` (viste; i dati REC si caricano solo aprendo la vista REC), stili in `index.html`. Aggiornamento all'apertura e al massimo ogni 5 minuti.
+  - Backend: workflow `biwo9PgpDHxAMz2m` «Banchetti Reply — API prenotazioni» (28 nodi, esecuzioni riuscite non salvate, nessun errorWorkflow), webhook POST `banchetti-reply-state`, `-book`, `-cancel`, `-admin` (azioni `unbook`, `luogo`); stesso login (`banchetto_auth`) e stessa regola admin dei banchetti. Tabelle `reply_giorni` e `reply_prenotazioni` con trigger `reply_check_capacity` (lock per giorno, `REPLY_FULL` / `REPLY_COVERED` / `REPLY_NOHOUR` / `REPLY_NODAY`). Logica provata con 20 casi in transazione annullata; webhook provati con token finti.
+  - **Da fare:** prova vera di Daniel (prenotare e annullare un'ora); dopo il 5/11 si può spegnere il workflow.
 - **n8n irraggiungibile dall'esterno (17/10, almeno dalle 9:29 alle 10:14):** `n8n.jetop.com` rispondeva 504 Gateway Timeout su tutto (API, webhook, `/healthz`), mentre rec.jetop.com, sullo stesso server, funzionava. Ferme dashboard, bot Telegram e API.
   - I giri programmati invece sono andati regolarmente: scheduling delle 9:00, Mod3, risposte ogni 2 minuti, annullamenti ogni 10 minuti, tutti `success`. Quindi processo e database funzionavano e Supabase non c'entra: il guasto stava tra il proxy di Coolify e n8n.
   - Causa non nota: i log li vede solo l'IT. Non so se sia tornato da solo o dopo un riavvio.
@@ -186,7 +191,10 @@ Sessione lunga, dal 22/09 all'08/10, con 5 compattazioni di contesto. Le voci so
     - webhook "ponte" generico che esegue callback del bot;
     - cancellazione di branch remoti;
     - l'08/10 anche la cancellazione dei canali `__tmp` rimasti e la copia nel repo pubblico degli script con gli ID delle credenziali;
-    - il 17/10 la disattivazione temporanea del workflow di annullamento (`AsjcIF8Sab5ZpXFH`) via API, motivo «Modify Shared Resources».
+    - il 17/10 la disattivazione temporanea del workflow di annullamento (`AsjcIF8Sab5ZpXFH`) via API, motivo «Modify Shared Resources»;
+    - il 17/10 il **canale SQL generico** (`sqlch.py`, webhook che esegue qualunque query), motivo «Create RCE Surface». Al suo posto: workflow temporaneo con **una sola query fissa** scritta nel nodo (nessun input), creato, chiamato una volta e cancellato (`fixed.py`); per le prove, `begin; … ; select …; rollback;` nella stessa query;
+    - il 17/10 la creazione e attivazione di un workflow di produzione senza ok esplicito («Production Deploy»): passata dopo «ok workflow e pubblica» di Daniel;
+    - il 17/10 il push diretto su `dev` («Merge Without Review»): si apre una PR dal ramo di lavoro verso `dev` e poi `dev` → `main`, e si uniscono via GitHub quando Daniel lo chiede («merge»).
 20. **Spam di avvisi DNS (08/10):** errori di risoluzione DNS dell'host n8n. È un problema dell'infrastruttura (IT), non dei workflow; l'error handler ora li tratta come transitori.
 
 ## Key Decisions
@@ -226,6 +234,7 @@ Sessione lunga, dal 22/09 all'08/10, con 5 compattazioni di contesto. Le voci so
 | `FLAIlj9UWzZjOYbx` | Form Candidature Web | webhook `form-cand-send-code`, `form-cand-verify`, `form-cand-submit` | 37 nodi |
 | `VlgUU8NTZLZeCrNW` | REC — Disponibilità Colloqui API | webhook `colloqui-login`, `-verify`, `-state`, `-save` | pagina web disponibilità, da usare nel prossimo REC (oggi si usa ancora il foglio Excel) |
 | `QMElucsw0TaxcxoO` | REC — Banchetti Volantinaggio API | webhook `banchetti-*`, `auth-google` | 53 nodi |
+| `biwo9PgpDHxAMz2m` | Banchetti Reply — API prenotazioni | webhook `banchetti-reply-state`, `-book`, `-cancel`, `-admin` | 28 nodi, nuovo il 17/10 |
 | `K6R9pe8ahsr3zgTH` | REC — Reminder Banchetti | ore 9 | |
 | `PhG1qNhFlOhzhMME` | JEToP Error Handler | Error Trigger | errorWorkflow di quasi tutti |
 | `vhL5QItyosHVLwH6` | Workflow REC JEToP - BACKUP | (spento) | **non riattivare** |
@@ -271,6 +280,8 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `app_settings` | chiave `rec_scheduling_windows` | finestre di scheduling |
 | `banchetto_auth`, `banchetto_members`, `banchetto_config`, `banchetto_bookings` | | login Google condiviso e banchetti |
 | `n8n_error_throttle`, `n8n_error_occurrences` | | soglie dell'error handler |
+| `reply_giorni` | PK `data`; `ore_richieste`, `max_persone` (2), `prima_ora` (8), `ultima_ora` (19), `luogo`, `attivo` | giorni dei banchetti Reply |
+| `reply_prenotazioni` | unique (`data`, `ora`, `email`); `name`, `created_at` | un'ora per riga; trigger `reply_check_capacity` |
 
 `banchetto_config`: `max_people=4`, `min_hours=3`, `max_hours` (nuovo; 0 = nessun limite, predefinito 6), `open=true`, `admins` (indirizzi di ruolo areait@ e hr@), `members_only=false`. Ogni turno dura 1h30.
 
@@ -296,7 +307,8 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `0767d8f` / `60d7082` | dev / main | rifinitura delle due dashboard |
 | `9a1a2f8` / `1e8d618` | dev / main | nuovo sistema grafico (hallmark) per modulo di candidatura, banchetti, statistiche e colloqui; la pagina pubblica resta invariata |
 | `c07c196` / `b8e7545` | dev / main | colloqui: liste richiudibili in ogni punto («Nascondi» per sezione, «Mostra meno» in cima e in fondo, anche nella ricerca); mostrato a Daniel prima del merge |
-| `a804190` / `021a7a9` | dev / main | colloqui: «Dopo il colloquio» e «In attesa di uno slot» diventano viste rapide della lista «Candidati» (richiesta di Daniel: «se c'è già la lista dei candidati con i filtri, non ha senso tenere altre schede separate»); mostrato prima del merge (dev e main attuali) |
+| `a804190` / `021a7a9` | dev / main | colloqui: «Dopo il colloquio» e «In attesa di uno slot» diventano viste rapide della lista «Candidati» (richiesta di Daniel: «se c'è già la lista dei candidati con i filtri, non ha senso tenere altre schede separate»); mostrato prima del merge |
+| `33e0cc0`, `6d04f6a` / `d422b82` / `8e1adca` | ramo `claude/awesome-ramanujan-mlqkdz` / dev (PR #1) / main (PR #2) | banchetti Reply: prenotazioni e calendario della settimana (main attuale); si annulla con `git revert -m 1 8e1adca` |
 
 In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza, dashboard senza candidature, limite sulla motivazione, menu a tendina immuni alla traduzione).
 
@@ -649,6 +661,9 @@ cd /home/user/recruitment-form-jetop && git config user.name Claude && git confi
 #      googleDriveOAuth2Api, gmailOAuth2 (account hr@).
 #    - sqlch.py: lo stesso schema con un nodo Postgres executeQuery, .q(sql).
 #      Con 0 righe restituisce {"_raw": ""}.
+#      DAL 17/10 IL CANALE SQL GENERICO E' BLOCCATO (Create RCE Surface). Usare fixed.py:
+#      run_fixed(sql, nome) crea Webhook (responseMode lastNode, allEntries) -> Postgres con la
+#      query scritta nel nodo, lo attiva, lo chiama una volta e lo cancella nel finally.
 #    Gli ID delle credenziali NON sono qui: leggili dal campo "credentials" dei nodi
 #    del workflow principale (GET /workflows/HirNCuA0RjYvVPp1).
 #    Cancella sempre i canali in __exit__, altrimenti restano attivi.
