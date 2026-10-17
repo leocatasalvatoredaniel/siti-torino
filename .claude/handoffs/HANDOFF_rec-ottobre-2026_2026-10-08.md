@@ -39,6 +39,11 @@ Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono sol
 
 ## Where We Are
 
+- **n8n irraggiungibile dall'esterno (17/10, almeno dalle 9:29 alle 10:14):** `n8n.jetop.com` rispondeva 504 Gateway Timeout su tutto (API, webhook, `/healthz`), mentre rec.jetop.com, sullo stesso server, funzionava. Ferme dashboard, bot Telegram e API.
+  - I giri programmati invece sono andati regolarmente: scheduling delle 9:00, Mod3, risposte ogni 2 minuti, annullamenti ogni 10 minuti, tutti `success`. Quindi processo e database funzionavano e Supabase non c'entra: il guasto stava tra il proxy di Coolify e n8n.
+  - Causa non nota: i log li vede solo l'IT. Non so se sia tornato da solo o dopo un riavvio.
+  - Telegram ha avuto l'ultimo errore di consegna alle 9:52 (504) e dopo il ripristino ha riconsegnato tutto (0 in coda). Le azioni fatte dalla dashboard in quella finestra non sono passate.
+  - Il server JEToP si gestisce con Coolify su `server.jetop.com`: lì si riavvia n8n e si leggono i log (accesso IT).
 - **Apertura e chiusura delle candidature (11/10):** prima dipendevano solo dalla casella «Candidature Aperte» della riga «Candidature aperte (form sito)» nel database Notion Config (`056f3c16…`).
   - Ora la riga ha anche «Apertura Candidature» e «Chiusura Candidature» (data con ora). Regola: aperte = casella spuntata e adesso tra apertura e chiusura (una data vuota non limita).
   - La applicano `Code - Stato Candidature` (workflow REC, risponde a `form-cand-status`, che ora restituisce anche `apre` e `chiude`) e `Code - Stato Submit` (workflow Form `FLAIlj9UWzZjOYbx`, rifiuta gli invii). Il testo di chiusura non è cambiato, per scelta di Daniel.
@@ -180,7 +185,8 @@ Sessione lunga, dal 22/09 all'08/10, con 5 compattazioni di contesto. Le voci so
     - token admin temporaneo;
     - webhook "ponte" generico che esegue callback del bot;
     - cancellazione di branch remoti;
-    - l'08/10 anche la cancellazione dei canali `__tmp` rimasti e la copia nel repo pubblico degli script con gli ID delle credenziali.
+    - l'08/10 anche la cancellazione dei canali `__tmp` rimasti e la copia nel repo pubblico degli script con gli ID delle credenziali;
+    - il 17/10 la disattivazione temporanea del workflow di annullamento (`AsjcIF8Sab5ZpXFH`) via API, motivo «Modify Shared Resources».
 20. **Spam di avvisi DNS (08/10):** errori di risoluzione DNS dell'host n8n. È un problema dell'infrastruttura (IT), non dei workflow; l'error handler ora li tratta come transitori.
 
 ## Key Decisions
@@ -621,6 +627,10 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 # 1. Ambiente: N8N_API_KEY deve essere già impostata nelle variabili d'ambiente.
 #    Mai chiederla in chat. Verifica che esista senza stamparla:
 test -n "$N8N_API_KEY" && echo ok
+#    SUPABASE_DB_URL è nell'ambiente ma dal container non serve: il proxy blocca le connessioni
+#    TCP dirette ai database (porta 6543). Le query passano dai canali n8n.
+#    TELEGRAM_BOT_TOKEN: getWebhookInfo (sola lettura) dice l'ultimo errore di consegna al bot.
+#    Se n8n dà 504 su /healthz, lo deve riavviare l'IT da Coolify (server.jetop.com).
 
 # 2. Repo del sito REC (solo per modifiche al codice del sito, mai note):
 #    collegalo con add_repo (owner JEToP, repo recruitment-form-jetop, access push), poi
