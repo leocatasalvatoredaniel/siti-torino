@@ -1,0 +1,8 @@
+{
+  "redirects": [
+    { "source": "/siti/banchetti", "destination": "https://rec.jetop.com/banchetti/", "permanent": false },
+    { "source": "/siti/banchetti/:path*", "destination": "https://rec.jetop.com/banchetti/", "permanent": false },
+    { "source": "/banchetti", "destination": "https://rec.jetop.com/banchetti/", "permanent": false },
+    { "source": "/banchetti/:path*", "destination": "https://rec.jetop.com/banchetti/", "permanent": false }
+  ]
+}
