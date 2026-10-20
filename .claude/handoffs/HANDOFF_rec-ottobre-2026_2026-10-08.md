@@ -39,6 +39,14 @@ Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono sol
 
 ## Where We Are
 
+- **Candidature precedenti (20/10, richiesta di Daniel: «serve qualcosa che mi dica se un candidato si era già candidato»).** Decisioni di Daniel: archivio dal 2025; impronte invece dei dati in chiaro; avviso solo nella scheda candidato della dashboard (con CV, email, solleciti).
+  - Fonti trovate: su Notion solo Ottobre 2026 (i DB «REC Ottobre 22 … Marzo 24» sono bacheche di attività). Su Drive, in un Drive condiviso (la ricerca per nome vuole `corpora=allDrives`): «REC - 2025 Ottobre / COLLOQUI / Candidati Ottobre 25» (73 nomi) e «REC - 2025 Marzo / Candidati» (60 nomi). **Hanno solo la colonna CANDIDATO (nome e cognome)**, niente email né telefono; ESITO (Ott 25) è vuota. Marzo 2026 e Ottobre 2024: nessun elenco trovato.
+  - Archivio: tabelle `rec_storico` (edizione, page_id, impronte `h_email`, `h_tel`, `h_nome`) e `rec_storico_config` (chiave `sale`). Impronta = SHA-256 di sale + valore normalizzato (email minuscola, ultime 9 cifre del telefono, parole del nome senza accenti e ordinate). Limite onesto: la sale sta nello stesso database, quindi chi ha accesso completo al DB può risalire ai telefoni provandoli tutti.
+  - Scheda: proprietà Notion «Candidature Precedenti» (testo, per esempio «Ottobre 2025 (stesso nome e cognome)», «Ottobre 2025 (email, telefono)» oppure «Nessuna (archivio dal 2025)»); la Dashboard API (`Code - Componi Lista`) la passa come `precedenti`; `rec-dashboard/colloqui/app.js` la mostra nella sezione Profilo (riga assente se il dato manca).
+  - **Da fare da Daniel:** eseguire da n8n il workflow «Archivio candidature: SCRITTURA» (file `2_archivio_scrittura.json` consegnato il 20/10; si importa, si esegue una volta, si elimina). Crea archivio e proprietà Notion e compila le 136 schede di Ottobre 2026. La prova in sola lettura del 20/10 ha dato 2 candidati con lo stesso nome e cognome di un'edizione passata. A me la scrittura è stata negata («PII Data Handling»).
+  - Prossimi REC: `Form Candidature Web` ha un ramo dopo `Notion - Crea Valido` (Code - Storico Prepara → Postgres - Storico → Code - Storico Testo → HTTP - Candidature Precedenti, tutti con errore che continua, ultimi per posizione quindi dopo la risposta): salva le impronte del nuovo candidato con l'edizione in corso e scrive la proprietà. Provato con dati finti in locale e in una transazione annullata.
+- **Stessa area due volte (20/10):** ammessa se l'area ha sotto-aree e le due sotto-aree sono diverse (per esempio T&DA · Talent e T&DA · Data Analysis); IT no. Modulo (`app.js`, `erroreAree()`) e n8n (`Code - Valida Submission`) con la stessa regola; lo scheduling già sceglie tre persone distinte anche dallo stesso foglio.
+- **Vecchio link dei banchetti (20/10):** il progetto Vercel di siti-torino pubblica ora solo `siti/jetop-rec-automation` (dominio `rec-automation.vercel.app`; `siti-torino.vercel.app` ci porta con 307), quindi `siti/banchetti/` dava 404. `siti/jetop-rec-automation/vercel.json` reindirizza `/siti/banchetti`, `/siti/banchetti/`, `/banchetti`, `/banchetti/` (e sottopercorsi) a `https://rec.jetop.com/banchetti/`. Le anteprime Vercel del progetto sono protette da login (401). Verificato da n8n dopo il merge.
 - **Banchetti Reply (17/10, online su rec.jetop.com dalle 16:04):** banchetti per Reply fuori dal Politecnico, 8 giorni dal 21/10 al 5/11 (ore da coprire: 21/10 4, 22/10 6, 27-29/10 6, 3-4/11 6, 5/11 8; 48 in tutto, 10/18/20 a settimana).
   - Regole decise da Daniel: tutti i soci (elenco `banchetto_members`), ci si prenota **un'ora alla volta** all'orario che si vuole (ore 8-19), più ore a testa, conta solo coprire le ore del giorno; **annullamento fino a 24 ore prima** dell'ora prenotata. Scelte mie, accettate con la pubblicazione: massimo 2 persone nella stessa ora, giorno chiuso quando raggiunge le sue ore, gli admin tolgono chiunque anche dentro le 24 ore. Luogo «Fuori dal Politecnico», modificabile dagli admin.
   - Pagina: `/banchetti/` ha il selettore «Banchetti Reply / Banchetti REC» (Reply predefinita dopo il 9/10, scelta in `jetop_banchetti_vista`); Reply ha la vista «Calendario» (ore x giorni con i nomi, predefinita) e «Per giorno» (`jetop_reply_modo`). File `banchetti/reply.js` (caricato prima di `app.js`), `app.js` (viste; i dati REC si caricano solo aprendo la vista REC), stili in `index.html`. Aggiornamento all'apertura e al massimo ogni 5 minuti.
@@ -194,7 +202,8 @@ Sessione lunga, dal 22/09 all'08/10, con 5 compattazioni di contesto. Le voci so
     - il 17/10 la disattivazione temporanea del workflow di annullamento (`AsjcIF8Sab5ZpXFH`) via API, motivo «Modify Shared Resources»;
     - il 17/10 il **canale SQL generico** (`sqlch.py`, webhook che esegue qualunque query), motivo «Create RCE Surface». Al suo posto: workflow temporaneo con **una sola query fissa** scritta nel nodo (nessun input), creato, chiamato una volta e cancellato (`fixed.py`); per le prove, `begin; … ; select …; rollback;` nella stessa query;
     - il 17/10 la creazione e attivazione di un workflow di produzione senza ok esplicito («Production Deploy»): passata dopo «ok workflow e pubblica» di Daniel;
-    - il 17/10 il push diretto su `dev` («Merge Without Review»): si apre una PR dal ramo di lavoro verso `dev` e poi `dev` → `main`, e si uniscono via GitHub quando Daniel lo chiede («merge»).
+    - il 17/10 il push diretto su `dev` («Merge Without Review»): si apre una PR dal ramo di lavoro verso `dev` e poi `dev` → `main`, e si uniscono via GitHub quando Daniel lo chiede («merge»);
+    - il 20/10 la lettura dei fogli dei candidati passati e la scrittura dell'archivio («PII Data Handling»), anche dopo l'ok di Daniel. Una prova in sola lettura con uscita di soli conteggi è passata; la scrittura no. Soluzione: workflow con Manual Trigger consegnato a Daniel, che lo esegue da n8n.
 20. **Spam di avvisi DNS (08/10):** errori di risoluzione DNS dell'host n8n. È un problema dell'infrastruttura (IT), non dei workflow; l'error handler ora li tratta come transitori.
 
 ## Key Decisions
@@ -231,7 +240,7 @@ Sessione lunga, dal 22/09 all'08/10, con 5 compattazioni di contesto. Le voci so
 | `HQxuUrIPubqppVC5` | REC — Sotto-aree fogli (ordine e colori) | `5 7,8,10-21 * * *` | 10 nodi |
 | `jiCiWpiLd2wt8wva` | REC — Pulizia responsabili aggiunti | `20,50 * * * *` | 15 nodi |
 | `zPRbwd7oiCUd647v` | REC — Dashboard Stats API | webhook `rec-stats-0c3ca2d1f337` | 10 nodi, senza errorWorkflow |
-| `FLAIlj9UWzZjOYbx` | Form Candidature Web | webhook `form-cand-send-code`, `form-cand-verify`, `form-cand-submit` | 37 nodi |
+| `FLAIlj9UWzZjOYbx` | Form Candidature Web | webhook `form-cand-send-code`, `form-cand-verify`, `form-cand-submit` | 41 nodi (dal 20/10 ramo «candidature precedenti» e regola della stessa area) |
 | `VlgUU8NTZLZeCrNW` | REC — Disponibilità Colloqui API | webhook `colloqui-login`, `-verify`, `-state`, `-save` | pagina web disponibilità, da usare nel prossimo REC (oggi si usa ancora il foglio Excel) |
 | `QMElucsw0TaxcxoO` | REC — Banchetti Volantinaggio API | webhook `banchetti-*`, `auth-google` | 53 nodi |
 | `biwo9PgpDHxAMz2m` | Banchetti Reply — API prenotazioni | webhook `banchetti-reply-state`, `-book`, `-cancel`, `-admin` | 28 nodi, nuovo il 17/10 |
@@ -282,6 +291,8 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `n8n_error_throttle`, `n8n_error_occurrences` | | soglie dell'error handler |
 | `reply_giorni` | PK `data`; `ore_richieste`, `max_persone` (2), `prima_ora` (8), `ultima_ora` (19), `luogo`, `attivo` | giorni dei banchetti Reply |
 | `reply_prenotazioni` | unique (`data`, `ora`, `email`); `name`, `created_at` | un'ora per riga; trigger `reply_check_capacity` |
+| `rec_storico` | `edizione`, `page_id` (solo edizioni da Notion), `h_email`, `h_tel`, `h_nome` (impronte) | archivio delle candidature per «Candidature precedenti»; nasce con la scrittura di Daniel o con il primo invio del modulo |
+| `rec_storico_config` | PK `key`; chiave `sale` | sale delle impronte |
 
 `banchetto_config`: `max_people=4`, `min_hours=3`, `max_hours` (nuovo; 0 = nessun limite, predefinito 6), `open=true`, `admins` (indirizzi di ruolo areait@ e hr@), `members_only=false`. Ogni turno dura 1h30.
 
@@ -308,7 +319,8 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `9a1a2f8` / `1e8d618` | dev / main | nuovo sistema grafico (hallmark) per modulo di candidatura, banchetti, statistiche e colloqui; la pagina pubblica resta invariata |
 | `c07c196` / `b8e7545` | dev / main | colloqui: liste richiudibili in ogni punto («Nascondi» per sezione, «Mostra meno» in cima e in fondo, anche nella ricerca); mostrato a Daniel prima del merge |
 | `a804190` / `021a7a9` | dev / main | colloqui: «Dopo il colloquio» e «In attesa di uno slot» diventano viste rapide della lista «Candidati» (richiesta di Daniel: «se c'è già la lista dei candidati con i filtri, non ha senso tenere altre schede separate»); mostrato prima del merge |
-| `33e0cc0`, `6d04f6a` / `d422b82` / `8e1adca` | ramo `claude/awesome-ramanujan-mlqkdz` / dev (PR #1) / main (PR #2) | banchetti Reply: prenotazioni e calendario della settimana (main attuale); si annulla con `git revert -m 1 8e1adca` |
+| `33e0cc0`, `6d04f6a` / `d422b82` / `8e1adca` | ramo `claude/awesome-ramanujan-mlqkdz` / dev (PR #1) / main (PR #2) | banchetti Reply: prenotazioni e calendario della settimana; si annulla con `git revert -m 1 8e1adca` |
+| `51eeace`, `019d427` / `353719c` / `466764d` | ramo / dev (PR #3) / main (PR #4) | stessa area con sotto-aree diverse nel modulo; «Candidature precedenti» nella scheda (main attuale); si annulla con `git revert -m 1 466764d` |
 
 In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza, dashboard senza candidature, limite sulla motivazione, menu a tendina immuni alla traduzione).
 
