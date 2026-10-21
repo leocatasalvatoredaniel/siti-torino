@@ -39,6 +39,14 @@ Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono sol
 
 ## Where We Are
 
+- **Convocazione al colloquio tecnico (21/10, richiesta di Daniel: «inserirà tutto il responsabile talent per inviare le email, non abbiamo calendario per il momento per i tecnici, possiamo usare quello dei colloqui conoscitivi»).** Tecnici dal 26 al 29/10. Ok di Daniel («ok workflow e pubblica») sul testo dell'email e sulle scelte sotto.
+  - Dashboard colloqui: pulsante **«Convoca al tecnico»** nella scheda di chi è in «Colloquio Tecnico» (una convocazione per area o per gruppo di aree, a scelta). Si inseriscono aree, giorno, ora, durata (proposta 60 minuti), luogo (Sala Ex Allievi, Sala riunioni, Ufficio, Online con link, Altro con testo), commissione scelta tra i soci (`banchetto_members`), nota facoltativa per il candidato, spunta «Invia l'email». Prima dell'invio c'è l'anteprima dell'email generata dal server (iframe `srcdoc` con `sandbox`, immagini tolte per la CSP) e gli avvisi non bloccanti se una persona della commissione o il candidato ha già un tecnico sovrapposto. Nel riquadro «Colloquio tecnico» della scheda: Modifica (se cambiano giorno, ora, durata o luogo di una convocazione già inviata la spunta dell'email si accende da sola) e «Annulla la convocazione» (nessuna email: il candidato va avvisato a mano).
+  - I tecnici compaiono nel calendario settimanale (chip con bordo tratteggiato, colore dell'area del tecnico) e in «Da gestire» c'è «Al tecnico, da convocare». La riga in «Candidati» dice «tecnico: M&C (26/10 15:00)» o «(da convocare)».
+  - Workflow `bN5TiyRrzWxmqdBm` «REC — Convocazione tecnico API», webhook POST `rec-tecnico-azione` con lo stesso Bearer della dashboard (ruolo rec o admin: può convocare chiunque abbia accesso alla dashboard, non solo il responsabile Talent). Azioni: `stato` (convocazioni attive e soci), `anteprima` (stessi controlli di `convoca`, restituisce oggetto e HTML senza salvare), `convoca` (nuova, o modifica con `id`), `annulla`. Rilegge sempre il candidato da Notion (stato «Colloquio Tecnico», aree tra le «Aree Tecnico», email).
+  - Ordine di `convoca`: blocco contro il doppio invio in `automation_deliveries` (tipo `convocazione_tecnico`, `slot_key` = `data|ora|hash del luogo`) solo se si invia l'email → evento vecchio tolto e nuovo creato nel calendario hr@ (`sendUpdates=none`, commissione invitata senza email, candidato non invitato, fuso `Europe/Rome`) → riga in `colloqui_tecnici` → Gmail da hr@ («JEToP Talent», reply-to hr@) → Telegram nel gruppo. Se il calendario fallisce: niente salvato, niente email, blocco liberato (502). Se Gmail fallisce: evento e riga salvati, blocco in `error`, risposta 502 «riprova da Modifica». Spostando o annullando, il blocco della vecchia chiave torna `pending`.
+  - Email: oggetto «Convocazione colloquio tecnico - JEToP» (prima volta) o «Aggiornamento colloquio tecnico - JEToP» (dopo un invio: «è stato spostato: non è più il … ma il …» oppure «resta fissato …», più «Questa email sostituisce la convocazione…»). Stesso modello HTML della convocazione al conoscitivo (indicazioni per la saletta se il luogo è in sede, link per l'online), durata, nota, «Aggiungi al Calendario», firma Team Talent e GDPR. Le risposte arrivano a hr@ ma il bot delle risposte non le legge (oggetto diverso e stato non «Colloquio Schedulato»): vanno lette a mano.
+  - Dati in Supabase, non su Notion: tabella `colloqui_tecnici` (solo l'id della pagina Notion, nessun dato del candidato). Su Notion la data del tecnico non si vede.
+  - Prove: simulatore locale del workflow (esegue i nodi seguendo le connessioni, Postgres 16 locale, Notion/calendario/Gmail finti) con 65 controlli; query vere su Supabase in una transazione annullata (blocco, inserimento, spostamento, annullamento, stato con 71 soci), verificato che non sia rimasto niente; webhook vero: 401 senza login, CORS solo per le origini della dashboard; Playwright con API simulata e la CSP di nginx (30 controlli). **Non ancora provato con un candidato vero:** consigliata a Daniel una convocazione senza email su un candidato, poi annullata, prima del 26/10.
 - **Candidature precedenti (20/10, richiesta di Daniel: «serve qualcosa che mi dica se un candidato si era già candidato»).** Decisioni di Daniel: archivio dal 2025; impronte invece dei dati in chiaro; avviso solo nella scheda candidato della dashboard (con CV, email, solleciti).
   - Fonti trovate: su Notion solo Ottobre 2026 (i DB «REC Ottobre 22 … Marzo 24» sono bacheche di attività). Su Drive, in un Drive condiviso (la ricerca per nome vuole `corpora=allDrives`): «REC - 2025 Ottobre / COLLOQUI / Candidati Ottobre 25» (73 nomi) e «REC - 2025 Marzo / Candidati» (60 nomi). **Hanno solo la colonna CANDIDATO (nome e cognome)**, niente email né telefono; ESITO (Ott 25) è vuota. Marzo 2026 e Ottobre 2024: nessun elenco trovato.
   - Archivio: tabelle `rec_storico` (edizione, page_id, impronte `h_email`, `h_tel`, `h_nome`) e `rec_storico_config` (chiave `sale`). Impronta = SHA-256 di sale + valore normalizzato (email minuscola, ultime 9 cifre del telefono, parole del nome senza accenti e ordinate). Limite onesto: la sale sta nello stesso database, quindi chi ha accesso completo al DB può risalire ai telefoni provandoli tutti.
@@ -244,6 +252,7 @@ Sessione lunga, dal 22/09 all'08/10, con 5 compattazioni di contesto. Le voci so
 | `VlgUU8NTZLZeCrNW` | REC — Disponibilità Colloqui API | webhook `colloqui-login`, `-verify`, `-state`, `-save` | pagina web disponibilità, da usare nel prossimo REC (oggi si usa ancora il foglio Excel) |
 | `QMElucsw0TaxcxoO` | REC — Banchetti Volantinaggio API | webhook `banchetti-*`, `auth-google` | 53 nodi |
 | `biwo9PgpDHxAMz2m` | Banchetti Reply — API prenotazioni | webhook `banchetti-reply-state`, `-book`, `-cancel`, `-admin` | 28 nodi, nuovo il 17/10 |
+| `bN5TiyRrzWxmqdBm` | REC — Convocazione tecnico API | webhook `rec-tecnico-azione` (POST, azioni `stato`, `anteprima`, `convoca`, `annulla`) | 37 nodi, nuovo il 21/10; esecuzioni riuscite non salvate |
 | `K6R9pe8ahsr3zgTH` | REC — Reminder Banchetti | ore 9 | |
 | `PhG1qNhFlOhzhMME` | JEToP Error Handler | Error Trigger | errorWorkflow di quasi tutti |
 | `vhL5QItyosHVLwH6` | Workflow REC JEToP - BACKUP | (spento) | **non riattivare** |
@@ -285,7 +294,7 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `blocked_slots` | unique (`data`, `ora`); `motivo` | slot bloccati da Telegram o dashboard |
 | `pending_reschedule` | `page_id`, `options` (JSON con chiavi `data`, `ora`, `formatted_date`, `rp`, `foglio_rp`, `gid_rp`, `row_rp`, `col_rp`, `rs…`, `talent…`) | proposte di spostamento aperte |
 | `telegram_pending` | `page_id`, `slot_data` JSON | solo secondi colloqui in attesa del luogo |
-| `automation_deliveries` | unique (`page_id`, `delivery_type`, `slot_key`); `status` (`sending`/`sent`) | dedupe email. Tipi: `convocazione`, `email_esclusione`, `onboarding`, `esclusione_tecnico`, `annullamento`. `slot_key` = `YYYY-MM-DD\|HH:MM` |
+| `automation_deliveries` | unique (`page_id`, `delivery_type`, `slot_key`); `status` (`sending`/`sent`) | dedupe email. Tipi: `convocazione`, `email_esclusione`, `onboarding`, `esclusione_tecnico`, `annullamento`, `convocazione_tecnico` (dal 21/10, `slot_key` = `YYYY-MM-DD\|HH:MM\|hash del luogo`). `slot_key` = `YYYY-MM-DD\|HH:MM` |
 | `app_settings` | chiave `rec_scheduling_windows` | finestre di scheduling |
 | `banchetto_auth`, `banchetto_members`, `banchetto_config`, `banchetto_bookings` | | login Google condiviso e banchetti |
 | `n8n_error_throttle`, `n8n_error_occurrences` | | soglie dell'error handler |
@@ -293,6 +302,7 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `reply_prenotazioni` | unique (`data`, `ora`, `email`); `name`, `created_at` | un'ora per riga; trigger `reply_check_capacity` |
 | `rec_storico` | `edizione`, `page_id` (solo edizioni da Notion), `h_email`, `h_tel`, `h_nome` (impronte) | archivio delle candidature per «Candidature precedenti»; nasce con la scrittura di Daniel o con il primo invio del modulo |
 | `rec_storico_config` | PK `key`; chiave `sale` | sale delle impronte |
+| `colloqui_tecnici` | PK `id` (bigserial); `page_id`, `aree` text[], `data`, `ora`, `durata`, `luogo`, `dettaglio` (link o indirizzo), `commissione` jsonb (`email`, `nome`), `nota`, `event_id`, `stato` (`convocato`/`annullato`), `email_inviata_at`, `creato_da`, `aggiornato_da` | convocazioni al tecnico (dal 21/10); si toglie con `drop table colloqui_tecnici` |
 
 `banchetto_config`: `max_people=4`, `min_hours=3`, `max_hours` (nuovo; 0 = nessun limite, predefinito 6), `open=true`, `admins` (indirizzi di ruolo areait@ e hr@), `members_only=false`. Ogni turno dura 1h30.
 
@@ -320,7 +330,9 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `c07c196` / `b8e7545` | dev / main | colloqui: liste richiudibili in ogni punto («Nascondi» per sezione, «Mostra meno» in cima e in fondo, anche nella ricerca); mostrato a Daniel prima del merge |
 | `a804190` / `021a7a9` | dev / main | colloqui: «Dopo il colloquio» e «In attesa di uno slot» diventano viste rapide della lista «Candidati» (richiesta di Daniel: «se c'è già la lista dei candidati con i filtri, non ha senso tenere altre schede separate»); mostrato prima del merge |
 | `33e0cc0`, `6d04f6a` / `d422b82` / `8e1adca` | ramo `claude/awesome-ramanujan-mlqkdz` / dev (PR #1) / main (PR #2) | banchetti Reply: prenotazioni e calendario della settimana; si annulla con `git revert -m 1 8e1adca` |
-| `51eeace`, `019d427` / `353719c` / `466764d` | ramo / dev (PR #3) / main (PR #4) | stessa area con sotto-aree diverse nel modulo; «Candidature precedenti» nella scheda (main attuale); si annulla con `git revert -m 1 466764d` |
+| `51eeace`, `019d427` / `353719c` / `466764d` | ramo / dev (PR #3) / main (PR #4) | stessa area con sotto-aree diverse nel modulo; «Candidature precedenti» nella scheda; si annulla con `git revert -m 1 466764d` |
+| `e2db82f` / `18419ef` / `6a33fc9` | ramo / dev / main | stessa area due volte solo per Talent & Data Analysis |
+| `0c2f226` / `1e64e15` / (in corso) | ramo / dev (PR #7) / main (in corso) | convocazione al colloquio tecnico dalla scheda; su dev il 21/10 |
 
 In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza, dashboard senza candidature, limite sulla motivazione, menu a tendina immuni alla traduzione).
 
@@ -542,6 +554,7 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 - `.claude/handoffs/HANDOFF_rec-ottobre-2026_2026-10-08.md`: questo file. Il sito è pubblicato da Vercel: il file `.vercelignore` esclude `.claude/` dal deploy. Il file resta comunque visibile su GitHub, perché il repo è pubblico.
 
 ### Script di lavoro (persi con il container, da ricreare)
+- **Convocazione al tecnico (21/10):** `tecnico/build_tecnico.py` genera il workflow dai file `tecnico/js/*.js` (un file per Code node) copiando credenziali e forma dei nodi dalla Dashboard API; `tecnico/sim.js` è un simulatore minimo (Code, IF, Switch, Postgres vero su un Postgres 16 locale avviato come utente postgres in `/var/lib/postgresql/pgtest`, porta 5499; HTTP e Gmail finti); `tecnico/test_tecnico.js` ha 65 controlli. Per modificarlo: GET del workflow `bN5TiyRrzWxmqdBm`, modifica del Code node, prova nel simulatore, PUT.
 - **Accesso:** `n8n.py` (API n8n), `gch.py` (canale temporaneo verso Google o Notion), `sqlch.py` (canale Postgres).
 - **Creazione e deploy dei workflow:**
   - `crea_wf_dash_colloqui.py`, `fase2_dash.py`, `fase3_dash.py` (`python3 fase3_dash.py go` rifà il deploy mantenendo id e webhookId);
