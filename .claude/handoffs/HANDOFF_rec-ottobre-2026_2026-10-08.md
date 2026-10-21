@@ -128,12 +128,7 @@ Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono sol
   - Ro. (martedì mattina; lunedì, mercoledì e venerdì pomeriggio; giovedì dalle 16).
 - **Lista d'attesa: 14 candidati senza slot.** Il collo di bottiglia sono le **disponibilità dei Talent**. Sul gruppo Telegram è stato pubblicato un messaggio che chiede ai Talent di spuntare ore, con l'elenco delle ore più utili.
 - **Skill di handoff installate.** Le skill `handoff` e `handoffplan` (repo REMvisual/claude-handoff, licenza MIT) sono in `~/.claude/skills/` del container, che è temporaneo, e in `siti-torino/.claude/skills/`, che resta per le sessioni future su questo repo.
-- **Tre canali temporanei di test rimasti attivi su n8n**, creati da sessioni precedenti e mai cancellati:
-  - `__tmp_g` `y9BO62IWZzbqHYUe` (creato il 04/10);
-  - `__tmp_g` `ZZm9X9wIqTs09Whf` (22/09);
-  - `__tmp_sql` `hqWHW9U5HbXUSdW9` (28/09).
-
-  Il classificatore ha negato la cancellazione via API, quindi vanno eliminati a mano dalla UI di n8n. Sono innocui (webhook protetti da un segreto casuale ormai perso) ma esposti.
+- **Pulizia dei workflow n8n (21/10, richiesta di Daniel: «controlla i workflow ed elimina quelli che non servono»):** inventario letto dal database interno di n8n (`workflow_entity`, `shared_workflow`, `webhook_entity`, `execution_entity`: 23 workflow, tutti del progetto «Area Talent»). Eliminati via API, dopo una copia completa (nodi, connessioni, impostazioni) nello scratchpad: i tre canali temporanei ancora attivi `__tmp_g` `y9BO62IWZzbqHYUe`, `__tmp_g` `ZZm9X9wIqTs09Whf`, `__tmp_sql` `hqWHW9U5HbXUSdW9`; «Archivio candidature: SCRITTURA (una volta sola)» `Rg1JCmUBrrxK7sRB` (già archiviato, lavoro fatto il 21/10; per rifarlo serve rigenerarlo da `storico_import.py`); «TEST - Bypass chiusura candidature» `rAIqcktuN7ZeOZep` (spento dal 12/10, vecchia copia di prova del modulo senza i cambi successivi). Verificato: restano 17 workflow (16 attivi più il BACKUP spento) e nessun webhook dei canali eliminati. Lasciati: tutti i workflow attivi, compreso «REC — Reminder Banchetti» (nodo «IF - In Periodo»: fuori dal periodo dei banchetti non manda niente) e «REC — Disponibilità Colloqui API» (per il prossimo REC); il BACKUP `vhL5QItyosHVLwH6` aspetta la decisione di Daniel.
 - **Gli script di supporto nel container sono persi** a fine sessione (scratchpad temporaneo). Vanno ricreati, vedi Quick Start. Non sono nel repo per scelta: contengono ID di credenziali e il repo è pubblico.
 
 ## What We Tried (Chronological)
@@ -256,7 +251,6 @@ Sessione lunga, dal 22/09 all'08/10, con 5 compattazioni di contesto. Le voci so
 | `K6R9pe8ahsr3zgTH` | REC — Reminder Banchetti | ore 9 | |
 | `PhG1qNhFlOhzhMME` | JEToP Error Handler | Error Trigger | errorWorkflow di quasi tutti |
 | `vhL5QItyosHVLwH6` | Workflow REC JEToP - BACKUP | (spento) | **non riattivare** |
-| `y9BO62IWZzbqHYUe`, `ZZm9X9wIqTs09Whf`, `hqWHW9U5HbXUSdW9` | `__tmp_g` / `__tmp_sql` | webhook temporanei | **da eliminare a mano** |
 
 ### Risorse dati
 
@@ -709,7 +703,6 @@ cd /home/user/recruitment-form-jetop && git config user.name Claude && git confi
 ```
 
 **Cose che l'utente deve fare a mano** (ricordarle se non sono fatte):
-- Eliminare dalla UI di n8n i 3 workflow temporanei `y9BO62IWZzbqHYUe`, `ZZm9X9wIqTs09Whf`, `hqWHW9U5HbXUSdW9` (nome `__tmp_g` / `__tmp_sql`).
 - Eliminare il branch `feat/banchetti-ore-massime` dal repo JEToP (GitHub → Branches → cestino).
 - Far correggere le email nel foglio soci, colonna F, righe 30, 35, 46, 54, 64. Le mail giuste sono nella mappa `_MAIL_GIUSTE` del bot Telegram; serve qualcuno con permesso di modifica.
 - Segnalare all'IT i problemi DNS dell'host n8n.
