@@ -173,9 +173,18 @@ colori delle aree e in un solo momento di movimento (il timbro).
   sovrapposto alla fascia (anello del colore della 1ª area); numero «n. X di N» sulla fascia, colore `--color-paper`.
   Dentro, due colonne da 760px di scena in su (container query `scena`): fatti a sinistra, motivazione e note a
   destra separate da un filetto di 1px e con scorrimento proprio.
-- **Squadre:** cinque pillole alte 64px nell'ordine M&C, D&V, IT, S&P, T&DA (tasti 1-5); spenta con bordo tinto
-  dall'area, accesa con fondo `color-mix(in oklab, area 32%, paper-3)` e bordo pieno dell'area; «1ª/2ª scelta» o
-  «convocato» (con lucchetto) sotto il nome.
+- **Squadre (sotto-aree, dal 23/10 sera):** nove pillole alte almeno 52px su una griglia di 5 colonne × 2 righe.
+  C'è una colonna per area nell'ordine M&C, D&V, IT, S&P, T&DA; IT occupa da sola le due righe (`--col`, `--riga`)
+  e mostra «Information Technology». I tasti vanno da 1 a 9. Ogni pillola ha il colore dell'area madre (`colTec`).
+  Spenta ha il bordo tinto dall'area; accesa ha fondo `color-mix(in oklab, area 32%, paper-3)` e bordo pieno
+  dell'area. Sotto il nome compare «1ª/2ª scelta» o «convocato» (con lucchetto). Il nome è a .9375rem (.875rem con
+  scena sotto i 1100px), così «Communication» entra intera. Sul telefono le colonne sono 3 a posizionamento
+  automatico, senza pallino né icona.
+- **Sotto-area da scegliere:** chi è al tecnico senza sotto-area ha il glifo mezzo pieno (`.fa-gl.completare`) e la
+  chip del timbro in stile avviso (`i.da`, `--color-warn`). Ha anche una rosa «Senza sotto-area», con il titolo
+  nel colore di avviso.
+- **Finestra delle sotto-aree (fuori dal fantasocio):** caselle su due colonne (`.pk-tecs9`), una riga per area,
+  IT da sola sulla riga intera (`.solo`). Sotto i 560px c'è una colonna sola.
 - **Timbro della decisione:** riquadro con bordo 3px `currentColor`, ruotato di -5°: iris «Al tecnico» con le aree,
   muted «Non passa», verde `--color-ok` «Convocato». Cade (scala 1.8 → 0.94 → 1, 420ms) solo quando la decisione
   cambia; con movimento ridotto compare in dissolvenza.

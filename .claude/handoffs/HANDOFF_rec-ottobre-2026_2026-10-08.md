@@ -39,6 +39,21 @@ Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono sol
 
 ## Where We Are
 
+- **Colloquio tecnico per sotto-area (23/10 sera, richiesta di Daniel: «devo poter selezionare tutte le sottoaree, anche due insieme della stessa area volendo»).** Decisioni di Daniel: **un gruppo Telegram per sotto-area**; su Notion le sotto-aree vanno **dentro «Aree Tecnico»** al posto dei codici d'area. «ok pubblica» di Daniel: **online su rec.jetop.com dalle 19:58 del 23/10** (PR #17 su dev, PR #18 su main). I due workflow sono stati caricati un minuto prima, perché la dashboard vecchia e i workflow nuovi non funzionano insieme.
+  - Le 9 sotto-aree, che sono i valori di «Aree Tecnico» e gli stessi di «Prima/Seconda Sotto-Area» del modulo: Marketing e Communication (M&C), Design e Videomaking (D&V), IT (senza sotto-aree), Sales e Partnership (S&P), Talent e Data Analysis (T&DA). «Area Ingresso» resta il codice d'area.
+  - Dashboard (`colloqui/app.js`): costanti `AREE_TEC`, `AREA_DI` (sotto-area → area); `tecDi(c)` dà le sotto-aree del tecnico, `areeDaScegliere(c)` i codici d'area rimasti da prima, `colTec` il colore dell'area madre.
+    - finestre «Sotto-aree del tecnico» e «Convocazione tecnico»: 9 caselle su due colonne (`.pk-tecs9`), una riga per area, IT da sola; 1ª e 2ª scelta in evidenza; avviso se resta un'area intera;
+    - convocazioni di gruppo: «Convocazioni al tecnico per sotto-area», un link per sotto-area, un'email sola a chi ne ha più di una;
+    - Fantasocio: 9 squadre (tasti 1-9, una colonna per area). Nuovo stato `completare`: in «Colloquio Tecnico» senza sotto-area, o con un'area intera rimasta da prima. Conta tra i «da decidere», ha il timbro «sotto-area da scegliere» e una rosa «Senza sotto-area»;
+    - «Da gestire»: card «Al tecnico senza sotto-area» con il pulsante «Sceglile nel Fantasocio»;
+    - «Accetta»: l'area d'ingresso si sceglie tra le aree madri delle sotto-aree del tecnico.
+  - Dashboard Colloqui API (`iD9mAViOGLgKM2M9`, PUT del 23/10 alle 19:58, 109 nodi, script `fanta/patch_sotto.py`): `Valida Input` accetta in `aree` solo le 9 sotto-aree («Scegli almeno una sotto-area per il colloquio tecnico.»); `accetta` ricava l'area con `AREA_DI` e controlla che sia tra quelle del tecnico.
+  - Convocazione tecnico API (`bN5TiyRrzWxmqdBm`, PUT del 23/10 alle 19:58, 27 nodi, sorgenti in `tecnico/js_invito/`): stesse 9 sotto-aree. Un'area intera rimasta da prima sparisce da «Aree Tecnico» quando arriva una sua sotto-area; `tecnico_inviti.area` ora contiene la sotto-area.
+  - Email (oggetto invariato): «il colloquio tecnico per Marketing e Communication», con più sotto-aree «abbiamo creato un gruppo Telegram per ciascuno» e un pulsante «Gruppo Telegram <sotto-area>» per ognuna. IT è scritto «Information Technology».
+  - Su Notion al 23/10: 67 candidati in «Colloquio Tecnico», 57 senza «Aree Tecnico» (passati a mano) e 10 con un'area intera. Tutti risultano «sotto-area da scegliere». Nessuna convocazione al tecnico è ancora partita.
+  - **Bot Telegram non aggiornato.** Ha 351 nodi e gestisce anche lo scheduling, quindi ripubblicarlo è un rischio alto per il beneficio. `/fantasocio` scrive ancora le 5 aree, e il candidato torna «sotto-area da scegliere» in dashboard; `/esiti` non mostra i pulsanti «Entra in…» per le sotto-aree, quindi si usa «Accetta» in dashboard. Detto a Daniel: si aggiorna solo se lo chiede.
+  - Prove: `tecnico/test_invito.js` (50 controlli), `fanta/test_fanta.js`, Playwright `pw/fanta_test.js`, `pw/ca_test.js` e `pw/invito_test.js` con dati finti, rilanciati sui file di produzione.
+  - **Per tornare indietro** servono tre passi insieme: `git revert -m 1 d4723dc` su main e la PUT dei backup `fanta/bk_dash_prima_sotto_20261023_1741.json` e `fanta/bk_tecnico_prima_sotto_20261023_1739.json`. I backup sono nello scratchpad e si perdono con il container. Senza di loro, la dashboard vecchia non funziona con i workflow nuovi, che rifiutano i codici d'area.
 - **Convocazioni al tecnico per area (23/10, proposta accettata da Daniel: «costruiscilo, mi piace»).** Finestra «Convocazioni al tecnico per area», dal pulsante «Convoca per area» nella card «Al tecnico, convocazione da inviare» di «Da gestire» o dalla fine dell'asta nel Fantasocio. Un link del gruppo Telegram per ogni area con candidati da convocare (`daInvitare`); l'email parte a tutti quelli dell'area che non l'hanno ancora ricevuta, si può togliere qualcuno, le aree lasciate vuote si convocano dopo. Chi è al tecnico in più aree riceve **un'email sola** con tutti i suoi gruppi. «Sei sicuro?» con destinatari, link per area e anteprima della prima email (`anteprima` sul server); poi le email partono una alla volta con l'azione `invia` di «REC — Convocazione tecnico API» (stesso blocco contro il doppio invio), con l'esito di ognuna e «Riprova» per quelle non partite; durante l'invio la finestra non si chiude (X spenta, Esc ignorato con `busy`). Il server non cambia; ogni email resta annunciata sul gruppo del team. Prove: `pw/ca_test.js` (Playwright, dati finti), rilanciata sui file di produzione. «ok pubblica» di Daniel: **online su rec.jetop.com dalle 14:00 del 23/10** (PR #15 su dev, PR #16 su main). Daniel non ha chiesto di togliere il messaggio sul gruppo per ogni email: resta uno per email.
 - **Fantasocio, l'asta dopo i conoscitivi (23/10, richiesta di Daniel: «una modalità fantasocio, in cui si apre una schermata più giocosa ma sempre con una ux/ui stupenda, in cui si può vedere la scheda del candidato e si può inserire se mandarlo o no al tecnico, devo anche poter selezionare subito in quale tecnico voglio mandare il candidato, l'email la mando in un secondo momento inserendo i gruppi telegram in una schermata come quella che c'è attualmente»).** Decisioni di Daniel: schermata **proiettata in riunione**; «non passa» = **escluso ripescabile, nessuna email**; struttura **«L'asta»**; «devo poter modificare le informazioni prima che parta la convocazione». Dopo l'anteprima: «ok pubblica» e «nel fantasocio non voglio il messaggio su telegram per ogni decisione». **Online su rec.jetop.com dalle 11:41 del 23/10** (PR #13 su dev, PR #14 su main).
   - Niente messaggi sul gruppo dal fantasocio: le decisioni mandano `fanta: true`; nella Dashboard API `Code - Esito` mette `avvisa: false` per `tecnico`, `escludi_fanta`, `fanta_annulla` e `ripesca` arrivati così, e il nuovo nodo `IF - Avvisa Gruppo` (tra `Code - Esito` e `HTTP - Notifica Gruppo`) salta il messaggio. «Segna effettuato» e le stesse azioni dalla scheda si annunciano come prima. PUT del 23/10 alle 11:39 (109 nodi), backup `fanta/bk_dash_prima_zitto_*.json`, script `fanta/patch_fanta_zitto.py`.
@@ -46,7 +61,7 @@ Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono sol
     - figurina del candidato al centro;
     - listone con ricerca e filtri;
     - rose delle aree;
-    - squadre 1-5, «Al tecnico» (Invio), «Non passa» (N), «Rimetti da decidere» (U), frecce, F per lo schermo intero, Esc per uscire.
+    - squadre 1-5 (dal 23/10 sera 9 sotto-aree, tasti 1-9), «Al tecnico» (Invio), «Non passa» (N), «Rimetti da decidere» (U), frecce, F per lo schermo intero, Esc per uscire.
 
     Nel listone: chi è in «Colloquio Effettuato» o «Colloquio Tecnico», più chi ha il colloquio passato ma non segnato (prima «Segna effettuato»). Dopo una decisione su un «da decidere» passa da solo al prossimo. Niente email: le convocazioni si mandano dopo, dalla scheda.
   - Dashboard Colloqui API (`iD9mAViOGLgKM2M9`, PUT del 23/10 alle 11:06, backup `fanta/bk_dash_prima_fanta_*.json`, script `fanta/patch_fanta.py`), solo nodi Code e query:
@@ -352,7 +367,8 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `b9249ff`, `1e6e1b0`, `dd39a42`, `fefdcd4` / `1b5f1c3` / `a02d6e5` | ramo / dev (PR #9) / main (PR #10) | «Convocazione tecnico» con il gruppo Telegram di ogni area e conferma «Sei sicuro?» (online dalle 23:34 del 22/10); si annulla con `git revert -m 1 a02d6e5` |
 | `e0a87cd` / `6bf38ff` / `a4ae663` | ramo / dev (PR #11) / main (PR #12) | statistiche, «Anno di corso» diviso tra triennale e magistrale (main attuale, online dalle 10:05 del 23/10); si annulla con `git revert -m 1 a4ae663` |
 | `8635f85`, `ec06450` / `9a6dcf3` / `0a16c56` | ramo / dev (PR #13) / main (PR #14) | modalità Fantasocio e niente messaggi sul gruppo dalle sue decisioni (online dalle 11:41 del 23/10); si annulla con `git revert -m 1 0a16c56` |
-| `bdbe94a` / `b4d5dfc` / `4116052` | ramo / dev (PR #15) / main (PR #16) | convocazioni al tecnico per area (main attuale, online dalle 14:00 del 23/10); si annulla con `git revert -m 1 4116052` |
+| `bdbe94a` / `b4d5dfc` / `4116052` | ramo / dev (PR #15) / main (PR #16) | convocazioni al tecnico per area (online dalle 14:00 del 23/10); si annulla con `git revert -m 1 4116052` |
+| `2ef1b82` / `830b9a2` / `d4723dc` | ramo / dev (PR #17) / main (PR #18) | colloquio tecnico per sotto-area (main attuale, online dalle 19:58 del 23/10); il revert da solo non basta, servono anche i backup dei due workflow (vedi «Where We Are») |
 
 In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza, dashboard senza candidature, limite sulla motivazione, menu a tendina immuni alla traduzione).
 
@@ -382,7 +398,7 @@ In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza
 | `prenota` | assegna o sposta uno slot (`forza`, `luogo` per il secondo nello slot, minimo 3h di preavviso) |
 | `blocca` / `sblocca` | `blocked_slots`, anche `tuttoGiorno` |
 | `commissione`, `cambia`, `aggiungi` | mostra, cambia o aggiunge responsabili (celle, DB, calendario, Notion) |
-| `tecnico`, `escludi_fanta`, `ripesca` | esiti dopo il colloquio; dal 23/10 `tecnico` non toglie aree già convocate ed `escludi_fanta` vale anche da Colloquio Tecnico |
+| `tecnico`, `escludi_fanta`, `ripesca` | esiti dopo il colloquio; dal 23/10 `tecnico` non toglie aree già convocate ed `escludi_fanta` vale anche da Colloquio Tecnico; dal 23/10 sera `aree` contiene le sotto-aree (Marketing, Communication, Design, Videomaking, IT, Sales, Partnership, Talent, Data Analysis) |
 | `fanta: true` (dal 23/10) | inviato dal Fantasocio insieme a `tecnico`, `escludi_fanta`, `fanta_annulla`: nessun messaggio sul gruppo Telegram |
 | `fanta_annulla` (dal 23/10) | rimette «da decidere» (Stato Colloquio Effettuato, Aree Tecnico ed Esito Conoscitivo vuoti); rifiutata se è già partita una convocazione al tecnico |
 | `accetta`, `rifiuta` | email Gmail con lock su `automation_deliveries` |
@@ -394,6 +410,8 @@ Ogni azione scrive sul gruppo Telegram chi l'ha fatta. Auth: Bearer token del lo
 ### Comandi del bot Telegram
 
 `/start`, `/stato`, `/verifica`, `/reset`, `/reset_sheets`, `/pausa_scheduling`, `/riprendi_scheduling`, `/blocca_slot`, `/libera_slot`, `/fantasocio`, `/esiti`, `/rifiuta`, più l'agenda e i pulsanti inline: Sposta, Assegna, Ritira, Aggiungi responsabile, Cambia responsabile, Colloquio fatto, Ripesca, scelta del luogo dei secondi colloqui.
+
+`/fantasocio` ed `/esiti` usano ancora le 5 aree e non le sotto-aree del tecnico (vedi «Where We Are»).
 
 ### Regex del taglio delle citazioni (sub, `Code - Parse Email` e `HTTP - Avvisa Messaggio Da Gestire`)
 
@@ -578,6 +596,11 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 ### Script di lavoro (persi con il container, da ricreare)
 - **Convocazione tecnico (21-22/10):** `tecnico/build_invito.py` genera il workflow dai file `tecnico/js_invito/*.js` (un file per Code node) copiando credenziali e forma dei nodi dalla Dashboard API; `tecnico/sim.js` è un simulatore minimo (Code, IF, Switch, Postgres vero su un Postgres 16 locale avviato come utente postgres in `/var/lib/postgresql/pgtest`, porta 5499, con `tecnico/pg_avvia.sh`; HTTP e Gmail finti; `WF=wf_invito.json`); `tecnico/test_invito.js` ha 46 controlli. Per pubblicare: GET del workflow, sostituire nodi e connessioni tenendo `id` e `webhookId` del webhook, PUT. La versione del 21/10 (`build_tecnico.py`, `js/`) non è più in uso.
 - **Fantasocio (23/10):** `fanta/patch_fanta.py <in> <out>` (modifica i nodi della Dashboard API partendo dal JSON del workflow), `fanta/test_fanta.js` (nodi e query, `WF=` sceglie il file), `pw/fanta_test.js` (Playwright), `fanta/patch_fanta_zitto.py` (niente messaggi sul gruppo), `pw/ca_test.js` (convocazioni per area). Le icone Phosphor nuove vengono dal pacchetto npm `@phosphor-icons/core@2.1.1` (unpkg è bloccato dal proxy, npm no).
+- **Sotto-aree (23/10 sera):**
+  - `fanta/patch_sotto.py <in> <out>` modifica la Dashboard API;
+  - i file `tecnico/js_invito/*.js` sono aggiornati alle sotto-aree; la versione per aree è in `tecnico/js_invito_aree_v2/`;
+  - `fanta/deploy_sotto.py` fa la PUT dei due workflow solo se la versione online è quella attesa;
+  - `tecnico/esempi_sotto.js` genera le email di esempio.
 - **Statistiche (23/10):** `stats/patch_anno_percorso.py` (GET, backup, aggiunta del blocco `anno_percorso` nel nodo «Code - Aggrega Stats», PUT); `pw/stats_test.js` (Playwright con dati finti generati dal nodo vero, `URL_DASH` per provarlo sui file di produzione).
 - **Controllo della pubblicazione:** `reply/check_pubblicazione.py staging|produzione` legge `rec-dashboard/app.js` e `rec-dashboard/colloqui/app.js` tramite un workflow n8n temporaneo (lo staging non si raggiunge dal container: il proxy risponde 403) e cerca alcuni marcatori nel codice; rec.jetop.com invece si legge direttamente con curl.
 - **Accesso:** `n8n.py` (API n8n), `gch.py` (canale temporaneo verso Google o Notion), `sqlch.py` (canale Postgres).
@@ -592,7 +615,7 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 
 ## User Feedback & Preferences (REQUIRED — never omit)
 - **Prima di portare modifiche su `main` (rec.jetop.com), mostrarle a Daniel e aspettare il suo ok** (richiesta del 10/10, dopo che il redesign è andato online senza anteprima). Strumenti: schermate prima/dopo (script `pw/confronto.js`) e lo staging su `dev`. Deve sempre essere possibile tornare alla versione precedente.
-- **Ultimo merge su main: `021a7a9`** (viste rapide nella lista Candidati); si annulla con `git revert -m 1 021a7a9` e torna a `b8e7545`.
+- **Ultimo merge su main: `d4723dc`** (colloquio tecnico per sotto-area, 23/10); per annullarlo vedi la tabella dei commit.
 - **Come tornare indietro dal redesign del 10/10:** su `main`, `git revert -m 1 1e8d618` e push. Provato in una copia separata: i file tornano identici a `60d7082` (la versione online prima del redesign). Per altre modifiche vale lo stesso schema: ogni pubblicazione è un merge `--no-ff` di `dev` su `main`, quindi si annulla con `git revert -m 1 <merge>`.
 
 - **Rispondere sempre in italiano.** Quando sono passato all'inglese l'utente ha scritto "parla italiano".
@@ -643,6 +666,7 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 - **Disponibilità Talent:** è il collo di bottiglia, con 14 candidati in attesa. Non si risolve con il codice: serve che i Talent spuntino ore.
 - **Deploy di rec.jetop.com:** a volte ci mette ore, una volta meno di un minuto. È fuori dal nostro controllo.
 - **Classificatore in modalità auto:** nega le azioni distruttive o di modifica dei permessi su sistemi condivisi (cancellare workflow non creati nella sessione, branch remoti, token admin, canali generici). Non aggirare: spiegare all'utente e lasciargli l'azione.
+- **Bot Telegram e sotto-aree (dal 23/10 sera):** `/fantasocio` ed `/esiti` lavorano ancora per area. Chi decide il tecnico dal bot rimette il candidato tra quelli con «sotto-area da scegliere».
 - **Repo siti-torino pubblico:** mai committare dati dei candidati, email personali, ID di credenziali o segreti.
 - **Quota di traffico Supabase (avviso del 09/10).**
   - Il Postgres "Postgres account" è un progetto Supabase sul piano gratuito. Contiene **anche il database interno di n8n** (esecuzioni, workflow, utenti, credenziali), per un totale di 845 MB, di cui 819 MB di `execution_data`.
