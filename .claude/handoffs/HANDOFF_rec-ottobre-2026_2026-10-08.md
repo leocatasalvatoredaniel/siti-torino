@@ -39,6 +39,25 @@ Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono sol
 
 ## Where We Are
 
+- **Fantasocio, l'asta dopo i conoscitivi (23/10, richiesta di Daniel: «una modalità fantasocio, in cui si apre una schermata più giocosa ma sempre con una ux/ui stupenda, in cui si può vedere la scheda del candidato e si può inserire se mandarlo o no al tecnico, devo anche poter selezionare subito in quale tecnico voglio mandare il candidato, l'email la mando in un secondo momento inserendo i gruppi telegram in una schermata come quella che c'è attualmente»).** Decisioni di Daniel: schermata **proiettata in riunione**; «non passa» = **escluso ripescabile, nessuna email**; struttura **«L'asta»**; «devo poter modificare le informazioni prima che parta la convocazione». **Su staging (PR #13 su dev), non ancora su main: aspetta l'ok di Daniel.**
+  - Dashboard colloqui: pulsante «Fantasocio» accanto al titolo, oppure `#fantasocio` nell'indirizzo. Schermata a tutto schermo (sistema grafico in `.claude/design/DESIGN_rec-jetop.md`, sezione «Modalità Fantasocio»):
+    - figurina del candidato al centro;
+    - listone con ricerca e filtri;
+    - rose delle aree;
+    - squadre 1-5, «Al tecnico» (Invio), «Non passa» (N), «Rimetti da decidere» (U), frecce, F per lo schermo intero, Esc per uscire.
+
+    Nel listone: chi è in «Colloquio Effettuato» o «Colloquio Tecnico», più chi ha il colloquio passato ma non segnato (prima «Segna effettuato»). Dopo una decisione su un «da decidere» passa da solo al prossimo. Niente email: le convocazioni si mandano dopo, dalla scheda.
+  - Dashboard Colloqui API (`iD9mAViOGLgKM2M9`, PUT del 23/10 alle 11:06, backup `fanta/bk_dash_prima_fanta_*.json`, script `fanta/patch_fanta.py`), solo nodi Code e query:
+    - `Postgres - Stato Slot` legge anche le aree già convocate (`tecnico_inviti`);
+    - nuova azione `fanta_annulla` (Stato «Colloquio Effettuato», Aree Tecnico ed Esito vuoti);
+    - `escludi_fanta` vale anche da «Colloquio Tecnico» (torna a Colloquio Effettuato senza aree);
+    - `tecnico` non toglie un'area già convocata.
+
+    Chi ha già una convocazione non si esclude e non torna da decidere (409). Ogni decisione scrive sul gruppo Telegram del team, come prima.
+  - Prove:
+    - `fanta/test_fanta.js`: 23 controlli sui nodi e sulla query, con Postgres locale in transazione annullata;
+    - `pw/fanta_test.js`: Playwright con CSP, dati finti, a 1920×1080, 1366×768, 1440×900 con movimento ridotto e 390×844;
+    - passano ancora `invito_test.js` e `precedenti_test.js`; `tecnico_test.js` è della convocazione del 21/10, sostituita.
 - **Statistiche, «Anno di corso» diviso per percorso (23/10, segnalazione di Daniel: «è incompleto, non so se quelli del primo secondo e terzo sono magistrale o triennale»).** Online su rec.jetop.com dal 23/10 alle 10:05 («ok pubblica» di Daniel).
   - Stats API (`zPRbwd7oiCUd647v`), nodo «Code - Aggrega Stats»: nuovo campo `anno_percorso` per edizione e nel riepilogo, cioè `{percorso: {anno: n}}` (percorso senza gli `=` iniziali, «(nessuno)» se manca). Il campo è solo aggiunto e i conteggi di prima non cambiano. Backup prima della PUT nello scratchpad: `bk_stats_anno_percorso_*.json`.
   - Dashboard statistiche (`rec-dashboard/app.js`): `barAnnoPercorso(id, d)` disegna barre raggruppate «1° anno», «2° anno», «3° anno» con una serie per percorso, ordinate come la ciambella «Percorso di studi» e con gli stessi colori (`PALETTE[i]`, grigio `#8a8597` per «Non indicato»), legenda in basso. Se `anno_percorso` manca, resta il grafico di prima (`bar` su `anno_corso`).
@@ -239,7 +258,7 @@ Sessione lunga, dal 22/09 all'08/10, con 5 compattazioni di contesto. Le voci so
 | `HirNCuA0RjYvVPp1` | Workflow REC JEToP (principale) | `0 9 * * 1-6` scheduling; ogni 5 min Mod3; `0 10 * * 1-6` riepilogo Mod2b; ogni 2 min risposte; `15 9-20 * * *` solleciti; Notion Trigger Escluso; webhook `form-cand-status` | 89 nodi. Gmail Trigger Mod4 disabilitato |
 | `i0ZbyVmKy5ae7XuM` | REC — Risposte candidati (una email alla volta) | chiamato dal principale | 67 nodi |
 | `m7WJCsjBYyPYRmUT` | Workflow Telegram JEToP | Telegram Trigger; timeout ogni ora; mattutino `0 8 * * *` | 351 nodi |
-| `iD9mAViOGLgKM2M9` | REC — Dashboard Colloqui API | webhook `rec-colloqui-lista`, `rec-colloqui-azione` (POST) | 72 nodi |
+| `iD9mAViOGLgKM2M9` | REC — Dashboard Colloqui API | webhook `rec-colloqui-lista`, `rec-colloqui-azione` (POST) | 108 nodi; dal 23/10 `fanta_annulla` e blocco sulle aree già convocate |
 | `AsjcIF8Sab5ZpXFH` | REC — Annullamento colloqui non confermati | `*/10 8-21 * * *` | 18 nodi, nuovo l'08/10 |
 | `OQHWrx3WCHIUMyTc` | REC — Promemoria dopo i colloqui | `35 9 * * 1-6` | 4 nodi |
 | `HQxuUrIPubqppVC5` | REC — Sotto-aree fogli (ordine e colori) | `5 7,8,10-21 * * *` | 10 nodi |
@@ -330,6 +349,7 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `0c2f226` / `1e64e15` / `1b55328` | ramo / dev (PR #7) / main (PR #8) | prima convocazione al tecnico (giorno, luogo, commissione, calendario), sostituita il 22/10 |
 | `b9249ff`, `1e6e1b0`, `dd39a42`, `fefdcd4` / `1b5f1c3` / `a02d6e5` | ramo / dev (PR #9) / main (PR #10) | «Convocazione tecnico» con il gruppo Telegram di ogni area e conferma «Sei sicuro?» (online dalle 23:34 del 22/10); si annulla con `git revert -m 1 a02d6e5` |
 | `e0a87cd` / `6bf38ff` / `a4ae663` | ramo / dev (PR #11) / main (PR #12) | statistiche, «Anno di corso» diviso tra triennale e magistrale (main attuale, online dalle 10:05 del 23/10); si annulla con `git revert -m 1 a4ae663` |
+| `8635f85` | ramo (PR #13 su dev) | modalità Fantasocio; non ancora su main |
 
 In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza, dashboard senza candidature, limite sulla motivazione, menu a tendina immuni alla traduzione).
 
@@ -359,7 +379,8 @@ In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza
 | `prenota` | assegna o sposta uno slot (`forza`, `luogo` per il secondo nello slot, minimo 3h di preavviso) |
 | `blocca` / `sblocca` | `blocked_slots`, anche `tuttoGiorno` |
 | `commissione`, `cambia`, `aggiungi` | mostra, cambia o aggiunge responsabili (celle, DB, calendario, Notion) |
-| `tecnico`, `escludi_fanta`, `ripesca` | esiti dopo il colloquio |
+| `tecnico`, `escludi_fanta`, `ripesca` | esiti dopo il colloquio; dal 23/10 `tecnico` non toglie aree già convocate ed `escludi_fanta` vale anche da Colloquio Tecnico |
+| `fanta_annulla` (dal 23/10) | rimette «da decidere» (Stato Colloquio Effettuato, Aree Tecnico ed Esito Conoscitivo vuoti); rifiutata se è già partita una convocazione al tecnico |
 | `accetta`, `rifiuta` | email Gmail con lock su `automation_deliveries` |
 | `presenza` (dal 10/10) | segna «Conferma Presenza» = Confermata, dopo aver gestito la risposta di un candidato in «Ha Risposto» |
 | `rimetti` (dal 10/10) | «Annulla e rimetti in attesa», per quando non c'è un altro slot. Libera celle ed extra, cancella l'evento e le righe nel DB, rimette Notion come lo script dell'8/10 (`Da Ricontrollare`, data, ora, commissione, luogo, evento e conferma vuoti). Manda l'email di rinvio con lock `automation_deliveries` di tipo `rinvio` per lo slot. Con `blocca: true` (casella «Tieni occupato questo orario») inserisce anche l'orario in `blocked_slots`: l'orario resta occupato e non riceve altri colloqui. I testi distinguono «commissione liberata» da «orario occupato» o «orario disponibile». Script `fase4_dash.py` (86 nodi), provato a secco e su un candidato finto |
@@ -552,6 +573,7 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 
 ### Script di lavoro (persi con il container, da ricreare)
 - **Convocazione tecnico (21-22/10):** `tecnico/build_invito.py` genera il workflow dai file `tecnico/js_invito/*.js` (un file per Code node) copiando credenziali e forma dei nodi dalla Dashboard API; `tecnico/sim.js` è un simulatore minimo (Code, IF, Switch, Postgres vero su un Postgres 16 locale avviato come utente postgres in `/var/lib/postgresql/pgtest`, porta 5499, con `tecnico/pg_avvia.sh`; HTTP e Gmail finti; `WF=wf_invito.json`); `tecnico/test_invito.js` ha 46 controlli. Per pubblicare: GET del workflow, sostituire nodi e connessioni tenendo `id` e `webhookId` del webhook, PUT. La versione del 21/10 (`build_tecnico.py`, `js/`) non è più in uso.
+- **Fantasocio (23/10):** `fanta/patch_fanta.py <in> <out>` (modifica i nodi della Dashboard API partendo dal JSON del workflow), `fanta/test_fanta.js` (nodi e query, `WF=` sceglie il file), `pw/fanta_test.js` (Playwright). Le icone Phosphor nuove vengono dal pacchetto npm `@phosphor-icons/core@2.1.1` (unpkg è bloccato dal proxy, npm no).
 - **Statistiche (23/10):** `stats/patch_anno_percorso.py` (GET, backup, aggiunta del blocco `anno_percorso` nel nodo «Code - Aggrega Stats», PUT); `pw/stats_test.js` (Playwright con dati finti generati dal nodo vero, `URL_DASH` per provarlo sui file di produzione).
 - **Controllo della pubblicazione:** `reply/check_pubblicazione.py staging|produzione` legge `rec-dashboard/app.js` e `rec-dashboard/colloqui/app.js` tramite un workflow n8n temporaneo (lo staging non si raggiunge dal container: il proxy risponde 403) e cerca alcuni marcatori nel codice; rec.jetop.com invece si legge direttamente con curl.
 - **Accesso:** `n8n.py` (API n8n), `gch.py` (canale temporaneo verso Google o Notion), `sqlch.py` (canale Postgres).
