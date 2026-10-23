@@ -173,18 +173,22 @@ colori delle aree e in un solo momento di movimento (il timbro).
   sovrapposto alla fascia (anello del colore della 1ª area); numero «n. X di N» sulla fascia, colore `--color-paper`.
   Dentro, due colonne da 760px di scena in su (container query `scena`): fatti a sinistra, motivazione e note a
   destra separate da un filetto di 1px e con scorrimento proprio.
-- **Squadre (sotto-aree, dal 23/10 sera):** nove pillole alte almeno 52px su una griglia di 5 colonne × 2 righe.
-  C'è una colonna per area nell'ordine M&C, D&V, IT, S&P, T&DA; IT occupa da sola le due righe (`--col`, `--riga`)
-  e mostra «Information Technology». I tasti vanno da 1 a 9. Ogni pillola ha il colore dell'area madre (`colTec`).
-  Spenta ha il bordo tinto dall'area; accesa ha fondo `color-mix(in oklab, area 32%, paper-3)` e bordo pieno
-  dell'area. Sotto il nome compare «1ª/2ª scelta» o «convocato» (con lucchetto). Il nome è a .9375rem (.875rem con
-  scena sotto i 1100px), così «Communication» entra intera. Sul telefono le colonne sono 3 a posizionamento
-  automatico, senza pallino né icona.
-- **Sotto-area da scegliere:** chi è al tecnico senza sotto-area ha il glifo mezzo pieno (`.fa-gl.completare`) e la
-  chip del timbro in stile avviso (`i.da`, `--color-warn`). Ha anche una rosa «Senza sotto-area», con il titolo
-  nel colore di avviso.
-- **Finestra delle sotto-aree (fuori dal fantasocio):** caselle su due colonne (`.pk-tecs9`), una riga per area,
-  IT da sola sulla riga intera (`.solo`). Sotto i 560px c'è una colonna sola.
+- **Squadre (voci del tecnico, dal 23/10 sera):** sette pillole alte almeno 52px su una griglia di 5 colonne ×
+  2 righe, una colonna per area nell'ordine M&C, D&V, IT, S&P, T&DA:
+  - M&C, IT e S&P (`INTERE`) occupano da sole le due righe (`--col`, `--riga`) e sotto il codice mostrano il nome
+    per esteso;
+  - D&V e T&DA hanno le due sotto-aree una sopra l'altra;
+  - i tasti vanno da 1 a 7 e ogni pillola ha il colore dell'area madre (`colTec`);
+  - spenta ha il bordo tinto dall'area; accesa ha fondo `color-mix(in oklab, area 32%, paper-3)` e bordo pieno
+    dell'area;
+  - sotto il nome compare «1ª/2ª scelta» o «convocato» (con lucchetto);
+  - il nome è a .9375rem (.875rem con scena sotto i 1100px);
+  - sul telefono le colonne sono 3 a posizionamento automatico, senza pallino né icona.
+- **Area da scegliere:** chi è al tecnico senza voce valida ha il glifo mezzo pieno (`.fa-gl.completare`) e la chip
+  del timbro in stile avviso (`i.da`, `--color-warn`): «area da scegliere», oppure «D&V: sotto-area?» se ha D&V o
+  T&DA interi. Ha anche una rosa «Area da scegliere», con il titolo nel colore di avviso.
+- **Finestra «Aree del tecnico» (fuori dal fantasocio):** caselle su due colonne (`.pk-tecs9`), una riga per area;
+  M&C, IT e S&P occupano la riga intera (`.solo`). Sotto i 560px c'è una colonna sola.
 - **Timbro della decisione:** riquadro con bordo 3px `currentColor`, ruotato di -5°: iris «Al tecnico» con le aree,
   muted «Non passa», verde `--color-ok` «Convocato». Cade (scala 1.8 → 0.94 → 1, 420ms) solo quando la decisione
   cambia; con movimento ridotto compare in dissolvenza.
@@ -198,6 +202,24 @@ colori delle aree e in un solo momento di movimento (il timbro).
 Regola emersa costruendolo: **non animare né far transitare colori tra tinte lontane** (per esempio il colore di
 un'area verso l'indaco): Chromium interpola passando per rosso e giallo. Si animano solo forma e opacità; i cambi di
 colore sono istantanei.
+
+## Convoca al tecnico (23/10 sera)
+
+Due passi nella stessa finestra (`.modal.picker`), dal pulsante «Convoca al tecnico» accanto a «Fantasocio».
+
+- **Passo 1, le aree (`.ca-aree`):** cinque righe-pulsante `.ca-scelta`, alte almeno 56px, con quadratino del colore
+  dell'area, nome per esteso e, sotto, i gruppi Telegram («un gruppo Telegram per Talent e per Data Analysis»).
+  A destra ci sono i numeri («3 al tecnico da convocare · 1 già convocato») e la freccia. Il bordo è tinto
+  dall'area; al passaggio del mouse diventa pieno e il fondo prende il 10% del colore.
+- **Passo 2, la lista:**
+  - titolo «Tecnico di …» con il quadratino, poi i link Telegram (`.ca-link`, colonne da 240px), la ricerca
+    (`.ca-cerca`) e i gruppi (`.ca-gruppo`, titolo `h5` piccolo e muted con il numero a destra);
+  - ogni candidato è una riga `.ca-riga` con un filetto sopra: nome in grassetto, scelte e stato in piccolo;
+  - per M&C, IT e S&P la riga intera è la casella; per D&V e T&DA ci sono due pillole `.ca-voce`, una per
+    sotto-area, accese in iris quando spuntate;
+  - «non l'aveva scelta» è una chip in stile avviso (`.ca-fuori`);
+  - chi è già convocato resta visibile con opacità .6.
+
 
 ## Cosa le pagine possono variare
 
