@@ -17,6 +17,7 @@ il codice del sito.
 | Banchetti | `/banchetti/` | strumenti | ridisegnata |
 | Statistiche | `/rec-dashboard/` | strumenti | ridisegnata |
 | Colloqui | `/rec-dashboard/colloqui/` | strumenti | ridisegnata |
+| Fantasocio | `/rec-dashboard/colloqui/#fantasocio` (modalità a tutto schermo della pagina colloqui) | strumenti, registro giocoso | nuova (23/10) |
 
 La pagina pubblica è la fonte del DNA: fondo indaco con le onde a linee sottili, iris, Red Hat
 Display, parole scritte a mano in Schoolbell color iris, foto con bordo iris.
@@ -155,6 +156,39 @@ Ogni pagina tiene nel proprio `<style>` solo ciò che è suo, sempre tramite i t
   separata. Le viste vanno a capo su telefono, così sono tutte visibili.
 - Il modulo riserva sempre lo spazio dei messaggi (`.status` con `min-height`), cosi' un errore
   che compare non sposta la pagina.
+
+## Modalità Fantasocio (23/10)
+
+Unica pagina degli strumenti con un registro giocoso, chiesto da Daniel («più giocosa ma sempre con una ux/ui
+stupenda»). La metafora è l'asta del fantacalcio: il candidato chiamato è una figurina, le aree sono squadre con la
+loro rosa. Tema, font, icone e voce dei pulsanti restano quelli del sistema; il gioco sta nella composizione, nei
+colori delle aree e in un solo momento di movimento (il timbro).
+
+- **Uso:** proiettata durante la riunione, una persona decide da tastiera. Con il fantasocio aperto la radice va al
+  112.5% da 1600×860 e al 131.25% da 2200×1200, così crescono anche le finestre che si aprono sopra.
+- **Struttura (l'asta):** listone a sinistra (220-280px), scena al centro, rose a destra (240-320px). Sotto i 1500px il
+  listone diventa un pannello; sotto i 760px anche le rose. La barra della decisione è `sticky` in fondo alla scena.
+- **Figurina:** modulo con raggio 20px; in alto una fascia alta 44px con i colori della 1ª e della 2ª area
+  (`linear-gradient(100deg, a1 0 58%, a2 58% 100%)`, stacco netto, nessuna sfumatura); medaglione con le iniziali
+  sovrapposto alla fascia (anello del colore della 1ª area); numero «n. X di N» sulla fascia, colore `--color-paper`.
+  Dentro, due colonne da 760px di scena in su (container query `scena`): fatti a sinistra, motivazione e note a
+  destra separate da un filetto di 1px e con scorrimento proprio.
+- **Squadre:** cinque pillole alte 64px nell'ordine M&C, D&V, IT, S&P, T&DA (tasti 1-5); spenta con bordo tinto
+  dall'area, accesa con fondo `color-mix(in oklab, area 32%, paper-3)` e bordo pieno dell'area; «1ª/2ª scelta» o
+  «convocato» (con lucchetto) sotto il nome.
+- **Timbro della decisione:** riquadro con bordo 3px `currentColor`, ruotato di -5°: iris «Al tecnico» con le aree,
+  muted «Non passa», verde `--color-ok` «Convocato». Cade (scala 1.8 → 0.94 → 1, 420ms) solo quando la decisione
+  cambia; con movimento ridotto compare in dissolvenza.
+- **Movimento:** eccezione documentata al «negli strumenti nessun ingresso»: cambiando candidato la figurina entra
+  da destra o da sinistra (32px, 220ms); un nome appena entrato in una rosa fa un anello del colore dell'area.
+- **Tasti visibili:** `kbd` in Red Hat Mono con bordo `--color-rule-2`; nascosti su schermi touch e sotto i 760px.
+- **Successo silenzioso:** la decisione si vede sul timbro e nelle rose, niente toast; gli errori restano toast.
+- **Livelli:** il fantasocio sta a `--z-sticky` + 100: sopra l'intestazione, sotto scheda candidato, finestre e avvisi,
+  che si aprono sopra.
+
+Regola emersa costruendolo: **non animare né far transitare colori tra tinte lontane** (per esempio il colore di
+un'area verso l'indaco): Chromium interpola passando per rosso e giallo. Si animano solo forma e opacità; i cambi di
+colore sono istantanei.
 
 ## Cosa le pagine possono variare
 
