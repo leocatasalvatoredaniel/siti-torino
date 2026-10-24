@@ -39,6 +39,34 @@ Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono sol
 
 ## Where We Are
 
+- **Visibilità, un'email sola per più aree e Fantasocio da telefono (notte tra 23 e 24/10).**
+  - **Segnalazioni di Daniel:**
+    - con una schermata dal telefono: «problemi di visibilità, stai attento a non farli mai più». Le righe del passo 1 di «Convoca al tecnico» erano schiacciate e sovrapposte;
+    - «quelli che vengono invitati ai tecnici di due aree diverse gli arrivano due email»;
+    - «stai attento che la grafica si veda ovunque bene, soprattutto da telefono (per esempio: il fantasocio è inutilizzabile da telefono)».
+  - **Online dalle 01:45 del 24/10** (PR #21 su dev, PR #22 su main):
+    - «Convoca al tecnico», passo 1: con la finestra stretta i numeri vanno sotto il nome (container query `aree` su `.ca-aree`);
+    - Fantasocio: layout a una colonna con listone e rose come pannelli fino a 1023px (prima 760px; a 768px i nomi si spezzavano);
+    - squadre su quattro colonne quando la scena è sotto i 900px;
+    - il nome per esteso di M&C, IT e S&P va a capo (`.fa-sq.intera`) invece di finire con i puntini;
+    - un filo d'aria nel timbro.
+  - **Un'email sola per chi è in più aree**, nella stessa PR. In «Convoca al tecnico» c'è un solo stato per tutta la finestra (`nuovoStato`: link per voce, voci spuntate per candidato, aree aperte), quindi le spunte restano passando da un'area all'altra.
+    - Un'area si spunta da sola alla prima apertura (`apri`).
+    - «Continua», sia dal passo 1 sia dal passo 2 (`continua`), manda un'email per candidato con i gruppi di tutte le aree spuntate.
+    - Il passo 1 mostra «N spuntati · link inserito» oppure «manca il link».
+    - Nella lista c'è «nella stessa email anche …».
+    - Alla fine c'è «Altre convocazioni», che riparte da capo.
+    - Chiudendo la finestra e riconvocando un altro giorno le email restano due.
+  - **Fantasocio da telefono, online dalle 01:58 del 24/10** (PR #23 su dev, PR #24 su main). Fino a 1023px la scena scorre tutta (`.fa-dec { display: contents }`): figurina intera, avviso, squadre. In fondo resta fissa solo `.fa-azioni`, su due righe: la decisione principale, poi ‹ «Non passa» «Rimetti» ›.
+    - Finché non c'è un'area scelta, il pulsante principale dice «Scegli le aree» e porta alle squadre (`versoSquadre`).
+    - Un candidato nuovo riparte dall'alto.
+    - La figurina passa da circa il 40% a circa il 70% dello schermo.
+  - **Controllo di visibilità** (`pw/visibilita.js`, giro `pw/vis_sweep.js`). Cerca testi sovrapposti, tagliati, fuori dal riquadro o in colonne schiacciate. Conta solo il testo che si vede davvero (non coperto da pannelli, non nei `<details>` chiusi, ritagliato dagli `overflow`) e controlla sia all'altezza vera sia con la finestra allungata.
+    - Gira su intestazione e «Da gestire», «Convoca al tecnico» (aree, IT, T&DA, aree con spunte, «Sei sicuro?»), scheda, «Aree del tecnico», convocazione singola, Fantasocio con pannelli e «area da scegliere».
+    - Larghezze: 360, 390, 412, 768, 1024, 1280, 1366 e 1920px.
+    - Misura anche lo spazio della figurina nel Fantasocio: minimo 55% sotto 1024px, 40% sopra.
+    - Sulla versione online di prima ha trovato 55 problemi; ora nessuno.
+  - **Non ancora controllati con questo strumento:** il calendario e le liste della dashboard colloqui, le statistiche, i banchetti, il modulo di candidatura. L'ho proposto a Daniel.
 - **Tecnico misto e «Convoca al tecnico» in due passi (23/10 sera).** Online su rec.jetop.com dalle 20:41 del 23/10 (PR #19 su dev, PR #20 su main), con i due workflow caricati un minuto prima. Sostituisce in parte il punto sotto sulle sotto-aree.
   - Richieste di Daniel:
     - «sales e partnership e m&c devono essere insieme, non mi serve selezionare le sottoaree per inviare le email e per il fantasocio»;
@@ -60,7 +88,7 @@ Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono sol
       - chi è già convocato per una voce resta spuntato e bloccato.
     - «Sei sicuro?»: «(non scelta)» accanto ai destinatari, anteprima del primo e di uno fuori dalle scelte, avviso per chi passa a «Colloquio Tecnico».
     - Poi `inviaArea` come prima; alla fine c'è «Convoca un'altra area».
-    - **Un'email per candidato e per area.** Chi è convocato per due aree in due passaggi riceve due email; dentro D&V o T&DA le due sotto-aree vanno in un'email sola. Prima c'era un'email sola con tutte le aree. Ho fatto notare la differenza a Daniel, che ha detto «ok pubblica».
+    - ~~Un'email per candidato e per area~~: superato il 24/10, ora un'email sola con tutte le aree spuntate (vedi sopra).
   - **Email** (`tecnico/js_invito/prepara.js`):
     - nomi per esteso per M&C, IT e S&P;
     - se una voce è fuori dalle due scelte della candidatura (si confrontano «Prima Area» e «Seconda Area» per area, quindi Design conta come D&V), dopo «Il prossimo passo è il colloquio tecnico per …» aggiunge «Non era tra le aree che avevi indicato nella candidatura, ma in base alle tue competenze abbiamo scelto di farti fare questo colloquio tecnico.». Al plurale diventa «Non erano… questi colloqui tecnici». Con una voce scelta e una no: «<voce> non era tra le aree che avevi indicato… anche questo colloquio tecnico.»;
@@ -406,7 +434,9 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `8635f85`, `ec06450` / `9a6dcf3` / `0a16c56` | ramo / dev (PR #13) / main (PR #14) | modalità Fantasocio e niente messaggi sul gruppo dalle sue decisioni (online dalle 11:41 del 23/10); si annulla con `git revert -m 1 0a16c56` |
 | `bdbe94a` / `b4d5dfc` / `4116052` | ramo / dev (PR #15) / main (PR #16) | convocazioni al tecnico per area (online dalle 14:00 del 23/10); si annulla con `git revert -m 1 4116052` |
 | `2ef1b82` / `830b9a2` / `d4723dc` | ramo / dev (PR #17) / main (PR #18) | colloquio tecnico per sotto-area (online dalle 19:58 del 23/10), sostituito dal tecnico misto; il revert da solo non basta, servono anche i backup dei due workflow (vedi «Where We Are») |
-| `b60c06c`, `019a11e`, `1caa0e9` / `14fd7c7` / `8b62486` | ramo / dev (PR #19) / main (PR #20) | tecnico misto (M&C, IT e S&P intere) e «Convoca al tecnico» in due passi (main attuale, online dalle 20:41 del 23/10); il revert da solo non basta, servono anche i backup dei due workflow (vedi «Where We Are») |
+| `b60c06c`, `019a11e`, `1caa0e9` / `14fd7c7` / `8b62486` | ramo / dev (PR #19) / main (PR #20) | tecnico misto (M&C, IT e S&P intere) e «Convoca al tecnico» in due passi (online dalle 20:41 del 23/10); il revert da solo non basta, servono anche i backup dei due workflow (vedi «Where We Are») |
+| `b09d77d`, `cbb7c15` / `faa4f27` / `2216997` | ramo / dev (PR #21) / main (PR #22) | visibilità su telefono e tablet, un'email sola per più aree (online dalle 01:45 del 24/10); solo dashboard, si annulla con `git revert -m 1 2216997` |
+| `98d315d` / `5ceb659` / `3e890f3` | ramo / dev (PR #23) / main (PR #24) | Fantasocio usabile dal telefono (main attuale, online dalle 01:58 del 24/10); solo dashboard, si annulla con `git revert -m 1 3e890f3` |
 
 In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza, dashboard senza candidature, limite sulla motivazione, menu a tendina immuni alla traduzione).
 
@@ -634,6 +664,10 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 ### Script di lavoro (persi con il container, da ricreare)
 - **Convocazione tecnico (21-22/10):** `tecnico/build_invito.py` genera il workflow dai file `tecnico/js_invito/*.js` (un file per Code node) copiando credenziali e forma dei nodi dalla Dashboard API; `tecnico/sim.js` è un simulatore minimo (Code, IF, Switch, Postgres vero su un Postgres 16 locale avviato come utente postgres in `/var/lib/postgresql/pgtest`, porta 5499, con `tecnico/pg_avvia.sh`; HTTP e Gmail finti; `WF=wf_invito.json`); `tecnico/test_invito.js` ha 46 controlli. Per pubblicare: GET del workflow, sostituire nodi e connessioni tenendo `id` e `webhookId` del webhook, PUT. La versione del 21/10 (`build_tecnico.py`, `js/`) non è più in uso.
 - **Fantasocio (23/10):** `fanta/patch_fanta.py <in> <out>` (modifica i nodi della Dashboard API partendo dal JSON del workflow), `fanta/test_fanta.js` (nodi e query, `WF=` sceglie il file), `pw/fanta_test.js` (Playwright), `fanta/patch_fanta_zitto.py` (niente messaggi sul gruppo), `pw/ca_test.js` (convocazioni per area). Le icone Phosphor nuove vengono dal pacchetto npm `@phosphor-icons/core@2.1.1` (unpkg è bloccato dal proxy, npm no).
+- **Visibilità (24/10):**
+  - `pw/visibilita.js` contiene `controllaVisibilita(page, radice, consentiti)`;
+  - `pw/vis_sweep.js` fa il giro di tutte le schermate del tecnico a 8 larghezze, con foto in `shots/vis/`; `URL_DASH` lo fa girare sui file di produzione;
+  - `pw/tel_shot.js` fa le foto del Fantasocio sul telefono, prima e dopo (`SUFF=_prima` con `URL_DASH` di produzione).
 - **Tecnico misto e convocazioni in due passi (23/10 sera):**
   - `fanta/patch_misto.py <in> <out>` modifica la Dashboard API partendo dalla versione per sotto-area;
   - `tecnico/build_misto.py` sostituisce nel workflow i nodi Code con i file di `tecnico/js_invito/`, riconoscendoli dalla versione precedente in `tecnico/js_invito_sotto_v3/`;
@@ -659,7 +693,12 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 
 ## User Feedback & Preferences (REQUIRED — never omit)
 - **Prima di portare modifiche su `main` (rec.jetop.com), mostrarle a Daniel e aspettare il suo ok** (richiesta del 10/10, dopo che il redesign è andato online senza anteprima). Strumenti: schermate prima/dopo (script `pw/confronto.js`) e lo staging su `dev`. Deve sempre essere possibile tornare alla versione precedente.
-- **Ultimo merge su main: `8b62486`** (tecnico misto e convocazioni in due passi, 23/10); per annullarlo vedi la tabella dei commit.
+- **Ultimo merge su main: `3e890f3`** (Fantasocio usabile dal telefono, 24/10); per annullarlo vedi la tabella dei commit.
+- **Grafica leggibile ovunque, soprattutto dal telefono** (Daniel, 23-24/10: «problemi di visibilità, stai attento a non farli mai più»; «stai attento che la grafica si veda ovunque bene, soprattutto da telefono (per esempio: il fantasocio è inutilizzabile da telefono)»). Prima di proporre o pubblicare una modifica all'interfaccia servono due cose:
+  - il giro `pw/vis_sweep.js`, esteso alle schermate toccate, deve passare a tutte le larghezze, da 360 a 1920px;
+  - vanno **guardate a occhio** le foto da telefono (360-412px) e da tablet (768px).
+
+  Non basta che non ci sia scorrimento orizzontale: il 23/10 la foto del telefono era stata generata ma non guardata. Contano anche lo spazio utile e l'uso con il pollice: barre fisse piccole e pulsanti di almeno 44px.
 - **Come tornare indietro dal redesign del 10/10:** su `main`, `git revert -m 1 1e8d618` e push. Provato in una copia separata: i file tornano identici a `60d7082` (la versione online prima del redesign). Per altre modifiche vale lo stesso schema: ogni pubblicazione è un merge `--no-ff` di `dev` su `main`, quindi si annulla con `git revert -m 1 <merge>`.
 
 - **Rispondere sempre in italiano.** Quando sono passato all'inglese l'utente ha scritto "parla italiano".
