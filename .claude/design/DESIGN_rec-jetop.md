@@ -203,6 +203,23 @@ Regola emersa costruendolo: **non animare né far transitare colori tra tinte lo
 un'area verso l'indaco): Chromium interpola passando per rosso e giallo. Si animano solo forma e opacità; i cambi di
 colore sono istantanei.
 
+## Fantasocio sul telefono e sul tablet (24/10)
+
+Fino a 1023px il Fantasocio è a una colonna: listone e rose sono pannelli.
+
+- **La scena scorre tutta:** `.fa-dec` ha `display: contents`; vengono prima la figurina intera, poi l'avviso (`order: 1`) e le squadre (`order: 2`).
+- **Barra fissa in fondo:** resta solo `.fa-azioni` (`position: sticky`), una griglia su due righe.
+  - Sopra c'è la decisione principale, a tutta larghezza.
+  - Sotto ci sono ‹ «Non passa» «Rimetti» ›; se manca uno dei due, l'altro prende anche il suo posto (`:has`).
+  - «Rimetti da decidere» diventa «Rimetti» (`.lungo` nascosto) e il contatore «7/10» sparisce, perché è già nella figurina.
+- **Nessuna area scelta:** il pulsante principale dice «Scegli le aree» e porta alle squadre.
+- **Accanto alle rose:** sopra i 1023px, con la scena sotto i 900px, le squadre sono su quattro colonne (due righe).
+- **Regola:** sul telefono le parti fisse non devono superare circa un terzo dello schermo. La figurina deve averne almeno il 55% appena si apre un candidato (sopra i 1024px il 40%). Lo misura `pw/vis_sweep.js`.
+
+## Controllo di visibilità (regola di Daniel del 23-24/10)
+
+Ogni schermata nuova o toccata si prova a 360, 390, 412, 768, 1024, 1280, 1366 e 1920px con `pw/visibilita.js`: niente testi sovrapposti, tagliati, fuori dal riquadro o in colonne schiacciate. Poi si guardano a occhio le foto da telefono e da tablet, prima di mostrarle a Daniel. Le righe con numeri a destra (come `.ca-scelta`) vanno a capo con una container query, non con una media query: dipendono dalla larghezza della finestra, non dello schermo.
+
 ## Convoca al tecnico (23/10 sera)
 
 Due passi nella stessa finestra (`.modal.picker`), dal pulsante «Convoca al tecnico» accanto a «Fantasocio».
@@ -211,6 +228,8 @@ Due passi nella stessa finestra (`.modal.picker`), dal pulsante «Convoca al tec
   dell'area, nome per esteso e, sotto, i gruppi Telegram («un gruppo Telegram per Talent e per Data Analysis»).
   A destra ci sono i numeri («3 al tecnico da convocare · 1 già convocato») e la freccia. Il bordo è tinto
   dall'area; al passaggio del mouse diventa pieno e il fondo prende il 10% del colore.
+- **Finestra stretta (container `aree` sotto i 560px):** i numeri vanno sotto il nome dell'area e la freccia resta a destra.
+- **Spunte che restano tra le aree (24/10):** al passo 1, per le aree già aperte compare «N spuntati · link inserito» o «manca il link», e c'è «Continua con N email». Nella lista, «nella stessa email anche …» è in `ink-2` e semibold sotto le scelte.
 - **Passo 2, la lista:**
   - titolo «Tecnico di …» con il quadratino, poi i link Telegram (`.ca-link`, colonne da 240px), la ricerca
     (`.ca-cerca`) e i gruppi (`.ca-gruppo`, titolo `h5` piccolo e muted con il numero a destra);
