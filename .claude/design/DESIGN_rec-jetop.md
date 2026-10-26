@@ -183,7 +183,7 @@ colori delle aree e in un solo momento di movimento (il timbro).
     dell'area;
   - sotto il nome compare «1ª/2ª scelta» o «convocato» (con lucchetto);
   - il nome è a .9375rem (.875rem con scena sotto i 1100px);
-  - sul telefono le colonne sono 3 a posizionamento automatico, senza pallino né icona.
+  - sul telefono e sul tablet le squadre stanno nel foglio «Decisione» (vedi sotto).
 - **Area da scegliere:** chi è al tecnico senza voce valida ha il glifo mezzo pieno (`.fa-gl.completare`) e la chip
   del timbro in stile avviso (`i.da`, `--color-warn`): «area da scegliere», oppure «D&V: sotto-area?» se ha D&V o
   T&DA interi. Ha anche una rosa «Area da scegliere», con il titolo nel colore di avviso.
@@ -203,22 +203,55 @@ Regola emersa costruendolo: **non animare né far transitare colori tra tinte lo
 un'area verso l'indaco): Chromium interpola passando per rosso e giallo. Si animano solo forma e opacità; i cambi di
 colore sono istantanei.
 
-## Fantasocio sul telefono e sul tablet (24/10)
+## Fantasocio sul telefono e sul tablet (24/10, rifatto alle 11)
 
-Fino a 1023px il Fantasocio è a una colonna: listone e rose sono pannelli.
+Fino a 1023px (`MQ_STRETTO` in JS, stessa soglia nel CSS) il Fantasocio è a una colonna: listone e rose sono pannelli.
+La prima versione (squadre e azioni sotto la figurina, `.fa-dec { display: contents }`) è stata tolta: la nota
+sopra le squadre veniva schiacciata a 0px nella scena che scorre e finiva sotto i riquadri delle aree.
 
-- **La scena scorre tutta:** `.fa-dec` ha `display: contents`; vengono prima la figurina intera, poi l'avviso (`order: 1`) e le squadre (`order: 2`).
-- **Barra fissa in fondo:** resta solo `.fa-azioni` (`position: sticky`), una griglia su due righe.
-  - Sopra c'è la decisione principale, a tutta larghezza.
-  - Sotto ci sono ‹ «Non passa» «Rimetti» ›; se manca uno dei due, l'altro prende anche il suo posto (`:has`).
-  - «Rimetti da decidere» diventa «Rimetti» (`.lungo` nascosto) e il contatore «7/10» sparisce, perché è già nella figurina.
-- **Nessuna area scelta:** il pulsante principale dice «Scegli le aree» e porta alle squadre.
+- **Intestazione su una riga:** griglia `brand cmd / prog cmd`. A sinistra «Fantasocio» e sotto «n decisi su N»
+  (`--text-xs`); a destra Listone, Rose e × da 44px. L'avanzamento è `.fa-bar` assoluta, 3px sul bordo in basso.
+- **Scena:** solo la figurina, che scorre senza niente appiccicato sopra. Ha la fascia da 32px, il tondo da 56px
+  e il nome a `--text-lg`. Il timbro sta nella colonna del nome, inclinato di -3° (`--inclina`; sul computer -5°),
+  con chip e testo sulla stessa riga. Per «Convocato» mostra le aree convocate se Notion non ha ancora le aree del
+  tecnico.
+- **Barra in basso** (`.fa-barra`, terza riga della griglia di `.fanta`, fuori dalla scena): ‹ pulsante › con
+  frecce da 48px. Il pulsante apre il foglio e dice:
+  - «Decidi» (primario) per chi è da decidere;
+  - «Scegli la sotto-area» (primario) per chi è al tecnico senza area valida;
+  - «Cambia decisione» per chi è già deciso;
+  - «Aggiungi aree» per chi è già convocato.
+
+  Per chi è da segnare, il pulsante è direttamente «Segna effettuato».
+- **Foglio «Decisione»** (`.fa-velo` fisso con il velo `--color-scrim`, `.fa-foglio` largo al massimo 640px,
+  angoli in alto di 20px):
+  - in alto il nome e la ×;
+  - poi la parte che scorre (`.fa-fo-corpo`), con l'avviso e le squadre su due colonne: M&C, IT e S&P a tutta
+    larghezza, D&V e T&DA con le due sotto-aree affiancate;
+  - in fondo le azioni: «Al tecnico (n aree)» a tutta larghezza, sotto «Non passa» e «Rimetti da decidere».
+
+  Le squadre hanno il pallino dell'area e il nome a tutta larghezza; la spunta o il lucchetto stanno sulla
+  seconda riga, accanto a «1ª scelta», al nome per esteso o a «convocato».
+
+  Il foglio entra dal basso (48px, 220ms, con il velo in dissolvenza; con movimento ridotto solo dissolvenza). Si
+  chiude con la ×, toccando il velo, con Esc, dopo una decisione o cambiando candidato. Tiene il fuoco (Tab gira
+  dentro) e quando si chiude il fuoco torna sul pulsante della barra.
+- **Esc** chiude, nell'ordine: finestra, scheda, foglio, pannello, Fantasocio.
 - **Accanto alle rose:** sopra i 1023px, con la scena sotto i 900px, le squadre sono su quattro colonne (due righe).
-- **Regola:** sul telefono le parti fisse non devono superare circa un terzo dello schermo. La figurina deve averne almeno il 55% appena si apre un candidato (sopra i 1024px il 40%). Lo misura `pw/vis_sweep.js`.
+- **Regola:** sul telefono le parti fisse non devono superare circa un terzo dello schermo. La figurina deve averne
+  almeno il 55% appena si apre un candidato (sopra i 1024px il 40%). Lo misura `pw/vis_sweep.js`: ora è il 78-83%.
 
 ## Controllo di visibilità (regola di Daniel del 23-24/10)
 
-Ogni schermata nuova o toccata si prova a 360, 390, 412, 768, 1024, 1280, 1366 e 1920px con `pw/visibilita.js`: niente testi sovrapposti, tagliati, fuori dal riquadro o in colonne schiacciate. Poi si guardano a occhio le foto da telefono e da tablet, prima di mostrarle a Daniel. Le righe con numeri a destra (come `.ca-scelta`) vanno a capo con una container query, non con una media query: dipendono dalla larghezza della finestra, non dello schermo.
+Ogni schermata nuova o toccata si prova a 360, 390, 412, 768, 1024, 1280, 1366 e 1920px con `pw/visibilita.js`. Non devono esserci testi:
+- sovrapposti;
+- tagliati;
+- fuori dal riquadro;
+- in colonne schiacciate;
+- coperti da un elemento opaco dello stesso strato;
+- che traboccano dal proprio riquadro.
+
+Le prove usano testi lunghi come quelli veri: motivazioni di più paragrafi, nomi lunghi, candidati già convocati. Poi si guardano a occhio le foto da telefono e da tablet, prima di mostrarle a Daniel. Le righe con numeri a destra (come `.ca-scelta`) vanno a capo con una container query, non con una media query: dipendono dalla larghezza della finestra, non dello schermo.
 
 ## Convoca al tecnico (23/10 sera)
 

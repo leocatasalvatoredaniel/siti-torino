@@ -39,6 +39,27 @@ Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono sol
 
 ## Where We Are
 
+- **Fantasocio da telefono rifatto (24/10 mattina).**
+  - **Segnalazione di Daniel**, con due foto dal telefono: «non è ancora fatto bene per un telefono. usa tutte le skill che ritieni opportune».
+    - La nota «Convocazione già inviata per …» finiva sotto i riquadri delle aree.
+    - Le barre fisse prendevano troppo spazio.
+    - «Scegli le aree» restava anche con le aree già in vista.
+  - **Causa della sovrapposizione:** con `.fa-dec { display: contents }` la nota era un elemento flessibile della scena con `min-height: 0` e veniva schiacciata a 0px.
+  - **Perché il controllo non la vedeva:** scartava come «coperto da un pannello» qualunque testo sotto un elemento opaco. In più le prove avevano motivazioni di una riga, e il difetto compare solo quando la figurina supera lo schermo.
+  - **Rifatto con la skill impeccable (adapt):** intestazione su una riga, barra in basso ‹ Decidi › fuori dalla scena, foglio «Decisione» con squadre e azioni. Dettagli in `.claude/design/DESIGN_rec-jetop.md`, sezione «Fantasocio sul telefono e sul tablet».
+    - Tornando sulla pagina dopo almeno 30 secondi i dati si ricaricano subito (`visibilitychange`, `caricatoAlle`).
+    - Sul computer non cambia nulla.
+    - Sul telefono «Non passa» ora richiede due tocchi; l'ho detto a Daniel.
+  - **Controllo di visibilità** (`pw/visibilita.js`): ora segnala anche il testo coperto da un elemento opaco dello stesso strato (fisso, assoluto o appiccicoso = strato diverso) e il testo che trabocca dal suo blocco. Controlla anche gli elementi alti 0px.
+    - Nuova prova `pw/fanta_tel.js`, con dati realistici e tutti gli stati, a 360×640, 390×664, 412×722, 768×960 e 1023×700.
+    - `pw/fanta_test.js` è aggiornato per il telefono.
+    - `pw/vis_sweep.js` passa a 8 larghezze.
+  - **«ok pubblica» di Daniel: online su rec.jetop.com dal 24/10 mattina** (PR #25 su dev, PR #26 su main).
+  - **Dato da chiarire:** nella foto di Daniel il Fantasocio diceva «0 decisi su 96» e mostrava da decidere, senza aree, una candidata convocata la sera prima. Su Notion invece 67 candidati sono in «Colloquio Tecnico» dal 23/10 21:2x (ora italiana), lei compresa. Le convocazioni del 23/10 (78 inviti tra le 22:00 e le 22:27) risultavano già nella pagina.
+    - Lista e convocazioni arrivano dallo stesso `load()`, quindi non so spiegare la differenza.
+    - Ho chiesto a Daniel di ricaricare e dirmi se vede ancora «0 decisi».
+- **Reply, recupero delle 2 ore del 22/10 (24/10).** Il 22/10 erano richieste 6 ore e ne sono state prenotate 4. Daniel: «sarebbero da aggiungere in questa o in quella dopo». Ho messo le 2 ore sul 28/10, che passa da 6 a 8 ore richieste: è questa settimana, così resta la successiva come margine; il 27/10 era già pieno e il 29/10 aveva 1 ora su 6. È un solo `UPDATE` con controllo (`ore_richieste = 6`), fatto con `reply/fixed.py`. Restano scoperte 21 ore in tutto: 28/10 3, 29/10 5, 3/11 4, 4/11 2, 5/11 7.
+
 - **Visibilità, un'email sola per più aree e Fantasocio da telefono (notte tra 23 e 24/10).**
   - **Segnalazioni di Daniel:**
     - con una schermata dal telefono: «problemi di visibilità, stai attento a non farli mai più». Le righe del passo 1 di «Convoca al tecnico» erano schiacciate e sovrapposte;
@@ -436,7 +457,8 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `2ef1b82` / `830b9a2` / `d4723dc` | ramo / dev (PR #17) / main (PR #18) | colloquio tecnico per sotto-area (online dalle 19:58 del 23/10), sostituito dal tecnico misto; il revert da solo non basta, servono anche i backup dei due workflow (vedi «Where We Are») |
 | `b60c06c`, `019a11e`, `1caa0e9` / `14fd7c7` / `8b62486` | ramo / dev (PR #19) / main (PR #20) | tecnico misto (M&C, IT e S&P intere) e «Convoca al tecnico» in due passi (online dalle 20:41 del 23/10); il revert da solo non basta, servono anche i backup dei due workflow (vedi «Where We Are») |
 | `b09d77d`, `cbb7c15` / `faa4f27` / `2216997` | ramo / dev (PR #21) / main (PR #22) | visibilità su telefono e tablet, un'email sola per più aree (online dalle 01:45 del 24/10); solo dashboard, si annulla con `git revert -m 1 2216997` |
-| `98d315d` / `5ceb659` / `3e890f3` | ramo / dev (PR #23) / main (PR #24) | Fantasocio usabile dal telefono (main attuale, online dalle 01:58 del 24/10); solo dashboard, si annulla con `git revert -m 1 3e890f3` |
+| `98d315d` / `5ceb659` / `3e890f3` | ramo / dev (PR #23) / main (PR #24) | Fantasocio usabile dal telefono (online dalle 01:58 del 24/10); solo dashboard, si annulla con `git revert -m 1 3e890f3` |
+| `d0cda6f` / `b69998d` / `ce1d495` | ramo / dev (PR #25) / main (PR #26) | Fantasocio da telefono con barra in basso e foglio «Decisione», dati ricaricati tornando sulla pagina (main attuale, 24/10 mattina); solo dashboard, si annulla con `git revert -m 1 ce1d495` |
 
 In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza, dashboard senza candidature, limite sulla motivazione, menu a tendina immuni alla traduzione).
 
@@ -667,7 +689,8 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 - **Visibilità (24/10):**
   - `pw/visibilita.js` contiene `controllaVisibilita(page, radice, consentiti)`;
   - `pw/vis_sweep.js` fa il giro di tutte le schermate del tecnico a 8 larghezze, con foto in `shots/vis/`; `URL_DASH` lo fa girare sui file di produzione;
-  - `pw/tel_shot.js` fa le foto del Fantasocio sul telefono, prima e dopo (`SUFF=_prima` con `URL_DASH` di produzione).
+  - `pw/tel_shot.js` fa le foto del Fantasocio sul telefono, prima e dopo (`SUFF=_prima` con `URL_DASH` di produzione);
+  - `pw/fanta_tel.js [prefisso]` prova il Fantasocio da telefono e tablet con dati realistici, cioè il flusso del foglio «Decisione» in tutti gli stati; esporta anche `apri(browser, w, h)` per altre prove.
 - **Tecnico misto e convocazioni in due passi (23/10 sera):**
   - `fanta/patch_misto.py <in> <out>` modifica la Dashboard API partendo dalla versione per sotto-area;
   - `tecnico/build_misto.py` sostituisce nel workflow i nodi Code con i file di `tecnico/js_invito/`, riconoscendoli dalla versione precedente in `tecnico/js_invito_sotto_v3/`;
@@ -693,7 +716,7 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 
 ## User Feedback & Preferences (REQUIRED — never omit)
 - **Prima di portare modifiche su `main` (rec.jetop.com), mostrarle a Daniel e aspettare il suo ok** (richiesta del 10/10, dopo che il redesign è andato online senza anteprima). Strumenti: schermate prima/dopo (script `pw/confronto.js`) e lo staging su `dev`. Deve sempre essere possibile tornare alla versione precedente.
-- **Ultimo merge su main: `3e890f3`** (Fantasocio usabile dal telefono, 24/10); per annullarlo vedi la tabella dei commit.
+- **Ultimo merge su main: `ce1d495`** (Fantasocio da telefono con barra e foglio «Decisione», 24/10); per annullarlo vedi la tabella dei commit.
 - **Grafica leggibile ovunque, soprattutto dal telefono** (Daniel, 23-24/10: «problemi di visibilità, stai attento a non farli mai più»; «stai attento che la grafica si veda ovunque bene, soprattutto da telefono (per esempio: il fantasocio è inutilizzabile da telefono)»). Prima di proporre o pubblicare una modifica all'interfaccia servono due cose:
   - il giro `pw/vis_sweep.js`, esteso alle schermate toccate, deve passare a tutte le larghezze, da 360 a 1920px;
   - vanno **guardate a occhio** le foto da telefono (360-412px) e da tablet (768px).
