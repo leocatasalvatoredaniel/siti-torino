@@ -39,6 +39,33 @@ Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono sol
 
 ## Where We Are
 
+- **Email di rifiuto dopo il Fantasocio (26/10 sera).**
+  - **Decisione di Daniel:** chi riceve «Non passa» nel Fantasocio deve avere l'email di rifiuto ed essere scartato. L'email parte il giorno dopo, così gli errori si correggono in tempo. Scelte: invio alle **18:00 ogni giorno**; gli arretrati col primo invio automatico.
+  - **Controllo prima di partire, in sola lettura:**
+    - Nel REC nessuna email di rifiuto dopo il conoscitivo: in `automation_deliveries` c'è un solo `esclusione_tecnico`, del 06/10.
+    - Nella posta inviata da hr@ dal 21/10 ci sono solo 77 convocazioni al tecnico, una convocazione a mano e 8 codici banchetti.
+    - 26 candidati sono in «Rifiutato» su Notion, tutti dopo il conoscitivo:
+      - 25 messi a mano il 22/10 tra le 17:15 e le 18:40, **senza email**;
+      - 1 ha ricevuto il 20/10 l'email di esclusione standard (`email_esclusione`).
+  - **Workflow n8n `jQunvRnQ8IMkfVrR` «REC — Rifiuti dopo il Fantasocio (email alle 18 del giorno dopo)»**, attivo dal 26/10 sera.
+    - Gira ogni ora (`0 * * * *`, `timezone Europe/Rome`), con `errorWorkflow` = Error Handler. Le esecuzioni riuscite non sono salvate.
+    - **Notion:** legge l'edizione corrente con «Colloquio Effettuato» + «Esito Conoscitivo = Escluso», oppure «Rifiutato». Il filtro Notion accetta al massimo due livelli di annidamento: è un `or` di due `and`.
+    - **Postgres:** legge le righe di `rifiuti_programmati`, gli `esclusione_tecnico` già `sent`, le pagine in `tecnico_inviti`, e la data e l'ora di Roma.
+    - **Ogni ora:** registra i nuovi «Non passa» (fonte `controllo`), compresi quelli fatti dal bot o a mano su Notion. Cancella le righe di chi non è più escluso: rimesso da decidere, convocato al tecnico o già avvisato.
+    - **Alle 18:** manda l'email a chi è stato deciso prima di oggi, ora di Roma.
+      - Stesso testo, oggetto «Esito selezione JEToP» e mittente dell'azione `rifiuta`.
+      - Blocco `esclusione_tecnico`/`esclusione`, che salta anche se esiste già un invio con l'id scritto in un altro formato.
+      - Poi Notion `Stato = Rifiutato`, segna `sent`, cancella la riga.
+      - Infine un messaggio unico sul gruppo Telegram con i nomi.
+    - **Dashboard API non toccata:** il controllo orario registra le decisioni entro un'ora.
+  - **Tabella `rifiuti_programmati`:** `page_id` PK, `deciso_at`, `fonte` (`controllo` o `arretrato`). I 25 senza email sono registrati come `arretrato` con `deciso_at` = 25/10: partono **alle 18 del 27/10**. Gli `arretrato` si mandano anche se sono già «Rifiutato»; gli altri solo se ancora «Colloquio Effettuato» + Escluso.
+  - **Prove:**
+    - logica in `talent/rifiuti/test_logica.js`, tutta ok;
+    - copia temporanea sui dati veri (`talent/rifiuti/prova.py`): 25 destinatari giusti, abbinamento tra gli elementi verificato dopo Gmail, un'email d'esempio a hr@ con oggetto «[PROVA, non inviata al candidato]».
+  - **Fantasocio:** per chi è «Non passa» compare l'avviso «Email di rifiuto alle 18 del giorno dopo la decisione: fino ad allora puoi rimetterlo da decidere». Online dalla sera del 26/10 (PR #27 su dev, PR #28 su main).
+  - **Da verificare il 27/10 dopo le 18:** 25 `esclusione_tecnico` `sent`, righe `arretrato` sparite, nessuna esecuzione in errore. C'è un controllo programmato alle 18:10.
+  - **Per fermare gli invii:** disattivare il workflow `jQunvRnQ8IMkfVrR`, oppure cancellare le righe da `rifiuti_programmati` (il controllo orario però ri-registra chi è ancora Escluso).
+
 - **Fantasocio da telefono rifatto (24/10 mattina).**
   - **Segnalazione di Daniel**, con due foto dal telefono: «non è ancora fatto bene per un telefono. usa tutte le skill che ritieni opportune».
     - La nota «Convocazione già inviata per …» finiva sotto i riquadri delle aree.
@@ -374,6 +401,7 @@ Sessione lunga, dal 22/09 all'08/10, con 5 compattazioni di contesto. Le voci so
 | `bN5TiyRrzWxmqdBm` | REC — Convocazione tecnico API (gruppi Telegram) | webhook `rec-tecnico-azione` (POST, azioni `stato`, `anteprima`, `invia`) | 27 nodi, nuovo il 21/10, rifatto il 22/10; esecuzioni riuscite non salvate |
 | `K6R9pe8ahsr3zgTH` | REC — Reminder Banchetti | ore 9 | |
 | `PhG1qNhFlOhzhMME` | JEToP Error Handler | Error Trigger | errorWorkflow di quasi tutti |
+| `jQunvRnQ8IMkfVrR` | REC — Rifiuti dopo il Fantasocio (email alle 18 del giorno dopo) | `0 * * * *` (Europe/Rome); invio solo alle 18 | 13 nodi, nuovo il 26/10; esecuzioni riuscite non salvate |
 
 ### Risorse dati
 
@@ -420,6 +448,7 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `rec_storico` | `edizione`, `page_id` (solo edizioni da Notion), `h_email`, `h_tel`, `h_nome` (impronte) | archivio delle candidature per «Candidature precedenti»; nasce con la scrittura di Daniel o con il primo invio del modulo |
 | `rec_storico_config` | PK `key`; chiave `sale` | sale delle impronte |
 | `tecnico_inviti` | PK `id` (bigserial); `page_id`, `area`, `telegram` (link d'invito), `inviata_at`, `inviato_da` | una riga per area a ogni convocazione al tecnico inviata (dal 22/10); vale l'ultima per candidato e area; si toglie con `drop table tecnico_inviti` |
+| `rifiuti_programmati` | PK `page_id`; `deciso_at`, `fonte` (`controllo`/`arretrato`) | «Non passa» in attesa dell'email delle 18 del giorno dopo (dal 26/10); la riga sparisce all'invio |
 
 `banchetto_config`: `max_people=4`, `min_hours=3`, `max_hours` (nuovo; 0 = nessun limite, predefinito 6), `open=true`, `admins` (indirizzi di ruolo areait@ e hr@), `members_only=false`. Ogni turno dura 1h30.
 
@@ -458,7 +487,8 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `b60c06c`, `019a11e`, `1caa0e9` / `14fd7c7` / `8b62486` | ramo / dev (PR #19) / main (PR #20) | tecnico misto (M&C, IT e S&P intere) e «Convoca al tecnico» in due passi (online dalle 20:41 del 23/10); il revert da solo non basta, servono anche i backup dei due workflow (vedi «Where We Are») |
 | `b09d77d`, `cbb7c15` / `faa4f27` / `2216997` | ramo / dev (PR #21) / main (PR #22) | visibilità su telefono e tablet, un'email sola per più aree (online dalle 01:45 del 24/10); solo dashboard, si annulla con `git revert -m 1 2216997` |
 | `98d315d` / `5ceb659` / `3e890f3` | ramo / dev (PR #23) / main (PR #24) | Fantasocio usabile dal telefono (online dalle 01:58 del 24/10); solo dashboard, si annulla con `git revert -m 1 3e890f3` |
-| `d0cda6f` / `b69998d` / `ce1d495` | ramo / dev (PR #25) / main (PR #26) | Fantasocio da telefono con barra in basso e foglio «Decisione», dati ricaricati tornando sulla pagina (main attuale, 24/10 mattina); solo dashboard, si annulla con `git revert -m 1 ce1d495` |
+| `d0cda6f` / `b69998d` / `ce1d495` | ramo / dev (PR #25) / main (PR #26) | Fantasocio da telefono con barra in basso e foglio «Decisione», dati ricaricati tornando sulla pagina (24/10 mattina); solo dashboard, si annulla con `git revert -m 1 ce1d495` |
+| `0520ce1` / `395bc22` / `1530743` | ramo / dev (PR #27) / main (PR #28) | avviso dell'email di rifiuto alle 18 del giorno dopo nel Fantasocio (main attuale, 26/10 sera); solo dashboard, si annulla con `git revert -m 1 1530743` |
 
 In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza, dashboard senza candidature, limite sulla motivazione, menu a tendina immuni alla traduzione).
 
@@ -691,6 +721,9 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
   - `pw/vis_sweep.js` fa il giro di tutte le schermate del tecnico a 8 larghezze, con foto in `shots/vis/`; `URL_DASH` lo fa girare sui file di produzione;
   - `pw/tel_shot.js` fa le foto del Fantasocio sul telefono, prima e dopo (`SUFF=_prima` con `URL_DASH` di produzione);
   - `pw/fanta_tel.js [prefisso]` prova il Fantasocio da telefono e tablet con dati realistici, cioè il flusso del foglio «Decisione» in tutti gli stati; esporta anche `apri(browser, w, h)` per altre prove.
+- **Rifiuti (26/10):**
+  - `talent/rifiuti/` contiene: `decidi.js`, `prepara.js`, `riepilogo.js` (i nodi Code), `build.py` (che genera `wf_rifiuti.json` e la copia di prova `wf_prova.json`), `prova.py` (esegue la copia di prova e la cancella), `test_logica.js`, `setup.sql`;
+  - `talent/gmail_leggi.py '<query>'` legge in sola lettura la posta di hr@ e stampa solo destinatario, oggetto e data.
 - **Tecnico misto e convocazioni in due passi (23/10 sera):**
   - `fanta/patch_misto.py <in> <out>` modifica la Dashboard API partendo dalla versione per sotto-area;
   - `tecnico/build_misto.py` sostituisce nel workflow i nodi Code con i file di `tecnico/js_invito/`, riconoscendoli dalla versione precedente in `tecnico/js_invito_sotto_v3/`;
@@ -716,7 +749,8 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 
 ## User Feedback & Preferences (REQUIRED — never omit)
 - **Prima di portare modifiche su `main` (rec.jetop.com), mostrarle a Daniel e aspettare il suo ok** (richiesta del 10/10, dopo che il redesign è andato online senza anteprima). Strumenti: schermate prima/dopo (script `pw/confronto.js`) e lo staging su `dev`. Deve sempre essere possibile tornare alla versione precedente.
-- **Ultimo merge su main: `ce1d495`** (Fantasocio da telefono con barra e foglio «Decisione», 24/10); per annullarlo vedi la tabella dei commit.
+- **Ultimo merge su main: `1530743`** (avviso dell'email di rifiuto nel Fantasocio, 26/10); per annullarlo vedi la tabella dei commit.
+- **Nei testi a Daniel, poche spiegazioni** (26/10: «non sprecare token nella spiegazione di ciò che fai»): esito e azioni, senza raccontare i passaggi.
 - **Grafica leggibile ovunque, soprattutto dal telefono** (Daniel, 23-24/10: «problemi di visibilità, stai attento a non farli mai più»; «stai attento che la grafica si veda ovunque bene, soprattutto da telefono (per esempio: il fantasocio è inutilizzabile da telefono)»). Prima di proporre o pubblicare una modifica all'interfaccia servono due cose:
   - il giro `pw/vis_sweep.js`, esteso alle schermate toccate, deve passare a tutte le larghezze, da 360 a 1920px;
   - vanno **guardate a occhio** le foto da telefono (360-412px) e da tablet (768px).
