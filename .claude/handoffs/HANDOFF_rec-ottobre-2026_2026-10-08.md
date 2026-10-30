@@ -1,4 +1,4 @@
-# REC Ottobre 2026: automazioni n8n, dashboard colloqui e gestione candidati (stato al 08/10 sera)
+# REC Ottobre 2026: automazioni n8n, dashboard colloqui e gestione candidati (aggiornato al 30/10)
 
 **Date:** 2026-10-08
 **Status:** IN PROGRESS (REC in corso; nessun lavoro di codice a metà)
@@ -38,6 +38,46 @@ Il mio ruolo è **monitorare, correggere ed estendere** queste automazioni mentr
 Obiettivo finale: il REC deve girare da solo, con gli umani che intervengono solo dove serve una decisione. L'utente ha chiesto anche questo: "voglio un calendario nella dashboard, dove posso vedere e gestire tutti i colloqui, praticamente tutte le cose che posso fare da telegram". La dashboard è completata in 3 fasi, tutte in produzione.
 
 ## Where We Are
+
+- **Esiti del tecnico ed email finali (28-30/10).**
+  - **Decisioni di Daniel:**
+    - riunione unica sugli esiti, guidata da lui, nel Fantasocio;
+    - si salvano sotto-area **e** area intera;
+    - invio automatico; testi riscritti (senza genere, senza «—»);
+    - nell'email di ingresso: link al gruppo Telegram dei nuovi membri e primo appuntamento (onboarding **martedì 3/11 alle 21:30**, data e ora inserite da lui);
+    - rifiuto dopo il tecnico breve e cordiale, ringrazia per entrambi i colloqui;
+    - **30/10:** prima partono le email di chi entra, i rifiuti solo quando li sblocca lui («se qualcuno che io accetto poi mi rifiuta resto senza»). La conferma di chi entra è **entrare nel gruppo Telegram**; il controllo è a mano.
+  - **Notion (`Candidati REC`):** proprietà nuove «Esito Tecnico» (Entra / Non entra) e «Sotto-area Ingresso» (M&C, Design, Videomaking, IT, S&P, Talent, Data Analysis). «Area Ingresso» (5 aree) si compila insieme.
+  - **Fantasocio, fase «Tecnico»** (interruttore Conoscitivo / Tecnico in cima al listone; si apre in Tecnico quando i conoscitivi sono tutti decisi):
+    - elenco: chi è al tecnico, gli «Accettato», i «Rifiutato» dopo il tecnico e i ritirati con le aree del tecnico;
+    - «Entra in…» con una sola sotto-area (tasti 1-7, Invio), «Non entra» (N), «Rimetti da decidere» (U); le voci del suo tecnico sono in evidenza, le altre si possono scegliere;
+    - rose «Chi entra» per sotto-area; riquadro «Email di ingresso» con il pulsante **«Gruppo e onboarding»** (link per tutti o per area, giorno e ora dell'onboarding); riquadro **«Rifiuti dopo il tecnico»** con «Manda i rifiuti» / «Rimetti in attesa»;
+    - chi ha già l'email («Accettato», «Rifiutato») o si è ritirato è bloccato; nella fase Conoscitivo gli accettati e i rifiutati dopo il tecnico stanno «Al tecnico», non tra i «Non passa».
+  - **Dashboard API `iD9mAViOGLgKM2M9`:**
+    - azioni nuove `esito_tecnico` (`esitoTecnico` Entra/Non entra, `voce`) e `tecnico_annulla`: solo Notion, senza messaggio sul gruppo dal Fantasocio; rifiutate se l'email di esito è già partita (`automation_deliveries` `onboarding`/`esclusione_tecnico` `sent` o `sending`);
+    - `link_gruppi` salva in `esiti_impostazioni`: `links` (chiavi `tutti`, `M&C`, `D&V`, `IT`, `S&P`, `T&DA`), `onboarding` (`YYYY-MM-DDTHH:MM`), `rifiuti` (`true` sblocca, `false` rimette in attesa; questo sì annunciato sul gruppo);
+    - `accetta` (scheda) ora vuole la `voce` e richiede link e onboarding non passato; `accetta` e `rifiuta` usano i testi nuovi (il rifiuto da «Colloquio Effettuato» resta quello del conoscitivo). **Mandano l'email subito:** nella riunione si usa solo il Fantasocio;
+    - la lista espone `esitoTecnico`, `sottoIngresso`, `esitoGiorno`, e in cima `gruppi`, `onboarding`, `rifiutiVia`.
+    - Backup prima delle modifiche: `talent/esiti/bk_dash_prima_esiti_20261028.json` (versione `bdd1ecfa…`) e `bk_dash_prima_rifiuti_20261030.json` (versione `8597ecd1…`). Versione attuale `a336a213…`.
+  - **Workflow n8n `19P81AlDynbuSyUu` «REC — Esiti finali del tecnico (email alle 18 del giorno dopo)»**, attivo dal 28/10 sera, sullo schema dei rifiuti (`jQunvRnQ8IMkfVrR`):
+    - ogni ora (`0 * * * *`, Europe/Rome) registra in `esiti_programmati` chi è «Colloquio Tecnico» con un Esito Tecnico; cancella le righe di chi non lo è più (rimesso da decidere, ritirato, già avvisato);
+    - giorno della decisione = data di Roma di `deciso_at` meno 6 ore (la riunione può passare la mezzanotte);
+    - **alle 18:** chi **entra** ed è stato deciso prima di oggi riceve l'email di benvenuto (blocco `onboarding`/`onboarding`), poi Notion «Accettato» + sotto-area e area; chi **non entra** riceve il rifiuto (blocco `esclusione_tecnico`/`esclusione`, Notion «Rifiutato») **solo se i rifiuti sono sbloccati**: allora partono tutti i «Non entra» del momento, anche decisi oggi, e lo sblocco si consuma;
+    - il blocco salta chi ha già un `onboarding` o `esclusione_tecnico` `sent`;
+    - senza link del gruppo o senza data dell'onboarding (o con la data passata) l'email di ingresso non parte: avviso sul gruppo alle 12 e alle 18; lo stesso per email non valide;
+    - dopo l'invio un messaggio unico sul gruppo: chi entra per sotto-area, chi no, quanti rifiuti restano in attesa.
+    - Backup prima dei rifiuti manuali: `talent/esiti/bk_esiti_prima_rifiuti_20261030.json`.
+  - **Statistiche (`zPRbwd7oiCUd647v`):** grafici «Esito del tecnico» (Entra, Non entra, Da decidere, Ritirato dopo il tecnico) e «Ingressi per sotto-area» (accettati più decisi con l'email da partire); **tasso di accettazione = accettati / (accettati + rifiutati dopo il tecnico)**, prima contava anche i rifiutati del conoscitivo. Backup `talent/stats/bk_stats_prima_tecnico_20261028.json`.
+  - **Prove:** logica dei nodi in node (`talent/esiti/test_logica.js`, `test_dash.js`, `test_rif_dash.js`); copia temporanea del workflow sui 54 candidati veri al tecnico (2 email di prova a hr@, nessuna scrittura); `pw/fanta_tec.js` (fase Tecnico, scheda, link e onboarding, rifiuti, leggibilità da 360 a 1920px), `pw/stats_tec.js`, regressioni `fanta_test`, `fanta_tel`, `vis_sweep`, `stats_test`. Le query nuove sono provate in sola lettura sul database vero.
+  - **Stato al 30/10, 11:20:** nessuna decisione registrata (0 righe in `esiti_programmati`, nessun Esito Tecnico su Notion); `esiti_impostazioni` vuota (link, onboarding e sblocco dei rifiuti ancora da inserire). Primo giro del workflow (28/10 alle 19) senza errori.
+  - **Tempi:** decisione la sera del giorno X → ingressi alle 18 del giorno X+1. Un ripescato deciso entro domenica 1/11 riceve l'email lunedì 2; deciso lunedì, martedì alle 18, poche ore prima dell'onboarding.
+  - **Per fermare gli invii:** disattivare il workflow `19P81AlDynbuSyUu`; per i soli rifiuti, «Rimetti in attesa» (o cancellare la chiave `rifiuti` da `esiti_impostazioni`).
+
+- **Fantasocio e statistiche dopo i rifiuti (26-27/10).**
+  - **Rifiuti del 27/10:** alle 18 sono partite le 25 email arretrate, nessun errore.
+  - **Fantasocio:** compaiono anche i «Rifiutato» dopo il conoscitivo (bloccati, tra i «Non passa») e i **ritirati dopo il conoscitivo**, distinti da chi si è ritirato prima: hanno un «Esito Conoscitivo» (l'azione `ritira` scrive «Ritirato» se manca). Le rose dicono quante persone sono al tecnico e quante in più aree, perché la somma delle rose supera le persone.
+  - **Statistiche:** esito del conoscitivo calcolato come nel Fantasocio (`esito_fanta`), rose del tecnico per voce (`tecnico_aree`), ritirati divisi prima/dopo il conoscitivo (una sola casella negli operativi).
+  - **Numeri al 27/10:** 54 al tecnico (10 in più aree), 12 ritirati dopo il conoscitivo, 26 «Rifiutato» dopo il conoscitivo (ora tutti con email).
 
 - **Email di rifiuto dopo il Fantasocio (26/10 sera).**
   - **Decisione di Daniel:** chi riceve «Non passa» nel Fantasocio deve avere l'email di rifiuto ed essere scartato. L'email parte il giorno dopo, così gli errori si correggono in tempo. Scelte: invio alle **18:00 ogni giorno**; gli arretrati col primo invio automatico.
@@ -402,6 +442,7 @@ Sessione lunga, dal 22/09 all'08/10, con 5 compattazioni di contesto. Le voci so
 | `K6R9pe8ahsr3zgTH` | REC — Reminder Banchetti | ore 9 | |
 | `PhG1qNhFlOhzhMME` | JEToP Error Handler | Error Trigger | errorWorkflow di quasi tutti |
 | `jQunvRnQ8IMkfVrR` | REC — Rifiuti dopo il Fantasocio (email alle 18 del giorno dopo) | `0 * * * *` (Europe/Rome); invio solo alle 18 | 13 nodi, nuovo il 26/10; esecuzioni riuscite non salvate |
+| `19P81AlDynbuSyUu` | REC — Esiti finali del tecnico (email alle 18 del giorno dopo) | `0 * * * *` (Europe/Rome); invio solo alle 18 | 15 nodi, nuovo il 28/10, rifiuti manuali dal 30/10; esecuzioni riuscite non salvate |
 
 ### Risorse dati
 
@@ -426,6 +467,7 @@ Sessione lunga, dal 22/09 all'08/10, con 5 compattazioni di contesto. Le voci so
 | Stato Approvazione | Da Approvare (non più usato), In Attesa Conferma Team (secondo colloquio nello slot), Slot Confermato, Convocazione Inviata, Da Riprocessare |
 | Conferma Presenza | In Attesa, Sollecitato, Ha Risposto, Confermata |
 | Risposte (dal 10/10) | **Ultima Risposta**: testo delle risposte del candidato, le più recenti in alto, ognuna con «dd/MM HH:mm · …», massimo 1.900 caratteri. **Data Ultima Risposta**: data e ora. Le scrive `Notion - Segna Risposta` nel sub; per chi era già in «Ha Risposto» il 10/10 le ho recuperate dalla casella hr@ |
+| Esito del tecnico (dal 28/10) | **Esito Tecnico**: Entra, Non entra. **Sotto-area Ingresso**: M&C, Design, Videomaking, IT, S&P, Talent, Data Analysis. **Area Ingresso**: M&C, D&V, IT, S&P, T&DA. Le scrive il Fantasocio (fase Tecnico); «Accettato»/«Rifiutato» le mette il workflow `19P81AlDynbuSyUu` all'invio |
 | Altre | Data Convocazione, Ultimo Avviso, Solleciti Inviati, Responsabili Aggiuntivi, Luogo, ID Evento, Prima/Seconda Area, Prima/Seconda Sotto-Area, responsabili (formato "Nome (Area)"), Membro Talent |
 
 Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni sono riportati a memoria.
@@ -449,6 +491,8 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `rec_storico_config` | PK `key`; chiave `sale` | sale delle impronte |
 | `tecnico_inviti` | PK `id` (bigserial); `page_id`, `area`, `telegram` (link d'invito), `inviata_at`, `inviato_da` | una riga per area a ogni convocazione al tecnico inviata (dal 22/10); vale l'ultima per candidato e area; si toglie con `drop table tecnico_inviti` |
 | `rifiuti_programmati` | PK `page_id`; `deciso_at`, `fonte` (`controllo`/`arretrato`) | «Non passa» in attesa dell'email delle 18 del giorno dopo (dal 26/10); la riga sparisce all'invio |
+| `esiti_programmati` | PK `page_id`; `deciso_at` | esiti del tecnico registrati dal controllo orario (dal 28/10); la riga sparisce all'invio |
+| `esiti_impostazioni` | PK `chiave`; `valore`, `updated_at`, `updated_by` | chiavi `tutti` e `M&C`…`T&DA` (link dei gruppi), `onboarding` (`YYYY-MM-DDTHH:MM`), `rifiuti` (presente = rifiuti sbloccati per il prossimo giro delle 18) |
 
 `banchetto_config`: `max_people=4`, `min_hours=3`, `max_hours` (nuovo; 0 = nessun limite, predefinito 6), `open=true`, `admins` (indirizzi di ruolo areait@ e hr@), `members_only=false`. Ogni turno dura 1h30.
 
@@ -488,7 +532,12 @@ Verificare con l'API i nomi esatti delle proprietà prima di scriverci: alcuni s
 | `b09d77d`, `cbb7c15` / `faa4f27` / `2216997` | ramo / dev (PR #21) / main (PR #22) | visibilità su telefono e tablet, un'email sola per più aree (online dalle 01:45 del 24/10); solo dashboard, si annulla con `git revert -m 1 2216997` |
 | `98d315d` / `5ceb659` / `3e890f3` | ramo / dev (PR #23) / main (PR #24) | Fantasocio usabile dal telefono (online dalle 01:58 del 24/10); solo dashboard, si annulla con `git revert -m 1 3e890f3` |
 | `d0cda6f` / `b69998d` / `ce1d495` | ramo / dev (PR #25) / main (PR #26) | Fantasocio da telefono con barra in basso e foglio «Decisione», dati ricaricati tornando sulla pagina (24/10 mattina); solo dashboard, si annulla con `git revert -m 1 ce1d495` |
-| `0520ce1` / `395bc22` / `1530743` | ramo / dev (PR #27) / main (PR #28) | avviso dell'email di rifiuto alle 18 del giorno dopo nel Fantasocio (main attuale, 26/10 sera); solo dashboard, si annulla con `git revert -m 1 1530743` |
+| `0520ce1` / `395bc22` / `1530743` | ramo / dev (PR #27) / main (PR #28) | avviso dell'email di rifiuto alle 18 del giorno dopo nel Fantasocio (26/10 sera); solo dashboard, si annulla con `git revert -m 1 1530743` |
+| `4d91aa2` / `7c8de04` / `730ddc4` | ramo / dev (PR #29) / main (PR #30) | i «Rifiutato» dopo il conoscitivo nel Fantasocio, bloccati (26/10 notte) |
+| `a42f07d`, `d6df1e8` / `c7b0337` / `ce3852e` | ramo / dev (PR #31) / main (PR #32) | ritirati dopo il conoscitivo nel Fantasocio, numero di persone nelle rose (27/10 mattina) |
+| `ac407de` / `eca5992` / `14d0446` | ramo / dev (PR #33) / main (PR #34) | statistiche: esito come nel Fantasocio, tecnico per area, ritirati divisi (27/10); da annullare insieme al nodo «Code - Aggrega Stats» |
+| `0d44756`, `1aebb39` / `06b7e74` / `e6dfbc6` | ramo / dev (PR #35) / main (PR #36) | Fantasocio fase Tecnico, «Gruppo e onboarding», scheda «Accetta»/«Rifiuta» nuove, statistiche del tecnico (28/10 sera); il revert da solo non basta: servono anche i backup della Dashboard API e delle statistiche, e va disattivato `19P81AlDynbuSyUu` |
+| `87b4065` / `815c0d3` / `8bb137d` | ramo / dev (PR #37) / main (PR #38) | rifiuti dopo il tecnico solo con «Manda i rifiuti» (main attuale, 30/10 mattina); insieme alle modifiche del 30/10 a Dashboard API e workflow (backup in `talent/esiti/`) |
 
 In siti-torino sono state unite le PR #21-#25 (banchetti con redirect e capienza, dashboard senza candidature, limite sulla motivazione, menu a tendina immuni alla traduzione).
 
@@ -721,6 +770,13 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
   - `pw/vis_sweep.js` fa il giro di tutte le schermate del tecnico a 8 larghezze, con foto in `shots/vis/`; `URL_DASH` lo fa girare sui file di produzione;
   - `pw/tel_shot.js` fa le foto del Fantasocio sul telefono, prima e dopo (`SUFF=_prima` con `URL_DASH` di produzione);
   - `pw/fanta_tel.js [prefisso]` prova il Fantasocio da telefono e tablet con dati realistici, cioè il flusso del foglio «Decisione» in tutti gli stati; esporta anche `apri(browser, w, h)` per altre prove.
+- **Esiti del tecnico (28-30/10):** `talent/esiti/` contiene:
+  - `testi.js` (testi delle email di ingresso e di rifiuto dopo il tecnico, uguali nel workflow e nella Dashboard API), `decidi.js`, `prepara.js`, `riepilogo.js`, `avviso.js` (i nodi Code), `build.py` (genera `wf_esiti.json` e la copia di prova `wf_prova.json`), `prova.py`, `anteprime.js` (HTML delle email d'esempio);
+  - `patch_dash.py locale|pubblica` (esiti, link, onboarding, testi) e `patch_rifiuti_dash.py locale|pubblica` (sblocco dei rifiuti): partono dalla versione attesa e la controllano prima del PUT;
+  - `test_logica.js`, `test_dash.js`, `test_rif_dash.js`;
+  - `notion_scrivi.py` (in `talent/`) scrive su Notion con un workflow temporaneo: usato per creare le due proprietà;
+  - `stats/aggrega_tecnico.js` e `stats/genera_finte.js` (dati finti per `pw/stats_tec.js`);
+  - `pw/fanta_tec.js`, `pw/stats_tec.js`, `pw/email_esiti_shot.js`.
 - **Rifiuti (26/10):**
   - `talent/rifiuti/` contiene: `decidi.js`, `prepara.js`, `riepilogo.js` (i nodi Code), `build.py` (che genera `wf_rifiuti.json` e la copia di prova `wf_prova.json`), `prova.py` (esegue la copia di prova e la cancella), `test_logica.js`, `setup.sql`;
   - `talent/gmail_leggi.py '<query>'` legge in sola lettura la posta di hr@ e stampa solo destinatario, oggetto e data.
@@ -749,7 +805,9 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 
 ## User Feedback & Preferences (REQUIRED — never omit)
 - **Prima di portare modifiche su `main` (rec.jetop.com), mostrarle a Daniel e aspettare il suo ok** (richiesta del 10/10, dopo che il redesign è andato online senza anteprima). Strumenti: schermate prima/dopo (script `pw/confronto.js`) e lo staging su `dev`. Deve sempre essere possibile tornare alla versione precedente.
-- **Ultimo merge su main: `1530743`** (avviso dell'email di rifiuto nel Fantasocio, 26/10); per annullarlo vedi la tabella dei commit.
+- **Ultimo merge su main: `8bb137d`** (rifiuti dopo il tecnico solo con «Manda i rifiuti», 30/10); per annullarlo vedi la tabella dei commit.
+- **Esiti del tecnico (28-30/10):** decide Daniel in una riunione unica nel Fantasocio; email di ingresso automatiche alle 18 del giorno dopo; **i rifiuti dopo il tecnico partono solo quando li sblocca lui**, per poter ripescare se qualcuno rinuncia; la conferma di chi entra è entrare nel gruppo Telegram. Data e ora dell'onboarding e link del gruppo li inserisce lui: non inventarli.
+- **Pubblicazioni su n8n in produzione:** il 30/10 il classificatore della modalità auto ha bloccato il PUT della Dashboard API anche dopo l'ok di Daniel. Daniel è passato a «Accetta modifiche» e approva lui ogni passo. Non aggirare il blocco.
 - **Nei testi a Daniel, poche spiegazioni** (26/10: «non sprecare token nella spiegazione di ciò che fai»): esito e azioni, senza raccontare i passaggi.
 - **Grafica leggibile ovunque, soprattutto dal telefono** (Daniel, 23-24/10: «problemi di visibilità, stai attento a non farli mai più»; «stai attento che la grafica si veda ovunque bene, soprattutto da telefono (per esempio: il fantasocio è inutilizzabile da telefono)»). Prima di proporre o pubblicare una modifica all'interfaccia servono due cose:
   - il giro `pw/vis_sweep.js`, esteso alle schermate toccate, deve passare a tutte le larghezze, da 360 a 1920px;
@@ -781,6 +839,13 @@ Per far rielaborare un'email basta togliere l'etichetta `REC/Gestita`: il giro d
 - Va bene agire subito sui casi urgenti ("sposta subito i possibili e agli altri manda un email…").
 
 ## Where We're Going
+
+0. **Esiti del tecnico (dal 30/10):**
+   - Daniel inserisce nel Fantasocio (fase Tecnico, Rose → «Gruppo e onboarding») l'onboarding del 3/11 alle 21:30 e il link del gruppo Telegram; senza, le email di ingresso non partono;
+   - riunione sugli esiti; il giorno dopo alle 18 partono gli ingressi: controllare `automation_deliveries` (`onboarding` `sent`), Notion «Accettato», righe rimaste in `esiti_programmati`, esecuzioni in errore del workflow `19P81AlDynbuSyUu`;
+   - chi non entra nel gruppo entro il termine scelto da Daniel si ripesca tra i «Non entra» (stesso Fantasocio: «Entra in…»);
+   - poi Daniel preme «Manda i rifiuti»: partono al primo giro delle 18; ricordarglielo se i rifiuti restano fermi oltre il termine;
+   - un controllo è programmato il 30/10 alle 18:10 (invii, Notion, errori).
 
 1. **Avvio della nuova sessione:** ricreare gli script di supporto (Quick Start), poi fare un controllo di salute di sola lettura:
    - esecuzioni con errori nelle ultime 24h;
@@ -893,9 +958,10 @@ cd /home/user/recruitment-form-jetop && git config user.name Claude && git confi
 #    GET /executions?status=error&limit=50, poi incrocia Notion (Colloquio Schedulato)
 #    con slot_assignments e con le celle grigie.
 
-# 6. Prossima azione: controllare se ci sono nuove ore spuntate dai Talent e spostare
-#    Gri. e Ro. nei loro vincoli (dalla dashboard o con lo Sposta di Telegram), dopo
-#    averlo detto all'utente.
+# 6. Prossima azione (dal 30/10): esiti del tecnico, vedi «Where We're Going» punto 0.
+#    Sola lettura: SELECT su esiti_programmati, esiti_impostazioni e automation_deliveries
+#    (onboarding, esclusione_tecnico) con talent/sql_leggi.py, poi esecuzioni in errore di
+#    19P81AlDynbuSyUu. I rifiuti dopo il tecnico partono solo dopo «Manda i rifiuti».
 ```
 
 **Cose che l'utente deve fare a mano** (ricordarle se non sono fatte):
