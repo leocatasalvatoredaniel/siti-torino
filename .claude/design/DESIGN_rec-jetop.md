@@ -18,6 +18,7 @@ il codice del sito.
 | Statistiche | `/rec-dashboard/` | strumenti | ridisegnata |
 | Colloqui | `/rec-dashboard/colloqui/` | strumenti | ridisegnata |
 | Fantasocio | `/rec-dashboard/colloqui/#fantasocio` (modalità a tutto schermo della pagina colloqui) | strumenti, registro giocoso | nuova (23/10) |
+| Impostazioni | `/rec-dashboard/impostazioni/` | strumenti | nuova (12/11), solo admin |
 
 La pagina pubblica è la fonte del DNA: fondo indaco con le onde a linee sottili, iris, Red Hat
 Display, parole scritte a mano in Schoolbell color iris, foto con bordo iris.
@@ -272,6 +273,33 @@ Due passi nella stessa finestra (`.modal.picker`), dal pulsante «Convoca al tec
   - «non l'aveva scelta» è una chip in stile avviso (`.ca-fuori`);
   - chi è già convocato resta visibile con opacità .6.
 
+
+## Impostazioni (12/11)
+
+Pagina degli strumenti per i soli admin: chi entra dove, date e regole dell'edizione. Stesso tema e stessa voce delle
+altre; niente registro giocoso.
+
+- **Ingresso:** un'icona a ingranaggio (`.icon-btn`, 44px su telefono) nello stato dell'intestazione di banchetti,
+  statistiche e colloqui, visibile solo agli admin. Non è una quarta voce del selettore: su telefono quattro voci
+  non ci stanno, e le impostazioni non sono uno strumento di tutti i giorni. Nella pagina l'icona ha il bordo iris.
+- **Struttura:** titolo e una riga di spiegazione, poi sei viste a pillola con `aria-pressed` (Persone e accessi,
+  Candidature, Colloqui, Banchetti, Esiti, Registro), una alla volta, ricordate nell'indirizzo (`#banchetti`). Le
+  pillole vanno a capo su telefono. Ogni vista è uno o due moduli (`.modulo`), larghezza massima 1040px.
+- **Riga di stato** (`.stato`): pallino, titolo, dettaglio con le date in Red Hat Mono, comandi a destra. Come il
+  modulo «Candidature» delle statistiche; le azioni immediate chiedono conferma in linea.
+- **Persone:** una riga per socio con un filetto sopra (`.pe-riga`): nome, area in pillola tinta dal colore
+  dell'area (`color-mix(in oklab, …)`), ruolo ed email in piccolo; a destra l'accesso che ha («Colloqui e
+  Statistiche, per area») e il menu per cambiarlo. Sotto i 600px di contenitore la riga va su una colonna
+  (container query `persone`). I sottoinsiemi sono viste a pillola con il numero, non liste separate.
+- **Interruttore** (`.interruttore`, `role="switch"`): pillola con lo stato scritto accanto («Prenotazioni aperte» /
+  «Prenotazioni chiuse»), mai solo colore.
+- **Giorni dei banchetti:** primo e ultimo giorno, giorni della settimana a pillola, poi una riga per settimana con
+  i giorni (`.chip`, alti 44px, giorno e data). Su telefono l'etichetta della settimana sta sopra e i giorni sono
+  in colonne uguali. Un giorno con prenotazioni ha il bordo doppio e non si toglie.
+- **Salvataggi:** un pulsante «Salva» per vista; il messaggio sta accanto, in uno spazio sempre riservato
+  (`.msg`): «Salvato.», «Nessuna modifica da salvare.» o l'errore. Il toast serve solo per errori fuori da un modulo.
+- **«Togli»:** due tocchi sullo stesso pulsante (il primo lo fa diventare «Conferma» per quattro secondi), senza
+  finestra.
 
 ## Cosa le pagine possono variare
 
