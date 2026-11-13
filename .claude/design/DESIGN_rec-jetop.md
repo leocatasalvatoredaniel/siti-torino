@@ -19,6 +19,7 @@ il codice del sito.
 | Colloqui | `/rec-dashboard/colloqui/` | strumenti | ridisegnata |
 | Fantasocio | `/rec-dashboard/colloqui/#fantasocio` (modalità a tutto schermo della pagina colloqui) | strumenti, registro giocoso | nuova (23/10) |
 | Impostazioni | `/rec-dashboard/impostazioni/` | strumenti | nuova (12/11), solo admin |
+| Calendario | `/rec-dashboard/calendario/` | strumenti | nuova (13/11), per tutti i soci |
 
 La pagina pubblica è la fonte del DNA: fondo indaco con le onde a linee sottili, iris, Red Hat
 Display, parole scritte a mano in Schoolbell color iris, foto con bordo iris.
@@ -111,10 +112,10 @@ codifica dei dati che le persone hanno già imparato, non decorazione.
 
 ## Intestazione e piè di pagina
 
-- Strumenti: intestazione compatta (logo, «REC», selettore Statistiche / Colloqui / Banchetti
-  con la pagina attiva evidenziata, stato aggiornamento, Esci). Su telefono il selettore va
-  su una seconda riga a tutta larghezza. Ai soci senza ruolo REC i banchetti non mostrano il
-  selettore.
+- Strumenti: intestazione compatta (logo, «REC», selettore, stato aggiornamento, Esci). Il selettore c'è per tutti i
+  soci: Calendario e Banchetti; chi ha l'accesso REC vede anche Statistiche e Colloqui (quattro voci, la pagina
+  attiva evidenziata). Su telefono il selettore va su una seconda riga a tutta larghezza; con quattro voci, sotto i
+  520px, sta su due righe da due (`data-voci="4"`), così i nomi restano interi.
 - Modulo: intestazione allineata ai bordi (logo + «Candidature» a sinistra, jetop.com a destra),
   senza barra né filetto.
 - Piè di pagina: una sola riga (Ft2), senza lineette lunghe.
@@ -282,8 +283,8 @@ altre; niente registro giocoso.
 - **Ingresso:** un'icona a ingranaggio (`.icon-btn`, 44px su telefono) nello stato dell'intestazione di banchetti,
   statistiche e colloqui, visibile solo agli admin. Non è una quarta voce del selettore: su telefono quattro voci
   non ci stanno, e le impostazioni non sono uno strumento di tutti i giorni. Nella pagina l'icona ha il bordo iris.
-- **Struttura:** titolo e una riga di spiegazione, poi sei viste a pillola con `aria-pressed` (Persone e accessi,
-  Candidature, Colloqui, Banchetti, Esiti, Registro), una alla volta, ricordate nell'indirizzo (`#banchetti`). Le
+- **Struttura:** titolo e una riga di spiegazione, poi sette viste a pillola con `aria-pressed` (Persone e accessi,
+  Chi fa i colloqui, Candidature, Colloqui, Banchetti, Esiti, Registro), una alla volta, ricordate nell'indirizzo (`#banchetti`). Le
   pillole vanno a capo su telefono. Ogni vista è uno o due moduli (`.modulo`), larghezza massima 1040px.
 - **Riga di stato** (`.stato`): pallino, titolo, dettaglio con le date in Red Hat Mono, comandi a destra. Come il
   modulo «Candidature» delle statistiche; le azioni immediate chiedono conferma in linea.
@@ -300,6 +301,32 @@ altre; niente registro giocoso.
   (`.msg`): «Salvato.», «Nessuna modifica da salvare.» o l'errore. Il toast serve solo per errori fuori da un modulo.
 - **«Togli»:** due tocchi sullo stesso pulsante (il primo lo fa diventare «Conferma» per quattro secondi), senza
   finestra.
+
+## Calendario (13/11)
+
+Pagina degli strumenti per tutti i soci: le proprie ore libere per i colloqui e i propri colloqui. T&DA e admin
+hanno una terza vista con le disponibilità di tutti. Sostituisce il foglio Google delle disponibilità.
+
+- **Struttura:** titolo, tre viste a pillola (`aria-pressed`, ricordate nell'indirizzo), un modulo per vista. La
+  griglia della settimana è il modulo dominante.
+- **Griglia della settimana** (`.griglia`): le ore in riga (08-19, Red Hat Mono), i giorni da lunedì a sabato in
+  colonna; sei colonne uguali più quella delle ore (44px, 38px sotto i 560px), celle alte 44px. Sta tutta nello
+  schermo di un telefono da 360px, senza scorrimento laterale.
+- **Cella** (`.cella`): spenta ha il bordo `--color-rule-2`; accesa è iris piena con la spunta; un'ora con un
+  colloquio fissato è verde tenue con il lucchetto e non si tocca; un'ora passata o fuori dal periodo ha il bordo
+  tratteggiato. Sotto la griglia c'è la legenda dei quattro stati.
+- **Segnare in fretta:** il nome del giorno accende o spegne tutta la colonna, l'ora a sinistra tutta la riga.
+- **Barra della settimana** (`.sett-bar`): frecce `caret-left` e `caret-right` (`.icon-btn`), al centro «Settimana 2
+  di 4» e sotto le date in Red Hat Mono.
+- **Salvataggio esplicito:** il pulsante dice quante modifiche ci sono («Salva 3 modifiche») ed è spento se non ce
+  ne sono; «Copia la settimana prima» è spento finché ci sono modifiche da salvare. Il messaggio sta accanto, in
+  uno spazio sempre riservato.
+- **Disponibilità di tutti:** stessa griglia, ma ogni cella porta il numero di persone libere (vuota se nessuna) e
+  si scurisce con il numero (`color-mix(in oklab, …)` sull'iris, al massimo 55%). Il bordo verde segna le ore in
+  cui c'è chi può dirigere il colloquio e almeno altre due persone. Toccando un'ora si apre sotto il dettaglio con
+  i nomi per area (pallino del colore dell'area). Le aree si filtrano con pillole che portano il numero.
+- **Stati vuoti:** una frase che dice cosa manca e, per gli admin, il link al punto delle Impostazioni dove si
+  sistema (periodo dei colloqui, chi fa i colloqui).
 
 ## Cosa le pagine possono variare
 
