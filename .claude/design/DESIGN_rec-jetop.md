@@ -310,7 +310,7 @@ hanno una terza vista con le disponibilità di tutti. Sostituisce il foglio Goog
 - **Struttura:** titolo, tre viste a pillola (`aria-pressed`, ricordate nell'indirizzo), un modulo per vista. La
   griglia della settimana è il modulo dominante.
 - **Griglia della settimana** (`.griglia`): le ore in riga (08-19, Red Hat Mono), i giorni da lunedì a sabato in
-  colonna; sei colonne uguali più quella delle ore (44px, 38px sotto i 560px), celle alte 44px. Sta tutta nello
+  colonna (il sabato fino alle 13: le celle dopo restano vuote, `.cella.fuori`); sei colonne uguali più quella delle ore (44px, 38px sotto i 560px), celle alte 44px. Sta tutta nello
   schermo di un telefono da 360px, senza scorrimento laterale.
 - **Cella** (`.cella`): spenta ha il bordo `--color-rule-2`; accesa è iris piena con la spunta; un'ora con un
   colloquio fissato è verde tenue con il lucchetto e non si tocca; un'ora passata o fuori dal periodo ha il bordo
