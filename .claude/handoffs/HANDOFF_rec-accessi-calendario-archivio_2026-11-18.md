@@ -499,3 +499,8 @@ git clone https://github.com/JEToP/recruitment-form-jetop /home/user/recruitment
 - Completare su Notion la pagina di M.d.S. e chiudere i 3 candidati S&P ancora in «Colloquio Tecnico»; poi ricreare l'archivio con il tasto e buttare la versione vecchia da Drive.
 - Decidere chiusura dell'edizione, date di marzo, dati per l'informativa privacy.
 - Dalle note precedenti: correggere le email nel foglio soci (righe segnalate il 30/10), segnalare all'IT i problemi DNS dell'host n8n.
+
+## Session Closed
+**Closed at:** 2026-11-18 (sera, ora italiana)
+**Commit:** `f59ef55` (handoff) + questo commit di chiusura
+**Session status:** Handed off to next session (Daniel apre una sessione nuova)
