@@ -1,2 +1,5 @@
 # Motore di impeccable: si scarica da solo (verificato con engine-checksums.txt)
 .claude/skills/impeccable/scripts/bin/
+
+# Impostazioni locali di Claude Code (hook installati da impeccable): restano sulla macchina
+.claude/settings.local.json
